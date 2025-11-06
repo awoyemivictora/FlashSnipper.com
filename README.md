@@ -1,1 +1,0 @@
-# TurboSniper.com AI Snipping Bot
