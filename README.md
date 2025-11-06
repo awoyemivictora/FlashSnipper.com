@@ -1,0 +1,1 @@
+# FlashSnipper.com Software
