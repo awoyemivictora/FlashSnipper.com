@@ -1,10 +1,10 @@
 export { ComponentNodeSection } from "./ComponentNodeSection";
-export { FeaturesListSection } from "./FeaturesListSection";
 export { FeaturesSection } from "./FeaturesSection";
+export { FAQSection } from "./FAQSection";
 export { ImageGallerySection } from "./ImageGallerySection";
 export { LayoutSection } from "./LayoutSection";
 export { MainContentSection } from "./MainContentSection";
 export { OverlapGroupSection } from "./OverlapGroupSection";
-export { OverlapSection } from "./OverlapSection";
+export { PricingSection } from "./PricingSection";
 export { HeroSection } from "./HeroSection";
 

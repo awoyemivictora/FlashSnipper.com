@@ -1,964 +1,996 @@
 import json
-import aiohttp
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect
+import httpx
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+import asyncio
+from typing import Dict, Optional
 from datetime import datetime, timedelta
-from pydantic import BaseModel
-import requests
 import os
 from dotenv import load_dotenv
 import asyncio
-from contextlib import asynccontextmanager
-from sqlalchemy.orm import Session
 import websockets
-from app.telegramMessageFormatter import send_buy_telegram_notification, send_sell_telegram_notification, send_telegram_notification
 import logging
-
-
-# Create a custom logger for your bot
-logger = logging.getLogger("bot_logger")
-logger.setLevel(logging.INFO)  # Set minimum level to INFO (captures INFO and ERROR)
-
-# Create a file handler (optional, if you want logs saved)
-file_handler = logging.FileHandler("bot.log")
-file_handler.setLevel(logging.INFO)
-
-# Create a console handler
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-
-# Define a simple log format
-formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-file_handler.setFormatter(formatter)
-console_handler.setFormatter(formatter)
-
-# Add handlers to the logger
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
-
-# Suppress third-party logs (SQLAlchemy, PostgreSQL, FastAPI)
-logging.getLogger("sqlalchemy").setLevel(logging.CRITICAL)
-logging.getLogger("uvicorn").setLevel(logging.CRITICAL)
-logging.getLogger("fastapi").setLevel(logging.CRITICAL)
-logging.getLogger("asyncpg").setLevel(logging.CRITICAL)  # PostgreSQL driver
-logging.getLogger("httpx").setLevel(logging.CRITICAL)    # HTTP requests if used
-
-
-load_dotenv()
-
-
-# Import your models and database configuration.
+from .routers import auth, sentiment, snipe, token, trade, user, util
+from app.models import Trade, User, TokenMetadata
+from app.database import AsyncSessionLocal, get_db
+from app.security import get_current_user
+from app.utils.dexscreener_api import get_dexscreener_data
+from app.utils.raydium_apis import get_raydium_pool_info
+from app.utils.rugcheck import check_rug
+from app.utils.solscan_apis import get_solscan_token_meta, get_top_holders_info
 from . import models, database
+from fastapi.middleware.cors import CORSMiddleware
+from app.config import settings
+from solana.rpc.async_api import AsyncClient
+from solana.publickey import PublicKey
+
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load your environment variables and API keys.
-SOLSCAN_API_KEY = os.getenv("SOLSCAN_API_KEY")
-
-# Read Telegram config from env variables.
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-
+load_dotenv()
 
 PUMPPORTAL_WALLET_PUBLIC_KEY = os.getenv("PUMPPORTAL_WALLET_PUBLIC_KEY")
 PUMPPORTAL_WALLET_PRIVATE_KEY = os.getenv("PUMPPORTAL_WALLET_PRIVATE_KEY")
 PUMPPORTAL_API_KEY = os.getenv("PUMPPORTAL_API_KEY")
 
+ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY", "abc")
+DEX_AGGREGATOR_API_HOST = os.getenv("DEX_AGGREGATOR_API_HOST")
+SOLSCAN_API = os.getenv("SOLSCAN_API")
 
-app = FastAPI()
+app = FastAPI(
+    title="Solsniper API",
+    description="A powerful Solana sniping bot with AI analysis and rug pull protection.",
+    version="0.1.0",
+)
+
+# CORS Middleware (important for frontend communication)
+origins = [
+    "http://localhost:3000",  # Your React/Vite frontend development server
+    "http://localhost:5173",  # Another common Vite dev port
+    "http://localhost:8080",  # Additional common port
+    # Add your production frontend URL(s) here
+    # "https://yourproductionfrontend.com",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# app.include_router(api_router, prefix="/api/v1")
+app.include_router(auth.router)
+app.include_router(sentiment.router)
+app.include_router(snipe.router)
+# app.include_router(subscriptions.router, prefix="/subscriptions")
+app.include_router(token.router)
+app.include_router(trade.router)
+app.include_router(user.router)
+app.include_router(util.router)
 
 
-# Database setup
-models.Base.metadata.create_all(bind=database.engine)
+# Database setup (ensure this is executed when the app starts)
+# This creates tables based on your models.Base
+@app.on_event("startup")
+async def startup_event():
+    async with database.async_engine.begin() as conn:
+        await conn.run_sync(models.Base.metadata.create_all)
+    # Start the global token ingestion loop
+    asyncio.create_task(pumpportal_subscription_loop_global())
+    # Start the continuous metadata enrichment loop
+    asyncio.create_task(metadata_enrichment_loop()) # <-- New task here
+    logger.info("Database tables created and global background tasks started.")
 
 
-PRICE_CACHE = {}   # Key: token.mint_address, Value: last observed price
-HOLDER_CACHE = {}  # Key: token.mint_address, Value: last observed holder count
+#---- WebSocket Manager for Real-time Logs -----
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, WebSocket] = {} # {wallet_address: WebSocket}
+        
+        
+    async def connect(self, websocket: WebSocket, wallet_address: str):
+        await websocket.accept()
+        self.active_connections[wallet_address] = websocket
+        logger.info(f"WebSocket connected for wallet: {wallet_address}")
+        
+    
+    def disconnect(self, wallet_address: str):
+        if wallet_address in self.active_connections:
+            del self.active_connections[wallet_address]
+            logger.info(f"WebSocket disconnected for wallet: {wallet_address}")
+            
+    
+    async def send_personal_message(self, message: str, wallet_address: str):
+        if wallet_address in self.active_connections:
+            try:
+                await self.active_connections[wallet_address].send_text(message)
+            except RuntimeError as e:
+                logger.error(f"Error sending message to {wallet_address}: {e}")
+                self.disconnect(wallet_address) # Disconnect if sending fails
+                
+    
+    async def broadcast(self, message: str):
+        # This might not be needed for per-user bots, but kept for general broadcast if required
+        for connection in self.active_connections.values():
+            await connection.send_text(message)
+            
+
+websocket_manager = ConnectionManager()
 
 
-# -------------------------------
-# Pydantic Models
-# -------------------------------
-class TokenInput(BaseModel):
-    mint_address: str
+
+# Dictionary to keep track of active bot tasks per user
+active_bot_tasks: Dict[str, asyncio.Task] = {}
 
 
-
-
-# # -------------------------------
-# # Helper Function: Get Mint token data from Dexscreener 
-# # -------------------------------
-
-def get_dexscreener_data(mint_address: str) -> dict:
+# --- GLOBAL TOKEN INGESTION (Populates TokenMetadata for all users to check) ---
+async def pumpportal_subscription_loop_global():
     """
-    Fetches pool data from Dexscreener for the given token mint on Solana.
-    Extracts the following fields:
-      - dexscreener_url: The URL for the pool on Dexscreener.
-      - pair_address: The pool's pair address.
-      - price_native: The native price as a string.
-      - price_usd: The USD price as a string.
-      - liquidity: The liquidity in USD.
-      - market_cap: The market capitalization.
-      - pair_created_at: The timestamp (epoch) when the pair was created.
-      - websites: Concatenated website URLs (if any).
-      - twitter: The Twitter URL from socials.
-      - telegram: The Telegram URL from socials.
-    Returns a dict with these fields (or default values if not found).
+    Runs the Pumpportal subscription continuously to ingest new tokens globally.
+    This function ONLY populates the `TokenMetadata` table.
+    User-specific bots will then query this table.
     """
-    url = f"https://api.dexscreener.com/token-pairs/v1/solana/{mint_address}"
+    while True:
+        try:
+            uri = "wss://pumpportal.fun/api/data"
+            async with websockets.connect(uri) as websocket:
+                payload = {"method": "subscribeNewToken"}
+                await websocket.send(json.dumps(payload))
+                logger.info("Subscribed to Pumpportal new token events.")
+
+                while True:
+                    message = await websocket.recv()
+                    event = json.loads(message)
+                    logger.debug("Received Pumpportal event:", event) # Use debug to avoid spamming logs
+
+                    if "mint" not in event:
+                        continue # Skip non-token events
+
+                    mint = event.get("mint")
+                    if not mint or mint == "11111111111111111111111111111111":
+                        logger.info("Skipping event due to missing or native null mint address.")
+                        continue
+
+                    # Process the token event by updating/creating its metadata
+                    async with AsyncSessionLocal() as db_session:
+                        try:
+                            # Create or update a NewTokens entry (your existing logic)
+                            token_trade = models.NewTokens( # Assuming models.NewTokens exists
+                                mint_address=mint,
+                                name=event.get("name"),
+                                symbol=event.get("symbol"),
+                                timestamp=datetime.utcnow(),
+                                signature=event.get("signature"),
+                                trader_public_key=event.get("traderPublicKey"),
+                                tx_type=event.get("txType"),
+                                initial_buy=event.get("initialBuy"),
+                                sol_amount=event.get("solAmount"),
+                                bonding_curve_key=event.get("bondingCurveKey"),
+                                v_tokens_in_bonding_curve=event.get("vTokensInBonding_curve"),
+                                v_sol_in_bonding_curve=event.get("vSolInBonding_curve"),
+                                market_cap_sol=event.get("marketCapSol"),
+                                uri=event.get("uri"),
+                                pool=event.get("pool")
+                            )
+                            db_session.add(token_trade) # Use add or merge depending on if it's truly new or updateable
+                            await db_session.commit()
+                            logger.info(f"New token event recorded for: {mint}")
+                            
+                            # # --- We add 20 secs delay so that the metadata can populate on Dexscreener and Solscan API before we fetch them
+                            # await asyncio.sleep(20)     # Wait for 20 seconds
+
+                            # # Now, trigger metadata enrichment AFTER the delay
+                            # await process_token_logic(mint, db_session)
+
+                        except Exception as e:
+                            logger.error(f"Error processing Pumpportal event {mint}: {e}")
+                            await db_session.rollback()
+
+        except websockets.exceptions.ConnectionClosedOK:
+            logger.info("Pumpportal WebSocket connection closed normally. Reconnecting...")
+        except websockets.exceptions.WebSocketException as e:
+            logger.error(f"Pumpportal WebSocket error: {e}. Reconnecting in 10 seconds...", exc_info=True)
+            await asyncio.sleep(10)
+        except Exception as e:
+            logger.error(f"Unexpected error in Pumpportal subscription loop: {e}. Reconnecting in 30 seconds...", exc_info=True)
+            await asyncio.sleep(30)
+
+
+
+
+# --- CONTINUOUS METADATA ENRICHMENT LOOP ---
+async def metadata_enrichment_loop():
+    """
+    Periodically fetches tokens from NewTokens and enriches/updates their metadata
+    in TokenMetadata. This runs in a separate background task.
+    """
+    logger.info("Starting continuous metadata enrichment loop.")
+    while True:
+        try:
+            async with AsyncSessionLocal() as db:
+                # Select tokens from NewTokens that might need metadata.
+                # Criteria:
+                # 1. Newly added (check timestamp from NewTokens)
+                # 2. Existing tokens in TokenMetadata that are missing key info (e.g., pair_address, market_cap)
+                # 3. Existing tokens that haven't been checked recently (`last_checked_at` in TokenMetadata)
+
+                # For simplicity, let's target tokens from `NewTokens` that haven't been fully processed
+                # or need a retry. A robust solution might involve a `status` field on `NewTokens`
+                # like 'pending_metadata', 'metadata_fetched', 'failed_metadata'.
+
+                # Let's start by processing all new tokens and refreshing existing ones.
+                # Fetching tokens from NewTokens table that are relatively recent
+                # and haven't been successfully processed or need a refresh.
+                
+                # Option A: Get all NewTokens and check if they exist/are complete in TokenMetadata
+                # This might be too broad if NewTokens grows very large.
+                # Better: Join with TokenMetadata and find gaps/old data.
+
+                # Let's fetch all unique mint addresses from NewTokens,
+                # then check their status in TokenMetadata.
+                stmt = select(
+                    models.NewTokens.mint_address,
+                    models.NewTokens.timestamp # <-- Include timestamp here
+                ).distinct().order_by(models.NewTokens.timestamp.desc())
+
+                result = await db.execute(stmt)
+                # Now, each row in result will be a tuple: (mint_address, timestamp)
+                # We only need the mint_address for our list, but we had to select timestamp for ordering
+                mint_addresses_to_process = [row.mint_address for row in result.all()] # Use .all() to get all rows as tuples
+                
+                # Fetch existing TokenMetadata for these mints to check status
+                stmt_meta = select(models.TokenMetadata).where(
+                    models.TokenMetadata.mint_address.in_(mint_addresses_to_process)
+                )
+                result_meta = await db.execute(stmt_meta)
+                existing_metadata = {t.mint_address: t for t in result_meta.scalars().all()}
+
+                # Logic to determine which tokens need processing
+                mints_for_enrichment = []
+                for mint in mint_addresses_to_process:
+                    token_meta = existing_metadata.get(mint)
+                    
+                    # If token_meta does not exist (new token to TokenMetadata)
+                    # OR if it exists but is missing critical data (e.g., pair_address from dexscreener)
+                    # OR if it hasn't been checked recently (e.g., within the last 5 minutes)
+                    if not token_meta: # Token is in NewTokens but not yet in TokenMetadata
+                        mints_for_enrichment.append(mint)
+                    elif not token_meta.pair_address or not token_meta.market_cap: # Missing crucial Dexscreener data
+                        mints_for_enrichment.append(mint)
+                    elif token_meta.last_checked_at and (datetime.utcnow() - token_meta.last_checked_at) > timedelta(minutes=5):
+                        # Re-check tokens older than 5 minutes to get updated data
+                        mints_for_enrichment.append(mint)
+                    # Add more specific checks here based on what data is commonly missing
+
+                if mints_for_enrichment:
+                    logger.info(f"Found {len(mints_for_enrichment)} tokens needing metadata enrichment. Processing...")
+                    for mint in mints_for_enrichment:
+                        await process_token_logic(mint, db)
+                        # Introduce a small delay between each API call to avoid rate limits
+                        await asyncio.sleep(5) 
+                else:
+                    logger.info("No new or un-enriched tokens found for metadata processing.")
+
+        except Exception as e:
+            logger.error(f"Error in metadata enrichment loop: {e}", exc_info=True)
+            
+        # Define how often the enrichment loop runs
+        await asyncio.sleep(20) # Check for new/missing metadata every 20 seconds
+
+
+
+
+
+
+# --- TOKEN METADATA ENRICHMENT (Called by global ingestion loop) ---
+async def process_token_logic(mint: str, db: AsyncSession):
+    """
+    Enhanced token processing with Dexscreener, Solscan, and Raydium data,
+    updating relevant fields in the TokenMetadata model.
+    This function is called by the global ingestion loop and by user-specific bot loops
+    to ensure token data is always fresh.
+    """
     try:
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.json()
-        # Dexscreener returns an array of pool objects.
-        if not data or not isinstance(data, list) or len(data) == 0:
-            return {}
-        # We'll use the first pool for our data.
-        pool = data[0]
+        logger.info(f"Processing token metadata for: {mint}")
 
-        # Extract basic fields.
-        dexscreener_url = pool.get("url", "")
-        pair_address = pool.get("pairAddress", "")
-        price_native = pool.get("priceNative", "")
-        price_usd = pool.get("priceUsd", "")
-        liquidity_obj = pool.get("liquidity", {})
-        liquidity_usd = liquidity_obj.get("usd", 0.0)
-        market_cap = pool.get("marketCap", 0.0)
-        pair_created_at = pool.get("pairCreatedAt", 0)
+        # Fetch existing token or create a new one
+        stmt = select(TokenMetadata).where(TokenMetadata.mint_address == mint)
+        result = await db.execute(stmt)
+        token = result.scalars().first()
+        if not token:
+            token = TokenMetadata(mint_address=mint)
+            db.add(token) # Add to session if new
 
-        # Extract websites and socials from the "info" object.
-        info = pool.get("info", {})
-        # For websites, the API returns an array; join them if available.
-        websites_list = info.get("websites", [])
-        if websites_list and isinstance(websites_list, list):
-            # Each item is expected to be a dict with a "url" key.
-            websites = ", ".join([item.get("url", "").strip() for item in websites_list if item.get("url")])
-            if not websites:
-                websites = "N/A"
-        else:
-            websites = "N/A"
+        # --- Dexscreener Data ---
+        dex_data = await get_dexscreener_data(mint)
+        if dex_data:
+            token.dexscreener_url = dex_data.get("dexscreener_url")
+            token.pair_address = dex_data.get("pair_address")
+            token.price_native = dex_data.get("price_native")
+            token.price_usd = dex_data.get("price_usd")
+            token.market_cap = dex_data.get("market_cap")
+            token.pair_created_at = dex_data.get("pair_created_at")
+            token.websites = dex_data.get("websites")
+            token.twitter = dex_data.get("twitter")
+            token.telegram = dex_data.get("telegram")
+            token.token_name = dex_data.get("token_name")
+            token.token_symbol = dex_data.get("token_symbol")
+            token.dex_id = dex_data.get("dex_id")
+            token.volume_h24 = dex_data.get("volume_h24")
+            token.volume_h6 = dex_data.get("volume_h6")
+            token.volume_h1 = dex_data.get("volume_h1")
+            token.volume_m5 = dex_data.get("volume_m5")
+            token.price_change_h1 = dex_data.get("price_change_h1")
+            token.price_change_m5 = dex_data.get("price_change_m5")
+            token.price_change_h6 = dex_data.get("price_change_h6")
+            token.price_change_h24 = dex_data.get("price_change_h24")
 
-        # For socials, iterate over the array to find Twitter and Telegram.
-        socials = info.get("socials", [])
-        twitter = "N/A"
-        telegram = "N/A"
-        if socials and isinstance(socials, list):
-            for social in socials:
-                social_type = social.get("type", "").lower()
-                social_url = social.get("url", "").strip()
-                if social_type == "twitter" and social_url:
-                    twitter = social_url
-                elif social_type == "telegram" and social_url:
-                    telegram = social_url
+            # Update Basic Filter: Socials Added
+            token.socials_present = (
+                dex_data.get("twitter") not in [None, "N/A"] or
+                dex_data.get("telegram") not in [None, "N/A"] or
+                (dex_data.get("websites") is not None and len(dex_data["websites"]) > 0)
+            )
 
-        return {
-            "dexscreener_url": dexscreener_url,
-            "pair_address": pair_address,
-            "price_native": price_native,
-            "price_usd": price_usd,
-            "liquidity": liquidity_usd,
-            "market_cap": market_cap,
-            "pair_created_at": pair_created_at,
-            "websites": websites,
-            "twitter": twitter,
-            "telegram": telegram,
-        }
-    except Exception as e:
-        logger.error(f"Error fetching Dexscreener data for {mint_address}: {e}")
-        return {}
+            # Update Basic Filter: Pump.fun Migrated
+            # A more robust check might involve checking for a specific 'DEX' field if Dexscreener provides it.
+            token.migrated_from_pumpfun = "pump.fun" in dex_data.get("dex_id", "").lower() and "raydium" in dex_data.get("dex_id", "").lower()
+
+        # --- Raydium Pool Info ---
+        if token.pair_address:
+            raydium_data = await get_raydium_pool_info(token.pair_address)
+            if raydium_data:
+                token.liquidity_burnt = raydium_data.get("burnPercent", 0) == 100
+                token.liquidity_pool_size_sol = raydium_data.get("tvl") # Assuming TVL is in USD for now, convert if your field is SOL
+                # TODO: If `liquidity_pool_size_sol` MUST be in SOL, fetch SOL price and convert `tvl`.
+
+        # --- Solscan Token Metadata ---
+        solscan_data = await get_solscan_token_meta(mint)
+        if solscan_data:
+            token.immutable_metadata = solscan_data.get("is_mutable") is False
+            token.mint_authority_renounced = solscan_data.get("mint_authority") is None
+            token.freeze_authority_revoked = solscan_data.get("freeze_authority") is None
+            token.token_decimals = solscan_data.get("decimals")
+            # Solscan data also provides holder count directly
+            token.holder = solscan_data.get("holder")
+
+
+        # --- Top 10 Holders Percentage ---
+        top10_percentage = await get_top_holders_info(mint)
+        token.top10_holders_percentage = top10_percentage
+
+        token.last_checked_at = datetime.utcnow()
+
+        await db.merge(token)
+        await db.commit()
+
+        logger.info(f"Successfully processed and updated token data for: {mint}")
+
+    except httpx.HTTPError as e:
+        logger.error(f"HTTP error while processing token {mint}: {e}")
+        await db.rollback()
+    except Exception as ex:
+        logger.error(f"Unexpected error while processing token {mint}: {ex}")
+        await db.rollback()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 #============================ ALL ENDPOINTS STARTS HERE ========================
-
-# -------------------------------
-# Endpoint: Health Check
-# -------------------------------
-@app.get("/")
-def root():
-    return {"status": "API is running"}
-
-
-# -------------------------------
-# Endpoint: Fetch Token Metadata
-# (Existing GET endpoint – can be used for manual testing)
-# -------------------------------
-@app.get("/fetch-token-metadata/{mint_address}")
-def fetch_token_metadata(mint_address: str):
+@app.get("/ping")
+async def ping():
     """
-    Fetches token metadata from Solscan and stores it in the database.
+    Health check endpoint.
     """
-    url = "https://pro-api.solscan.io/v2.0/token/meta"
-    params = {"address": mint_address}
-    headers = {
-        "Accept": "application/json",
-        "token": SOLSCAN_API_KEY
+    logger.info("Ping received.")
+    return {"message": "pong", "status": "ok"}
+
+
+@app.get("/health")
+async def health_check():
+    """
+    Detailed health check including database and external API reachability.
+    (Placeholder for now, implement actual checks)
+    """
+    # TODO: Add actual checks for DB connection, Solana RPC, external APIs
+    db_status = "ok"
+    solana_rpc_status = "ok"
+    dexscreener_api_status = "ok"
+    
+    logger.info("Health check performed.")
+    return {
+        "status": "healthy",
+        "database": db_status,
+        "solana_rpc": solana_rpc_status,
+        "dexscreener_api": dexscreener_api_status,
+        "message": "All essential services are operational."
     }
-
-    try:
-        response = requests.get(url, params=params, headers=headers)
-        response.raise_for_status()  # Raise exception for HTTP errors
-        metadata = response.json()
-
-        if not metadata.get("success"):
-            raise HTTPException(status_code=404, detail="Token metadata not found")
-
-        data = metadata["data"]
-
-        # Create a TokenMetadata object (adjust field mapping as needed)
-        token_metadata = models.TokenMetadata(
-            mint_address=data.get("address"),
-            supply=data.get("supply"),
-            name=data.get("name"),
-            symbol=data.get("symbol"),
-            icon=data.get("icon"),
-            decimals=data.get("decimals"),
-            holder=data.get("holder"),
-            creator=data.get("creator"),
-            create_tx=data.get("create_tx"),
-            created_time=data.get("created_time"),
-            first_mint_tx=data.get("first_mint_tx"),
-            first_mint_time=data.get("first_mint_time"),
-            volume_24h=data.get("volume_24h"),
-            price_change_24h=data.get("price_change_24h"),
-            timestamp=datetime.utcnow(),
-        )
-
-        # Save/update the token metadata in the database.
-        with database.SessionLocal() as db:
-            db.merge(token_metadata)
-            db.commit()
-
-        return {"status": "success", "data": data}
-
-    except requests.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching token metadata: {e}")
-
-
-# -------------------------------
-# Endpoint: Process New Token from Pumpportal query
-# This endpoint combines Pumpportal ingestion with Solscan metadata fetching.
-# -------------------------------
-@app.post("/process-token")
-def process_token(token_input: TokenInput):
-    """
-    Accepts a token (mint address) from Pumpportal, fetches metadata from Solscan,
-    and stores/updates it in the database.
-    """
-    mint_address = token_input.mint_address
-
-    # Call the Solscan API to fetch metadata.
-    url = "https://pro-api.solscan.io/v2.0/token/meta"
-    params = {"address": mint_address}
-    headers = {
-        "Accept": "application/json",
-        "token": SOLSCAN_API_KEY
-    }
-
-    try:
-        response = requests.get(url, params=params, headers=headers)
-        response.raise_for_status()
-        metadata = response.json()
-
-        if not metadata.get("success"):
-            raise HTTPException(status_code=404, detail="Token metadata not found from Solscan")
-
-        data = metadata["data"]
-
-        # Build the TokenMetadata instance from the fetched data.
-        token_metadata = models.TokenMetadata(
-            mint_address=data.get("address"),
-            supply=data.get("supply"),
-            name=data.get("name"),
-            symbol=data.get("symbol"),
-            icon=data.get("icon"),
-            decimals=data.get("decimals"),
-            holder=data.get("holder"),
-            creator=data.get("creator"),
-            create_tx=data.get("create_tx"),
-            created_time=data.get("created_time"),
-            first_mint_tx=data.get("first_mint_tx"),
-            first_mint_time=data.get("first_mint_time"),
-            volume_24h=data.get("volume_24h"),
-            price_change_24h=data.get("price_change_24h"),
-            timestamp=datetime.utcnow()
-        )
-
-        # Save the metadata to the database.
-        with database.SessionLocal() as db:
-            db.merge(token_metadata)
-            db.commit()
-
-        return {"status": "success", "data": data}
-
-    except requests.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Error processing token: {e}")
-
-
-# -------------------------------
-# (Optional) Additional Endpoints
-# -------------------------------
-
-@app.get("/tokens/{mint_address}")
-def get_token(mint_address: str):
-    """
-    Retrieve token metadata from the database.
-    """
-    with database.SessionLocal() as db:
-        token = db.query(models.TokenMetadata).filter(models.TokenMetadata.mint_address == mint_address).first()
-        if not token:
-            raise HTTPException(status_code=404, detail="Token not found")
-        return {"status": "success", "data": token.to_dict()}
-
-
-@app.get("/sniping-candidates")
-def sniping_candidates():
-    """
-    Retrieve tokens that meet your sniping criteria.
-    (Filtering logic can be expanded based on candidate analysis.)
-    """
-    with database.SessionLocal() as db:
-        candidates = db.query(models.TokenMetadata).filter(models.TokenMetadata.is_candidate == True).all()
-    return {"status": "success", "candidates": [token.to_dict() for token in candidates]}
-
-
-
-
-
-
-
-
-
-
-#============================= TRADE EXECUTION LOGIC STARTS HERE =================
-
-
-
-############################################################
-# 1. Synchronous Trade Execution Function (Provided)
-############################################################
-def execute_trade(
-    api_key: str,
-    action: str,
-    mint: str,
-    amount,  # e.g., an integer/float or a string like "100%"
-    denominated_in_sol: str,  # "true" if amount is in SOL, "false" if it’s tokens
-    slippage: int,
-    priority_fee: float,
-    pool: str = "raydium", # pump, raydium, auto
-    skip_preflight: str = "true"
+    
+@app.post("/user/update-rpc")
+async def update_user_rpc(
+    rpc_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    """
-    Executes a trade (buy or sell) using the PumpPortal API.
-    """
-    url = f"https://pumpportal.fun/api/trade?api-key={api_key}"
-    payload = {
-        "action": action,             # "buy" or "sell"
-        "mint": mint,                 # token contract address (after the '/' in the Pump.fun URL)
-        "amount": amount,             # amount of SOL or tokens to trade (or percentage string if selling)
-        "denominatedInSol": denominated_in_sol,  # "true" if SOL, "false" if tokens
-        "slippage": slippage,         # allowed percent slippage
-        "priorityFee": priority_fee,  # fee to speed up the transaction
-        "pool": pool,                 # trading pool: "pump", "raydium", or "auto"
-        "skipPreflight": skip_preflight  # "true" to skip simulation, "false" to simulate
-    }
+    if not current_user.is_premium:
+        raise HTTPException(status_code=403, detail="Custom RPC is available only for premium users.")
     
+    # Validate RPC URLs
+    https_url = rpc_data.get("https")
+    wss_url = rpc_data.get("wss")
+    if https_url and not https_url.startswith("https://"):
+        raise HTTPException(status_code=400, detail="Invalid HTTPS RPC URL")
+    if wss_url and not wss_url.startswith("wss://"):
+        raise HTTPException(status_code=400, detail="Invalid WSS RPC URL")
+    
+    current_user.custom_rpc_https = https_url
+    current_user.custom_rpc_wss = wss_url
+    await db.merge(current_user)
+    await db.commit()
+    return {"status": "Custom RPC settings updated."}
+
+
+#--- WebSocket Endpoint for Real-time Logs ----
+@app.websocket("/ws/logs/{wallet_address}")
+async def websocket_endpoint(websocket: WebSocket, wallet_address: str, db: AsyncSession = Depends(get_db)):
+    # For simplicity, we'll allow connection by wallet address.
+    
+    await websocket_manager.connect(websocket, wallet_address)
     try:
-        response = requests.post(url, data=payload)
-        response.raise_for_status()  # raise an exception for HTTP errors
-        data = response.json()
-        logger.info("Trade response:", data)
-        return data
-    except requests.RequestException as e:
-        logger.error(f"Trade execution failed: {e}")
-        return None
-
-
-
-############################################################
-# 2. Asynchronous Wrapper for execute_trade
-############################################################
-TRADE_SLIPPAGE = 10
-PRIORITY_FEE = 0.005
-TRADE_POOL = "pump"
-
-async def execute_trade_async(action: str, mint: str, amount, denominated_in_sol: str):
-    """
-    Wraps the synchronous execute_trade() function so it can be called asynchronously.
-    """
-    loop = asyncio.get_running_loop()
-    result = await loop.run_in_executor(
-        None,
-        execute_trade,
-        PUMPPORTAL_API_KEY,
-        action,
-        mint,
-        amount,
-        denominated_in_sol,
-        TRADE_SLIPPAGE,
-        PRIORITY_FEE,
-        TRADE_POOL,
-        "true"  # skipPreflight; adjust as needed
-    )
-    return result
-
-
-
-
-
-############################################################
-# 3. Pumpportal Subscription and Event Processing
-############################################################
-async def pumpportal_subscription_loop():
-    """
-    Runs the Pumpportal subscription continuously.
-    """
-    while True:
-        try:
-            await pumpportal_subscription()
-        except Exception as e:
-            logger.error(f"Pumpportal subscription error: {e}")
-        # Wait a few seconds before reconnecting.
-        await asyncio.sleep(90)
-
-
-
-async def pumpportal_subscription():
-    """
-    Connects to Pumpportal's WebSocket, subscribes to new token events,
-    processes one event, then disconnects.
-    """
-    uri = "wss://pumpportal.fun/api/data"
-    async with websockets.connect(uri) as websocket:
-        # Subscribe to token creation events.
-        payload = {"method": "subscribeNewToken"}
-        await websocket.send(json.dumps(payload))
-
-        # Optionally, subscribe to other events if needed.
-        payload_trade = {
-            "method": "subscribeTokenTrade",
-            "keys": ["91WNez8D22NwBssQbkzjy4s2ipFrzpmn5hfvWVe2aY5p"]
-        }
-        await websocket.send(json.dumps(payload_trade))
-        
-        # Loop until we receive a pump event (an event that contains the "mint" key).
         while True:
-            message = await websocket.recv()
-            event = json.loads(message)
-            logger.info("Received Pumpportal event:", event)
-
-            # Skip non-token events (like subscription confirmation messages)
-            if "mint" not in event:
-                continue
-
-            await process_pumpportal_event(event)
-            break  # Process one event per connection
+            # Keep the connection alieve, wait for messages (optional, can be empty)
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        websocket_manager.disconnect(wallet_address)
+    except Exception as e:
+        logger.error(f"WebSocket error for {wallet_address}: {e}")
+        websocket_manager.disconnect(wallet_address)
+        
 
 
-
-async def process_pumpportal_event(event: dict):
-    """
-    Processes a Pumpportal event:
-      - Saves the token trade in the database.
-      - Waits a delay (e.g., 80 seconds) before enriching token metadata.
-      - After enrichment, you may decide to execute a buy trade.
-    """
+@app.get("/wallet/balance/{wallet_address}")
+async def get_wallet_balance(wallet_address: str):
     try:
-        # Extract values from the event.
-        signature = event.get("signature")
-        mint = event.get("mint")  # This will become our mint_address
+        async with AsyncClient(settings.SOLANA_RPC_URL) as client:
+            pubkey = PublicKey(wallet_address)
+            balance_response = await client.get_balance(pubkey)
+            lamports = balance_response['result']['value']
+            sol_balance = lamports / 1_000_000_000
+            return {"wallet_address": wallet_address, "sol_balance": sol_balance}
+    except Exception as e:
+        logger.error(f"Error fetching balance for {wallet_address}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching balance: {str(e)}")
 
-        # Skip if mint is missing or equals the native null address.
-        if not mint or mint == "11111111111111111111111111111111":
-            logger.info("Skipping event due to missing or native null mint address.")
-            return
 
-        trader_public_key = event.get("traderPublicKey")
-        tx_type = event.get("txType")
-        initial_buy = event.get("initialBuy")
-        sol_amount = event.get("solAmount")
-        bonding_curve_key = event.get("bondingCurveKey")
-        v_tokens_in_bonding_curve = event.get("vTokensInBondingCurve")
-        v_sol_in_bonding_curve = event.get("vSolInBondingCurve")
-        market_cap_sol = event.get("marketCapSol")
-        name = event.get("name")
-        symbol = event.get("symbol")
-        uri = event.get("uri")
-        pool = event.get("pool")
-        timestamp = datetime.utcnow()
+@app.post("/bot/start")
+async def start_user_bot(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    # Check minimum balance (0.3 SOL)
+    async with AsyncClient(settings.SOLANA_RPC_URL) as client:
+        pubkey = PublicKey(current_user.wallet_address)
+        balance_response = await client.get_balance(pubkey)
+        sol_balance = balance_response['result']['value'] / 1_000_000_000
+        if sol_balance < 0.3:
+            raise HTTPException(status_code=400, detail="Wallet balance must be at least 0.3 SOL to start the bot.")
 
-        # Create an instance of NewTokens with the extracted values.
-        token_trade = models.NewTokens(
-            mint_address=mint,
-            name=name,
-            symbol=symbol,
-            timestamp=timestamp,
-            signature=signature,
-            trader_public_key=trader_public_key,
-            tx_type=tx_type,
-            initial_buy=initial_buy,
-            sol_amount=sol_amount,
-            bonding_curve_key=bonding_curve_key,
-            v_tokens_in_bonding_curve=v_tokens_in_bonding_curve,
-            v_sol_in_bonding_curve=v_sol_in_bonding_curve,
-            market_cap_sol=market_cap_sol,
-            uri=uri,
-            pool=pool
+    if current_user.wallet_address in active_bot_tasks:
+        raise HTTPException(status_code=400, detail="Bot already running for this user.")
+
+    task = asyncio.create_task(run_user_specific_bot_loop(current_user.wallet_address))
+    active_bot_tasks[current_user.wallet_address] = task
+    logger.info(f"Bot started for user: {current_user.wallet_address}")
+    await websocket_manager.send_personal_message(
+        json.dumps({"type": "log", "message": "Bot started successfully!", "status": "info"}),
+        current_user.wallet_address
+    )
+    return {"status": "Bot started for user wallet."}
+
+
+# Endpoint to stop the bot from the frontend by the user
+@app.post("/bot/stop")
+async def stop_user_bot(current_user: User = Depends(get_current_user)):
+    if current_user.wallet_address in active_bot_tasks:
+        task = active_bot_tasks[current_user.wallet_address]
+        task.cancel() # Request the task to cancel
+        # The `finally` block in `run_user_specific_bot_loop` will clean up `active_bot_tasks`
+        await websocket_manager.send_personal_message(
+            json.dumps({"type": "log", "message": "Bot stop requested. It will stop shortly.", "status": "info"}),
+            current_user.wallet_address
+        )
+        return {"status": "Bot stop requested."}
+    else:
+        raise HTTPException(status_code=400, detail="No bot running for this user.")
+
+
+@app.post("/trade/log-trade")
+async def log_trade(
+    trade_data: LogTradeRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    fee_percentage = 0.01
+    fee_sol = trade_data.amount_sol * fee_percentage if trade_data.amount_sol else 0
+    amount_after_fee = trade_data.amount_sol - fee_sol if trade_data.amount_sol else 0
+    
+    trade = Trade(
+        user_wallet_address=current_user.wallet_address,
+        mint_address=trade_data.mint_address,
+        token_symbol=trade_data.token_symbol,
+        trade_type=trade_data.trade_type,
+        amount_sol=amount_after_fee,
+        amount_tokens=trade_data.amount_tokens,
+        price_sol_per_token=trade_data.price_sol_per_token,
+        price_usd_at_trade=trade_data.price_usd_at_trade,
+        buy_tx_hash=trade_data.tx_hash if trade_data.trade_type == "buy" else None,
+        sell_tx_hash=trade_data.tx_hash if trade_data.trade_type == "sell" else None,
+        profit_usd=trade_data.profit_usd,
+        profit_sol=trade_data.profit_sol,
+        log_message=trade_data.log_message,
+        buy_price=trade_data.buy_price,
+        entry_price=trade_data.entry_price,
+        stop_loss=trade_data.stop_loss,
+        take_profit=trade_data.take_profit,
+        token_amounts_purchased=trade_data.token_amounts_purchased,
+        token_decimals=trade_data.token_decimals,
+        sell_reason=trade_data.sell_reason,
+        swap_provider=trade_data.swap_provider
+    )
+    db.add(trade)
+    await db.commit()
+    
+    await websocket_manager.send_personal_message(
+        json.dumps({"type": "log", "message": f"Applied 1% fee ({fee_sol:.6f} SOL) on {trade_data.trade_type} trade.", "status": "info"}),
+        current_user.wallet_address
+    )
+    return {"status": "Trade logged successfully."}
+
+@app.get("/trade/history")
+async def get_trade_history(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    stmt = select(Trade).filter(Trade.user_wallet_address == current_user.wallet_address).order_by(Trade.buy_timestamp.desc())
+    result = await db.execute(stmt)
+    trades = result.scalars().all()
+    return [TradeLog(**trade.__dict__) for trade in trades]
+
+
+@app.post("/subscribe/premium")
+async def subscribe_premium(
+    subscription_data: SubscriptionRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        import stripe
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        subscription = stripe.Subscription.create(
+            customer={"email": subscription_data.email},
+            items=[{"price": settings.STRIPE_PREMIUM_PRICE_ID}],  # Add STRIPE_PREMIUM_PRICE_ID to settings.py
+            payment_behavior="default_incomplete",
+            expand=["latest_invoice.payment_intent"]
         )
         
-        # Save the record into the NewTokens table.
-        with database.SessionLocal() as db:
-            db.merge(token_trade)
-            db.commit()
-        logger.info(f"Successfully processed Pumpportal event for token: {mint}")
-
-        # Wait before calling the metadata enrichment
-        await asyncio.sleep(80)
-        await process_token_logic(mint)
-
+        sub = Subscription(
+            user_wallet_address=current_user.wallet_address,
+            plan_name="Premium",
+            payment_provider_id=subscription.id,
+            start_date=datetime.utcnow(),
+            end_date=datetime.utcnow() + timedelta(days=30)
+        )
+        current_user.is_premium = True
+        current_user.premium_start_date = datetime.utcnow()
+        current_user.premium_end_date = datetime.utcnow() + timedelta(days=30)
+        
+        db.add(sub)
+        await db.merge(current_user)
+        await db.commit()
+        return {"status": "Premium subscription activated", "payment_intent": subscription.latest_invoice.payment_intent}
     except Exception as e:
-        logger.error(f"Error processing Pumpportal event for token: {event.get('mint')}: {e}")
+        logger.error(f"Subscription failed: {e}")
+        raise HTTPException(status_code=400, detail=f"Subscription failed: {str(e)}")
+    
+    
 
-
-
-
-
-
-############################################################
-# 4. Token Metadata Enrichment
-############################################################
-async def process_token_logic(mint: str):
+# THE MAIN BOT LOOP PER USER
+async def run_user_specific_bot_loop(user_wallet_address: str):
     """
-    Synchronously calls the Solscan API to fetch token metadata,
-    Retrieves additional data from Dexscreener, and saves/updates the data in the database.
-    Falls back to the provided mint_address if Solscan does not return an address.
+    Main loop for a user-specific bot.
+    It fetches tokens from the DB (populated by global Pumpportal listener),
+    applies user's filters, and orchestrates trades via frontend instructions.
     """
-    url = "https://pro-api.solscan.io/v2.0/token/meta"
-    params = {"address": mint}
-    headers = {
-        "Accept": "application/json",
-        "token": SOLSCAN_API_KEY  # Using the 'token' header as required by Solscan
+    logger.info(f"Starting user-specific bot loop for {user_wallet_address}")
+    try:
+        while True:
+            async with AsyncSessionLocal() as db:
+                user_result = await db.execute(select(User).filter(User.wallet_address == user_wallet_address))
+                user = user_result.scalar_one_or_none()
+
+                if not user:
+                    logger.warning(f"User {user_wallet_address} not found, stopping bot loop.")
+                    await websocket_manager.send_personal_message(
+                        json.dumps({"type": "log", "message": "User session expired or wallet removed. Stopping bot.", "status": "error"}),
+                        user_wallet_address
+                    )
+                    break # Exit the loop
+
+                # Check if the user has premium access settings for filters
+                is_premium_user = user.is_premium
+
+                # 1. Fetch new token candidates from the TokenMetadata table
+                # We need a strategy to decide which tokens to look at.
+                # Options:
+                # A) Look for tokens that are new and haven't been 'analyzed_for_user' yet.
+                # B) Look for tokens that have been recently updated.
+                # C) Only consider tokens posted after the user started their bot session (more complex)
+                
+                # For simplicity, let's fetch recently updated tokens that haven't been bought by this user.
+                # You might add a field like `analyzed_for_users: JSON` to TokenMetadata
+                # to track which users have already evaluated a token, or a `user_trades` table
+                # to see if a token was already traded by *this specific user*.
+
+                # For now, let's fetch tokens that are recently checked (meaning their metadata is fresh)
+                # and haven't been marked as `is_bought` for *this user's trade history*.
+                # This implies a `Trade` table or a per-user `TokenMetadata` status.
+                # Assuming `TokenMetadata` can somehow track user-specific `is_bought` status
+                # (which is not in current `TokenMetadata` model).
+                # A proper solution would require a `UserTrade` or `UserTokenStatus` table.
+
+                # Let's adjust for simplicity: fetch newly added tokens in the last hour
+                # that have not yet been "seen" or processed for this specific user.
+                # This requires a more complex join or a new field on TokenMetadata.
+                
+                # For now, let's fetch tokens whose metadata has been recently updated by the global loop
+                # and assume we only process them once per user per significant update.
+                
+                # A better approach for user-specific bot:
+                # Have a `UserBotLog` or `UserTokenEvaluation` table:
+                # `user_wallet_address`, `mint_address`, `evaluated_at`, `passed_filters_at`, `buy_attempted_at` etc.
+                # This loop then queries for tokens that *this user* hasn't yet processed.
+
+                # Simplified example: just fetch a few *random* tokens as candidates for processing
+                # In a real bot, you'd have a more intelligent queue/discovery mechanism.
+                # We need to ensure we don't re-evaluate the same token endlessly for the same user.
+                
+                # Let's assume for now that we will process *all* tokens in TokenMetadata
+                # and `apply_user_filters` will handle if the user has already bought it.
+                # (This is less efficient for many tokens/users, but demonstrates logic).
+
+                # Fetch tokens that have been recently processed by the global loop
+                # and are potentially new candidates for *any* user.
+                # Add a filter to prevent processing tokens that are too old or too new,
+                # if that's a user setting, or a general bot strategy.
+                
+                # Fetching tokens updated in the last X minutes (e.g., 30 minutes)
+                recent_time_threshold = datetime.utcnow() - timedelta(minutes=30)
+                stmt = select(TokenMetadata).filter(
+                    TokenMetadata.updated_at >= recent_time_threshold
+                ).order_by(TokenMetadata.updated_at.desc()).limit(10) # Limit for efficiency
+                
+                result = await db.execute(stmt)
+                potential_candidates = result.scalars().all()
+
+                for token_meta in potential_candidates:
+                    # Check if this specific user has already traded this token
+                    # This requires a `Trade` model with `user_wallet_address` and `mint_address`
+                    user_trade_exists_stmt = select(models.Trade).filter(
+                        models.Trade.user_wallet_address == user_wallet_address,
+                        models.Trade.mint_address == token_meta.mint_address
+                    )
+                    user_trade_result = await db.execute(user_trade_exists_stmt)
+                    if user_trade_result.scalar_one_or_none():
+                        logger.debug(f"User {user_wallet_address} already traded {token_meta.mint_address}. Skipping.")
+                        continue # Skip if user already traded this token
+
+                    # Apply user-specific filters
+                    passes_all_filters = await apply_user_filters(user, token_meta, db, websocket_manager)
+
+                    if not passes_all_filters:
+                        log_msg = (f"Skipping {token_meta.token_symbol} ({token_meta.mint_address}) "
+                                   f"for {user_wallet_address}: Did not pass user-specific filters.")
+                        logger.info(log_msg)
+                        await websocket_manager.send_personal_message(
+                            json.dumps({"type": "log", "message": log_msg, "status": "info"}),
+                            user_wallet_address
+                        )
+                        continue
+
+                    # If filters pass, attempt to buy
+                    log_msg = (f"Filters passed for {token_meta.token_symbol} ({token_meta.mint_address}) "
+                               f"for {user_wallet_address}. Attempting buy instruction...")
+                    logger.info(log_msg)
+                    await websocket_manager.send_personal_message(
+                        json.dumps({"type": "log", "message": log_msg, "status": "info"}),
+                        user_wallet_address
+                    )
+
+                    # Send BUY instruction to frontend
+                    await execute_user_trade(
+                        user_wallet_address=user_wallet_address,
+                        mint_address=token_meta.mint_address,
+                        amount_sol=user.buy_amount_sol, # From user's settings
+                        trade_type="buy",
+                        slippage=user.slippage_bps / 100.0, # Convert basis points to percentage
+                        take_profit=user.take_profit_percentage,
+                        stop_loss=user.stop_loss_percentage,
+                        db=db, # Pass db for potential future logging/updates
+                        websocket_manager=websocket_manager
+                    )
+                    # Once a buy instruction is sent, we might want to mark this token as "pending buy"
+                    # for this user to avoid re-sending. This needs a new field or a UserTrade entry.
+                    # For simplicity, in this loop, it will just continue.
+                    
+                    # To mimic SolSniper, after a successful buy (frontend confirms and logs trade),
+                    # the bot will usually then monitor *that specific trade* for sell conditions.
+                    # This monitoring would likely be a separate asyncio task per trade, or integrated
+                    # into a sophisticated main loop that tracks active trades for each user.
+
+                    # For now, let's just break after sending a buy instruction for one token,
+                    # so the bot doesn't spam buys for every eligible token in one loop cycle.
+                    # In a real bot, you'd likely remove this break and manage concurrency.
+                    # break # Remove this for continuous evaluation if needed
+
+            # Define how often a user's bot loop re-evaluates tokens
+            await asyncio.sleep(user.bot_check_interval_seconds or 10) # User can configure interval
+
+    except asyncio.CancelledError:
+        logger.info(f"Bot task for {user_wallet_address} cancelled.")
+    except Exception as e:
+        logger.error(f"Error in user bot loop for {user_wallet_address}: {e}", exc_info=True)
+        await websocket_manager.send_personal_message(
+            json.dumps({"type": "log", "message": f"Bot encountered a critical error: {e}", "status": "critical"}),
+            user_wallet_address
+        )
+    finally:
+        if user_wallet_address in active_bot_tasks:
+            del active_bot_tasks[user_wallet_address]
+        logger.info(f"User-specific bot loop for {user_wallet_address} ended.")
+
+
+
+# --- Helper function to apply user-specific filters ---
+async def apply_user_filters(user: User, token_meta: TokenMetadata, db: AsyncSession, websocket_manager: ConnectionManager) -> bool:
+    async def log_failure(filter_name: str):
+        logger.debug(f"Token {token_meta.mint_address} failed {filter_name} for user {user.wallet_address}.")
+        await websocket_manager.send_personal_message(
+            json.dumps({"type": "log", "message": f"Token {token_meta.token_symbol or token_meta.mint_address} failed {filter_name} filter.", "status": "info"}),
+            user.wallet_address
+        )
+
+    # Basic Filters
+    if user.filter_socials_added and not token_meta.socials_present:
+        await log_failure("Socials Added")
+        return False
+    if user.filter_liquidity_burnt and not token_meta.liquidity_burnt:
+        await log_failure("Liquidity Burnt")
+        return False
+    if user.filter_immutable_metadata and not token_meta.immutable_metadata:
+        await log_failure("Immutable Metadata")
+        return False
+    if user.filter_mint_authority_renounced and not token_meta.mint_authority_renounced:
+        await log_failure("Mint Authority Renounced")
+        return False
+    if user.filter_freeze_authority_revoked and not token_meta.freeze_authority_revoked:
+        await log_failure("Freeze Authority Revoked")
+        return False
+    if user.filter_pump_fun_migrated and not token_meta.migrated_from_pumpfun:
+        await log_failure("Pump.fun Migrated")
+        return False
+    if user.filter_check_pool_size_min_sol and (token_meta.liquidity_pool_size_sol is None or token_meta.liquidity_pool_size_sol < user.filter_check_pool_size_min_sol):
+        await log_failure(f"Insufficient Liquidity Pool Size (min {user.filter_check_pool_size_min_sol} SOL)")
+        return False
+
+    # General Checks
+    if token_meta.pair_created_at:
+        deployed_time = datetime.utcfromtimestamp(token_meta.pair_created_at)
+        age = datetime.utcnow() - deployed_time
+        if age < timedelta(minutes=15) or age > timedelta(hours=72):
+            await log_failure("Token Age (15m-72h)")
+            return False
+    else:
+        await log_failure("Missing Pair Creation Time")
+        return False
+
+    if token_meta.market_cap is None or float(token_meta.market_cap) < 30000:
+        await log_failure("Market Cap (< $30k)")
+        return False
+
+    if token_meta.holder is None or token_meta.holder < 20:
+        await log_failure("Holder Count (< 20)")
+        return False
+
+    rug_data = await check_rug(token_meta.mint_address)
+    if not (rug_data and "score" in rug_data and rug_data["score"] < 100):
+        await log_failure("RugCheck Score (>= 100)")
+        return False
+
+    # Premium Filters
+    if user.is_premium:
+        if user.filter_top_holders_max_pct and token_meta.top10_holders_percentage and token_meta.top10_holders_percentage > user.filter_top_holders_max_pct:
+            await log_failure(f"Top 10 Holders % (>{user.filter_top_holders_max_pct}%)")
+            return False
+        
+        # Placeholder for Bundled Max (requires mempool analysis)
+        if user.filter_bundled_max:
+            # TODO: Implement mempool analysis or use Solscan heuristics
+            pass
+        
+        # Placeholder for Max Same Block Buys (requires mempool analysis)
+        if user.filter_max_same_block_buys:
+            # TODO: Implement mempool analysis or use Solscan heuristics
+            pass
+        
+        if user.filter_safety_check_period_seconds and token_meta.pair_created_at:
+            required_age = timedelta(seconds=user.filter_safety_check_period_seconds)
+            current_age = datetime.utcnow() - datetime.utcfromtimestamp(token_meta.pair_created_at)
+            if current_age < required_age:
+                await log_failure(f"Safety Check Period (<{user.filter_safety_check_period_seconds}s)")
+                return False
+
+    return True
+
+
+
+# Helper funtion for the bot to execute the trade per user's wallet's settings from the frontend
+async def execute_user_trade(
+    user_wallet_address: str,
+    mint_address: str,
+    amount_sol: float,
+    trade_type: str,
+    slippage: float,
+    take_profit: Optional[float],
+    stop_loss: Optional[float],
+    timeout_seconds: Optional[int],
+    trailing_stop_loss_pct: Optional[float],
+    db: AsyncSession,
+    websocket_manager: ConnectionManager
+):
+    user_stmt = select(User).filter(User.wallet_address == user_wallet_address)
+    user_result = await db.execute(user_stmt)
+    user = user_result.scalar_one_or_none()
+    
+    rpc_url = user.custom_rpc_https if user.is_premium and user.custom_rpc_https else settings.SOLANA_RPC_URL
+    wss_url = user.custom_rpc_wss if user.is_premium and user.custom_rpc_wss else settings.SOLANA_WEBSOCKET_URL
+    
+    trade_instruction_message = {
+        "type": "trade_instruction",
+        "trade_type": trade_type,
+        "mint_address": mint_address,
+        "amount_sol": amount_sol,
+        "slippage": slippage,
+        "take_profit": take_profit,
+        "stop_loss": stop_loss,
+        "timeout_seconds": timeout_seconds,
+        "trailing_stop_loss_pct": trailing_stop_loss_pct,
+        "rpc_url": rpc_url,
+        "wss_url": wss_url,
+        "message": f"Please execute a {trade_type} trade for {mint_address}."
     }
-    try:
-        response = requests.get(url, params=params, headers=headers)
-        response.raise_for_status()
-        metadata = response.json()
-        logger.info(f"Solscan metadata gotten: {metadata}")
+    await websocket_manager.send_personal_message(
+        json.dumps(trade_instruction_message),
+        user_wallet_address
+    )
+    
+    if trade_type == "buy":
+        asyncio.create_task(monitor_trade_for_sell(
+            user_wallet_address, mint_address, take_profit, stop_loss, timeout_seconds, trailing_stop_loss_pct, db, websocket_manager
+        ))
 
-        if not metadata.get("success"):
-            logger.info(f"Token metadata not found for {mint}")
-            return
-
-        # At this point, we have valid metadata.
-        data = metadata["data"]
-
-        # Use the address from Solscan if available; otherwise, use the provided mint_address.
-        # token_mint = data.get("address") or mint_address
-
-        token_metadata = models.TokenMetadata(
-            mint_address=mint,
-            supply=data.get("supply"),
-            name=data.get("name"),
-            symbol=data.get("symbol"),
-            icon=data.get("icon"),
-            decimals=data.get("decimals"),
-            holder=data.get("holder"),
-            creator=data.get("creator"),
-            create_tx=data.get("create_tx"),
-            created_time=data.get("created_time"),
-            first_mint_tx=data.get("first_mint_tx"),
-            first_mint_time=data.get("first_mint_time"),
-            volume_24h=data.get("volume_24h"),
-            price_change_24h=data.get("price_change_24h"),
-            timestamp=datetime.utcnow(),
-        )
-
-        # Fetch additional data from Dexscreener.
-        dex_data = get_dexscreener_data(mint)
-        if dex_data:
-            token_metadata.liquidity = dex_data.get("liquidity")
-            token_metadata.dexscreener_url = dex_data.get("dexscreener_url")
-            token_metadata.pair_address = dex_data.get("pair_address")
-            token_metadata.price_native = dex_data.get("price_native")
-            token_metadata.price_usd = dex_data.get("price_usd")
-            # Optionally, you can override the market cap with the Dexscreener value.
-            token_metadata.market_cap = dex_data.get("market_cap") or data.get("market_cap")
-            token_metadata.pair_created_at = dex_data.get("pair_created_at")
-            token_metadata.websites = dex_data.get("websites")
-            token_metadata.twitter = dex_data.get("twitter")
-            token_metadata.telegram = dex_data.get("telegram")
-        else:
-            token_metadata.liquidity = 0.0
-
-        with database.SessionLocal() as db:
-            db.merge(token_metadata)
-            db.commit()
-
-        logger.info(f"Successfully processed token: {mint}")
-
-    except requests.RequestException as e:
-        logger.error(f"Error fetching token metadata for {mint}: {e}")
-    except Exception as ex:
-        logger.error(f"Error processing token {mint}: {ex}")
-
-
-
-
-
-############################################################
-# 5a. Rugcheck Analysis
-############################################################
-async def check_rug(mint: str):
-    """
-    Checks the rug risk of a token using the RugCheck API.
-    """
-    url = f"https://api.rugcheck.xyz/v1/tokens/{mint}/report/summary"
-
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    return data # Return RugCheck report
-                else:
-                    error_message = await response.text()
-                    logger.error(f"Error checking RugCheck API for {mint}: {response.status}")
-                    return None
-    except Exception as e:
-        logger.error(f"Failed to connect to RugCheck API for {mint}: {e}")
-        return None
-
-
-
-############################################################
-# 5b. Candidate Analysis (Improved)
-############################################################
-
-async def analyze_candidates():
-    """
-    Periodically analyzes tokens to find candidates that meet these requirements:
-      - Created more than 15 minutes ago but less than 72 hours ago
-      - At least 10 holders
-      - Market cap of at least 15,000
-      - Passes RugCheck
-    Once a valid candidate is found, it sends a Telegram notification,
-    executes a buy order, waits 30 seconds, executes a sell order, and
-    notifies via Telegram again.
-    """
-    global PRICE_CACHE, HOLDER_CACHE
-
+async def monitor_trade_for_sell(
+    user_wallet_address: str,
+    mint_address: str,
+    take_profit: Optional[float],
+    stop_loss: Optional[float],
+    timeout_seconds: Optional[int],
+    trailing_stop_loss_pct: Optional[float],
+    db: AsyncSession,
+    websocket_manager: ConnectionManager
+):
+    logger.info(f"Monitoring trade for {user_wallet_address} on {mint_address}")
+    start_time = datetime.utcnow()
+    highest_price = None
+    
     while True:
         try:
-            with database.SessionLocal() as db:
-                now = datetime.utcnow()
-                tokens = db.query(models.TokenMetadata).filter(models.TokenMetadata.mint_address.isnot(None)).all()
-
-                for token in tokens:
-                    # Determine deployment time
-                    deployed_time = datetime.utcfromtimestamp(token.created_time) if token.created_time else now
-                    age = now - deployed_time
-
-                    # Ensure token is within the valid time frame (more than 15 minutes but less than 72 hours old)
-                    if age < timedelta(minutes=15) or age > timedelta(hours=72):
-                        token.is_candidate = False
-                        token.is_notified = False
-                        PRICE_CACHE.pop(token.mint_address, None)
-                        HOLDER_CACHE.pop(token.mint_address, None)
-                        db.commit() # Commit change
-                        continue
-
-                    # Ensure token has at least 20 holders
-                    if token.holder is None or token.holder < 20:
-                        token.is_candidate = False
-                        token.is_notified = False
-                        db.commit() # Commit change
-                        continue
-
-                    # Ensure market cap is at least 15,000
-                    token.market_cap = float(token.market_cap) if token.market_cap is not None else 0
-                    if token.market_cap < 30000:
-                        token.is_candidate = False
-                        token.is_notified = False
-                        db.commit() # Commit change
-                        continue
-
-                    # RugCheck API verification
-                    rug_data = await check_rug(token.mint_address)
-                    if rug_data and "score" in rug_data and rug_data["score"] < 100:
-                        logger.info(f"Token {token.mint_address} passes RugCheck with score {rug_data['score']}.")
-                    else:
-                        logger.warning(f"Skipping {token.mint_address} due to high RugCheck score or failed RugCheck API.")
-                        token.is_candidate = False
-                        token.is_notified = False
-                        db.commit() # Commit change
-                        continue
-
-                    # If token meets all criteria, mark as a candidate
-                    if not token.is_candidate:
-                        token.is_candidate = True 
-                        db.commit() # Commit change 
-
-                    # Send Telegram notification if not already notified
-                    if not token.is_notified:
-                        success = await send_telegram_notification(token)
-                        if success:
-                            token.is_notified = True  
-                            db.commit() # Commit the change
-                        else:
-                            logger.error(f"Failed to send Telegram notification for {token.mint_address}")
-                            continue  # Skip buying if notification fails
-
-                    # Buy the token if it's a valid candidate (ensuring it only buys once)
-                    if token.is_candidate and not token.entry_price:
-                        logger.info(f"Executing BUY for token {token.mint_address} at price {token.price_usd}")
-                        trade_signature = await execute_trade_async("buy", token.mint_address, 100, "false")
-
-                        if isinstance(trade_signature, dict):  
-                            trade_signature = json.dumps(trade_signature)
-
-                        # Store entry price and update DB
-                        token.entry_price = token.price_usd
-
-                        # Send BUY trade notification
-                        await send_buy_telegram_notification(token)
-                        logger.info("Buy telegram notification sent successfully")
-
-                        # Commit the database change after buying
-                        db.commit()
-
-                        # Wait for 30 seconds before selling
-                        await asyncio.sleep(30)
-
-                        # # Fetch updated price (assumes token.price_usd is updated every loop)
-                        # sell_price = token.price_usd  # Save sell price
-
-                        # # Execute SELL trade after 30 seconds
-                        # logger.info(f"Executing SELL for token {token.mint_address}")
-                        # sell_trade_signature = await execute_trade_async("sell", token.mint_address, 100, "false")
-                        # logger.info(f"Sell trade signature: {sell_trade_signature}")
-
-                        # # Calculate Profit
-                        # sell_price = float(token.price_usd)  # Ensure it's a float
-                        # entry_price = float(token.entry_price)  # Convert to float in case it's stored as a string
-                        # profit = (sell_price - entry_price) * (100 / entry_price)  # Assuming $100 investment
-                        # logger.info(f"Calculated profit for {token.mint_address}: {profit}")
-
-                        # # Send SELL trade notification
-                        # logger.info(f"Attempting to send SELL trade notification for {token.mint_address} with profit: {profit}")
-                        # try:
-                        #     await send_sell_telegram_notification(token, profit)
-                        #     logger.info("Sell telegram notification sent successfully")
-                        # except Exception as e:
-                        #     logger.error(f"Failed to send SELL telegram notification for {token.mint_address}: {e}")
-
-
-
-                        # Fetch updated price (ensure it's converted to float)
-                        sell_price = float(token.price_usd) if token.price_usd else 0.0
-
-                        # Ensure entry price is a float
-                        entry_price = float(token.entry_price) if token.entry_price else 0.0
-
-                        # Execute SELL trade
-                        logger.info(f"Executing SELL for token {token.mint_address}")
-                        sell_trade_signature = await execute_trade_async("sell", token.mint_address, 100, "false")
-                        logger.info(f"Sell trade signature: {sell_trade_signature}")
-
-                        # Ensure valid price before calculating profit
-                        if entry_price > 0:
-                            profit = (sell_price - entry_price) * (100 / entry_price)  # Assuming $100 investment
-                        else:
-                            profit = 0.0  # Avoid division by zero
-
-                        logger.info(f"Calculated profit for {token.mint_address}: {profit}")
-
-                        # Send SELL trade notification
-                        logger.info(f"Attempting to send SELL trade notification for {token.mint_address} with profit: {profit}")
-                        try:
-                            await send_sell_telegram_notification(token, profit)
-                            logger.info("Sell telegram notification sent successfully")
-                        except Exception as e:
-                            logger.error(f"Failed to send SELL telegram notification for {token.mint_address}: {e}")
-
-
-                        logger.info(f"Token {token.mint_address} successfully bought and sold after 30 seconds. Profit: ${profit:.2f}")
-
-                        # # Reset token state after trade
-                        # token.entry_price = None
-                        # token.is_candidate = False
-                        # token.is_notified = False
-
-                        # # Commit database changes after selling
-                        # db.commit()
-
-                logger.info("Candidate analysis complete.")
-
+            dex_data = await get_dexscreener_data(mint_address)
+            if not dex_data:
+                await websocket_manager.send_personal_message(
+                    json.dumps({"type": "log", "message": f"Failed to fetch price for {mint_address}. Retrying...", "status": "error"}),
+                    user_wallet_address
+                )
+                await asyncio.sleep(10)
+                continue
+            
+            current_price = float(dex_data.get("price_usd", 0))
+            trade_stmt = select(Trade).filter(
+                Trade.user_wallet_address == user_wallet_address,
+                Trade.mint_address == mint_address,
+                Trade.trade_type == "buy"
+            ).order_by(Trade.buy_timestamp.desc())
+            trade_result = await db.execute(trade_stmt)
+            trade = trade_result.scalar_one_or_none()
+            
+            if not trade:
+                logger.error(f"No buy trade found for {user_wallet_address} and {mint_address}")
+                break
+            
+            buy_price = trade.price_usd_at_trade or 0
+            
+            # Check timeout
+            if timeout_seconds and (datetime.utcnow() - start_time).total_seconds() > timeout_seconds:
+                await execute_user_trade(
+                    user_wallet_address, mint_address, trade.amount_tokens, "sell", 0.05, None, None, None, None, db, websocket_manager
+                )
+                await websocket_manager.send_personal_message(
+                    json.dumps({"type": "log", "message": f"Selling {mint_address} due to timeout.", "status": "info"}),
+                    user_wallet_address
+                )
+                break
+            
+            # Update trailing stop-loss
+            if trailing_stop_loss_pct and current_price > (highest_price or buy_price):
+                highest_price = current_price
+                stop_loss = highest_price * (1 - trailing_stop_loss_pct / 100)
+            
+            # Check take-profit
+            if take_profit and current_price >= buy_price * (1 + take_profit / 100):
+                await execute_user_trade(
+                    user_wallet_address, mint_address, trade.amount_tokens, "sell", 0.05, None, None, None, None, db, websocket_manager
+                )
+                await websocket_manager.send_personal_message(
+                    json.dumps({"type": "log", "message": f"Selling {mint_address} at take-profit.", "status": "info"}),
+                    user_wallet_address
+                )
+                break
+            
+            # Check stop-loss
+            if stop_loss and current_price <= buy_price * (1 - stop_loss / 100):
+                await execute_user_trade(
+                    user_wallet_address, mint_address, trade.amount_tokens, "sell", 0.05, None, None, None, None, db, websocket_manager
+                )
+                await websocket_manager.send_personal_message(
+                    json.dumps({"type": "log", "message": f"Selling {mint_address} at stop-loss.", "status": "info"}),
+                    user_wallet_address
+                )
+                break
+            
+            await asyncio.sleep(5)
         except Exception as e:
-            logger.error(f"Error during candidate analysis: {e}")
-
-        await asyncio.sleep(900) # Wait 15 minutes (900 seconds) before running again
-
-
-
-############################################################
-# 6. Trade Monitoring for Stop Loss / Take Profit
-############################################################
-
-# async def monitor_trade(mint: str, entry_price: float):
-#     """
-#     Monitors the token's price and triggers a sell trade when:
-#       - Price drops to 50% of the entry price → Sell 100 tokens
-#       - Price reaches 200% (2x entry) → Sell 50 tokens
-#       - Price reaches 300% (3x entry) → Sell remaining 500 tokens
-#     After executing the sell trade, a Telegram notification is sent.
-#     """
-#     CHECK_INTERVAL = 10  # seconds between price checks
-#     reason = None  # Will be set to "Stop Loss", "Take Profit", etc.
-#     sold_50 = False # Track if 50 tokens have been sold at 2x price
-#     sold_100 = False # Track if 100 tokens have been sold at 0.5x price
-
-#     try:
-#         entry_price = float(entry_price)  # Ensure entry_price is converted to float
-#     except ValueError:
-#         logger.error(f"Invalid entry_price: {entry_price}. Must be a float.")
-#         return
-    
-
-#     while True:
-#         dex_data = get_dexscreener_data(mint)  # expects a dict with "price_usd"
-        
-#         current_price = float(dex_data.get("price_usd", 0))  # Ensure conversion to float
-#         if current_price is None:
-#             logger.info(f"Price data not available for {mint}. Retrying...")
-#             await asyncio.sleep(CHECK_INTERVAL)
-#             continue
-
-#         logger.info(f"Monitoring {mint}: Entry Price = {entry_price}, Current Price = {current_price}")
-
-
-#         # Stop Loss: Sell 100 tokens if price drops to 50% of entry price
-#         if current_price <= entry_price * 0.5 and not sold_100:
-#             reason = "Stop Loss"
-#             logger.info(f"Stop Loss triggered for {mint}. Selling 100 tokens.")
-#             await execute_trade_async("sell", mint, 100, "false")
-#             await send_sell_telegram_notification(mint)
-#             break # Exit loop since all tokens are sold at 50% loss
-
-#         # Take Profit (2x): Sell 50 tokens if price reaches 2x entry price
-#         elif current_price >= entry_price * 2.0 and not sold_50:
-#             reason = "Take Profit (2x)"
-#             logger.info(f"Take Profit triggered for {mint}. Executing remaining 50 tokens.")
-#             await execute_trade_async("sell", mint, 50, "false")
-#             await send_sell_telegram_notification(mint)
-#             sold_50 = True # Mark as sold
-
-#         # Final Profit (3x): Sell remaining 500 tokens if price reaches 3x entry price
-#         elif current_price >= entry_price * 3.0:
-#             reason = "Take Profit (3x)"
-#             logger.info(f"Take Profit at 3x triggered for {mint}. Selling remaining 50 tokens.")
-#             await execute_trade_async("sell", mint, 50, "false")
-#             await send_sell_telegram_notification(mint)
-#             break # Exit loop after final sale
-
-#         await asyncio.sleep(CHECK_INTERVAL)
+            logger.error(f"Error monitoring trade for {mint_address}: {e}")
+            await websocket_manager.send_personal_message(
+                json.dumps({"type": "log", "message": f"Error monitoring {mint_address}: {str(e)}", "status": "error"}),
+                user_wallet_address
+            )
+            await asyncio.sleep(10)
 
 
 
-
-
-############################################################
-# 7. Liquidity Updates (as before)
-############################################################
-
-async def update_liquidity():
-    """
-    Periodically updates the liquidity field for all tokens in the database by querying Dexscreener.
-    """
-    while True:
-        try:
-            with database.SessionLocal() as db:
-                tokens = db.query(models.TokenMetadata).all()
-                for token in tokens:
-                    new_data = get_dexscreener_data(token.mint_address)
-                    if new_data:
-                        token.liquidity = new_data.get("liquidity")
-                        token.dexscreener_url = new_data.get("dexscreener_url")
-                        token.pair_address = new_data.get("pair_address")
-                        token.price_native = new_data.get("price_native")
-                        token.price_usd = new_data.get("price_usd")
-                        token.market_cap = new_data.get("market_cap")
-                        token.pair_created_at = new_data.get("pair_created_at")
-                        token.websites = new_data.get("websites")
-                        token.twitter = new_data.get("twitter")
-                        token.telegram = new_data.get("telegram")
-                    else:
-                        logger.error("No Dexscreener data for token: %s", token.mint_address)
-                db.commit()
-                logger.info("Liquidity update complete.")
-        except SQLAlchemyError as e:
-            logger.error("Error updating liquidity: %s", e)
-        except Exception as ex:
-            logger.error("Unexpected error updating liquidity: %s", ex)
-        # Run every 10 minutes. (600)
-        await asyncio.sleep(25)
-
-
-
-
-
-
-
-
-
-############################################################
-# IMPROVEMENTS
-############################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-############################################################
-# 8. FastAPI Application Lifespan (Background Tasks)
-############################################################
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    logger.info("Starting up...")
-    # Start the Pumpportal subscription loop.
-    asyncio.create_task(pumpportal_subscription_loop())
-    # Start candidate analysis and liquidity update background jobs.
-    asyncio.create_task(analyze_candidates())
-    asyncio.create_task(update_liquidity())
-    yield
-    logger.info("Shutting down...")
-    
-# Re-initialize FastAPI with the lifespan manager.
-app = FastAPI(lifespan=lifespan)
 
 

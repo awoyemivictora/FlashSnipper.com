@@ -1,0 +1,141 @@
+from typing import Dict, Optional
+import httpx
+import logging
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+logger = logging.getLogger(__name__)
+
+
+
+
+async def get_raydium_pool_info(mint_address: str) -> Optional[Dict]:
+    """
+    Fetches Raydium V3 pool info for a given token mint address.
+    Note: Raydium V3 API does not directly allow querying by token mint address
+          to get a pool ID. You typically need the pool ID to query specific pool info.
+          The provided documentation shows `/pools/info/ids` which takes a pool ID.
+          To find a pool by mint address, one would usually need to:
+          1. Query a list of all pools and filter (similar to your original approach,
+             but Raydium V3's primary 'get all pools' equivalent might be different or
+             require more complex logic, e.g., iterating through a large dataset or
+             using a separate 'pools by mint' endpoint if available).
+          2. Use an endpoint that specifically allows querying by two mints (base and quote).
+             The Solana Stack Exchange search result mentions `/pools/info/mint` which takes `mint1` and `mint2`.
+             This is the most direct way to find a specific pool for a given token pair if you know both.
+
+          Given the provided Raydium documentation `/pools/info/ids`,
+          this function will assume you **already know the pool ID** or
+          that the `mint_address` *is* actually a `pool_id`.
+          If the goal is to find a pool *given only one token's mint address*,
+          it would require a different approach than what's directly supported by
+          the provided Raydium V3 `ids` endpoint.
+
+          For demonstration, I'll adapt it to use the `ids` endpoint, assuming
+          `mint_address` might sometimes be treated as a `pool_id` for direct lookup,
+          or highlight the limitation. If you need to find pools by a *single* token,
+          we'd need to consider different Raydium V3 endpoints or strategies (e.g.,
+          `pools/info/mint` if you can infer the other token like WSOL/USDC).
+
+          Let's assume the intent is to find a pool where `mint_address` is the `pool_id`.
+          If not, the strategy needs to be clarified, as directly searching for a pool
+          by *one* constituent mint on the V3 `pools/info/ids` endpoint isn't supported.
+    """
+    # The provided Raydium V3 API doc shows /pools/info/ids which takes a pool ID.
+    # It does *not* directly support finding a pool given *one* token's mint address
+    # among its base_mint or quote_mint, without knowing the pool ID first.
+    #
+    # To find a pool by a single mint, we would typically need an endpoint that lists
+    # all pools (which can be very large) and then filter, or an endpoint
+    # like the `/pools/info/mint` mentioned in the Stack Exchange result,
+    # which requires *both* mint addresses (e.g., your_token_mint and WSOL).
+    #
+    # For this rewrite, I will use the `/pools/info/ids` endpoint as per your provided documentation.
+    # This means the `mint_address` parameter here should ideally be a Raydium Pool ID,
+    # not necessarily a token mint address if you expect to find a pool based on one of its constituent tokens.
+    #
+    # If your `mint_address` *is* intended to be the pool ID, the function works.
+    # If `mint_address` is a token's mint (e.g., JUP), and you want to find a pool where JUP is
+    # base or quote, the current Raydium V3 documentation you provided does not show a direct
+    # way to do that using a single mint.
+
+    pool_id_candidate = mint_address # Assuming mint_address might be a pool ID for direct lookup
+
+    try:
+        url = f"https://api-v3.raydium.io/pools/info/ids?ids={pool_id_candidate}"
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url)
+            response.raise_for_status()
+            data = response.json()
+
+            if data.get("success") and data.get("data"):
+                # Raydium V3 returns a list of pools, even for a single ID query
+                pools = data["data"]
+                if pools:
+                    pool = pools[0] # Take the first pool if multiple are returned (should be 1 for ID query)
+                    
+                    # Extracting relevant information based on Raydium V3 response structure
+                    return {
+                        "type": pool.get("type"),
+                        "programId": pool.get("programId"),
+                        "id": pool.get("id"),
+                        "mintA": pool.get("mintA"), # Returns the entire mintA dictionary
+                        "mintB": pool.get("mintB"), # Returns the entire mintB dictionary
+                        "config": pool.get("config"), # Returns the entire config dictionary
+                        "price": pool.get("price"),
+                        "mintAmountA": pool.get("mintAmountA"),
+                        "mintAmountB": pool.get("mintAmountB"),
+                        "feeRate": pool.get("feeRate"),
+                        "openTime": pool.get("openTime"),
+                        "tvl": pool.get("tvl"),
+                        "day": pool.get("day"), # Returns the entire day dictionary
+                        "week": pool.get("week"), # Returns the entire week dictionary
+                        "month": pool.get("month"), # Returns the entire month dictionary
+                        "pooltype": pool.get("pooltype"),
+                        "rewardDefaultInfos": pool.get("rewardDefaultInfos"),
+                        "farmUpcomingCount": pool.get("farmUpcomingCount"),
+                        "farmOngoingCount": pool.get("farmOngoingCount"),
+                        "farmFinishedCount": pool.get("farmFinishedCount"),
+                        "lpMint": pool.get("lpMint"), # Returns the entire lpMint dictionary
+                        "lpPrice": pool.get("lpPrice"),
+                        "lpAmount": pool.get("lpAmount"),
+                        "burnPercent": pool.get("burnPercent"), 
+                        "launchMigratePool": pool.get("launchMigratePool")
+                    }
+            logger.info(f"No Raydium V3 pool found for ID: {pool_id_candidate}")
+            return None
+    except httpx.HTTPStatusError as e:
+        logger.error(f"HTTP error fetching Raydium V3 pool info for {pool_id_candidate}: {e.response.status_code} - {e.response.text}")
+        return None
+    except httpx.RequestError as e:
+        logger.error(f"Network error fetching Raydium V3 pool info for {pool_id_candidate}: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"An unexpected error occurred while fetching Raydium V3 pool info for {pool_id_candidate}: {e}")
+        return None
+
+
+
+
+
+
+
+# Example usage (for testing)
+# async def main():
+#     # --- Raydium V3 Pool Info Test ---
+#     test_raydium_pool_id = "FTvEjJSKyckm2LXWJrvEbNB6PjpL1FV8M3NJnH8qWdbu"
+#     print(f"\n--- Fetching Raydium V3 Pool Info for ID: {test_raydium_pool_id} ---")
+#     raydium_pool = await get_raydium_pool_info(test_raydium_pool_id)
+#     if raydium_pool:
+#         import json
+#         print(json.dumps(raydium_pool, indent=2))
+#     else:
+#         print(f"Failed to fetch Raydium V3 pool info for ID: {test_raydium_pool_id}")
+
+
+# if __name__ == "__main__":
+#     import asyncio
+#     asyncio.run(main())

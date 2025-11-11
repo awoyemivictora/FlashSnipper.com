@@ -1,18 +1,9 @@
-# Robert Peaneur Solana Snipping Bot FastAPI Backend
+give me a step by step blueprint to build a profitable solana snipping bot for pump.fun that I can charge users 1% fee based on each trade profits they made:
+- The browser will automatically create a solana wallet and private key for them
+- They have to deposit like 0.1 sol at least to start trading
+- The user can set the parameters like Buy Amount, Priority fee and Slippage; Sell take profit %, Stop loss %, Slippage, Timeout, priority fee, Trailing Stop loss, and they can use their own RPC link
+- The bot will scan for qualified and potential coins to buy which will give returns at the moments from pump.fun (this approach, I haven't figured out yet. I need you to search online and top snipping bots how they are doing this. i was also considering adding machine learning with openai, tavily or maybe social sentiment here as well)
+- It'll go ahead and buy and use the user's parameters to sell with profit.
 
-
-Got it! Since Bitquery doesn't support running all queries at once, you need a sequential approach:
-
-First Query: Fetch newly created Pump.fun tokens.
-Second Query: Fetch Buy/Sell/Trade data for a specific token pair.
-Third Query: Fetch Market Cap, Liquidity, and Volume.
-Solution:
-Step 1: Run the first query to get newly created tokens.
-Step 2: For each token from step 1, extract MintAddress and run the second query.
-Step 3: After getting the trade data, run the third query for liquidity and volume.
-Implementation:
-Use a loop to handle tokens one by one.
-Add delays if needed to avoid rate limits.
-Use a task queue (like Celery or Redis Queue) for automation.
-Are you running these queries manually or need a script to automate this process? I can write a Python script using requests and asyncio to optimize execution.
+- Getting the new token data's from pumpportal api. then i have script in typescript to swap/sell using jupiter, dflow and okxswap.
 

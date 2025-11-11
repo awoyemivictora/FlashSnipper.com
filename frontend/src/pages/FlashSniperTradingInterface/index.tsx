@@ -1,11 +1,1126 @@
+// import React, { useState, useEffect, useCallback, useRef } from 'react';
+// import { getOrCreateWallet } from '@/utils/wallet.js';
+// import { Connection, clusterApiUrl } from '@solana/web3.js';
+// import bs58 from 'bs58';
+// import { executeTrade } from '@/services/trade';
+// import { useTradeMonitor } from '@/hooks/useTradeMonitor';
+
+// interface TransactionItem {
+//   id: string;
+//   type: 'traded' | 'exchanged' | 'sold' | 'completed' | 'liquidated';
+//   amount: string;
+//   token: string;
+//   date: string;
+//   time: string;
+// }
+
+// interface BuyFormData {
+//   amount: string;
+//   priorityFee: string;
+//   slippage: string;
+// }
+
+// interface SellFormData {
+//   takeProfit: string;
+//   stopLoss: string;
+//   slippage: string;
+//   timeout: string;
+//   priorityFee: string;
+//   useOwnRPC: boolean; // Renamed from trailingStopLoss
+//   trailingStopLossPct?: string;
+// }
+
+// interface TradeResponse {
+//   id: string;
+//   trade_type: string;
+//   amount_sol: number;
+//   token_symbol?: string;
+//   buy_timestamp?: string;
+//   sell_timestamp?: string;
+// }
+
+// // Professional Input Component with proper focus management
+// interface ProfessionalInputProps {
+//   value: string;
+//   onChange: (value: string) => void;
+//   placeholder: string;
+//   suffix?: string;
+//   type?: string;
+//   formatOnBlur?: (value: string) => string;
+//   formatOnFocus?: (value: string) => string;
+//   label: string;
+// }
+
+// const ProfessionalInput: React.FC<ProfessionalInputProps> = ({
+//   value,
+//   onChange,
+//   placeholder,
+//   suffix,
+//   type = 'text',
+//   formatOnBlur,
+//   formatOnFocus,
+//   label,
+// }) => {
+//   const [isFocused, setIsFocused] = useState(false);
+//   const [displayValue, setDisplayValue] = useState(value);
+//   const [showTooltip, setShowTooltip] = useState(false);
+//   const inputRef = useRef<HTMLInputElement>(null);
+//   const tooltipRef = useRef<HTMLDivElement>(null);
+
+//   // Handle focus - remove formatting/suffix
+//   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+//     setIsFocused(true);
+//     let rawValue = value;
+    
+//     if (formatOnFocus) {
+//       rawValue = formatOnFocus(value);
+//     } else if (suffix && value.endsWith(suffix)) {
+//       rawValue = value.replace(suffix, '').trim();
+//     }
+    
+//     setDisplayValue(rawValue);
+//     e.target.select();
+//   };
+
+//   // Handle blur - apply formatting/suffix
+//   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+//     setIsFocused(false);
+//     let formattedValue = displayValue.trim();
+    
+//     if (formatOnBlur) {
+//       formattedValue = formatOnBlur(formattedValue);
+//     } else if (suffix && formattedValue && !formattedValue.endsWith(suffix)) {
+//       formattedValue = `${formattedValue}${suffix}`;
+//     }
+    
+//     if (!formattedValue.trim()) {
+//       formattedValue = value;
+//     }
+    
+//     setDisplayValue(formattedValue);
+//     onChange(formattedValue);
+//   };
+
+//   // Handle input change
+//   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const newValue = e.target.value;
+//     setDisplayValue(newValue);
+    
+//     if (!suffix && !formatOnBlur) {
+//       onChange(newValue);
+//     }
+//   };
+
+//   // Sync with external value changes when not focused
+//   useEffect(() => {
+//     if (!isFocused) {
+//       setDisplayValue(value);
+//     }
+//   }, [value, isFocused]);
+
+//   // Handle tooltip click
+//   const handleTooltipClick = () => {
+//     setShowTooltip(!showTooltip);
+//   };
+
+//   // Close tooltip when clicking outside
+//   useEffect(() => {
+//     const handleClickOutside = (event: MouseEvent) => {
+//       if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
+//         setShowTooltip(false);
+//       }
+//     };
+//     document.addEventListener('mousedown', handleClickOutside);
+//     return () => {
+//       document.removeEventListener('mousedown', handleClickOutside);
+//     };
+//   }, []);
+
+//   const showSuffix = suffix && !isFocused && displayValue && !displayValue.endsWith(suffix);
+
+//   // Dummy tooltip text based on label
+//   const getTooltipText = () => {
+//     switch (label) {
+//       case 'Amount':
+//         return 'The amount of SOL to use for the buy transaction.';
+//       case 'Take profit':
+//         return 'Set the percentage at which to take profits.';
+//       case 'Stop loss':
+//         return 'Set the percentage at which to cut losses.';
+//       case 'Timeout':
+//         return 'Duration before the trade is canceled if not executed.';
+//       case 'Top 10 Holders Max':
+//         return 'Maximum percentage of tokens held by top 10 holders.';
+//       case 'Bundled Max':
+//         return 'Limit on bundled transactions to avoid scams.';
+//       case 'Max Same Block Buys':
+//         return 'Maximum buys in the same block to prevent manipulation.';
+//       case 'Safety Check Period':
+//         return 'Time period for safety checks before trading.';
+//       default:
+//         return 'This is a helper text for the input field.';
+//     }
+//   };
+
+//   return (
+//     <div className="relative">
+//       <div className="flex items-center gap-2 mb-2">
+//         <label className="block text-muted text-sm font-medium">{label}</label>
+//         <div className="relative">
+//           <span
+//             className="flex items-center justify-center w-4 h-4 bg-teal-400 rounded-full text-white text-xs cursor-pointer"
+//             onClick={handleTooltipClick}
+//           >
+//             ?
+//           </span>
+//           {showTooltip && (
+//             <div
+//               ref={tooltipRef}
+//               className="absolute z-10 bg-dark-2 text-white text-xs p-2 rounded-lg shadow-lg w-48 -top-10 left-6"
+//             >
+//               {getTooltipText()}
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//       <input
+//         ref={inputRef}
+//         type={type}
+//         value={isFocused ? displayValue : value}
+//         onChange={handleChange}
+//         onFocus={handleFocus}
+//         onBlur={handleBlur}
+//         placeholder={isFocused ? placeholder : ''}
+//         className="w-full bg-accent border-t border-[#22253e] rounded-lg p-3 text-white text-sm font-medium outline-none transition-all duration-200 focus:border-emerald-400 focus:bg-white/5 pr-10"
+//       />
+//       {showSuffix && (
+//         <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted text-sm pointer-events-none">
+//           {suffix}
+//         </span>
+//       )}
+//     </div>
+//   );
+// };
+
+// const FlashSniperTradingInterface: React.FC = () => {
+//   // UI State
+//   const [activeTab, setActiveTab] = useState<'logs' | 'transactions'>('transactions');
+//   const [activeWalletTab, setActiveWalletTab] = useState<'wallet' | 'buySell'>('buySell');
+//   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+//   const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+//   // Form State
+//   const [buyForm, setBuyForm] = useState<BuyFormData>({
+//     amount: '0.12000 SOL',
+//     priorityFee: '0.12000 SOL',
+//     slippage: '30%',
+//   });
+
+//   const [sellForm, setSellForm] = useState<SellFormData>({
+//     takeProfit: '40%',
+//     stopLoss: '20%',
+//     slippage: '40%',
+//     timeout: '60 seconds',
+//     priorityFee: '0.1000 SOL',
+//     useOwnRPC: false,
+//   });
+
+//   // Safety Form State
+//   const [safetyForm, setSafetyForm] = useState({
+//     top10HoldersMax: '50%',
+//     bundledMax: '5',
+//     maxSameBlockBuys: '3',
+//     safetyCheckPeriod: '300 seconds',
+//     selectedDex: 'Raydium',
+//     immutableMetadata: false,
+//     mintAuthorityRenounced: false,
+//     freezeAuthorityRenounced: false,
+//   });
+
+//   // Wallet and Trading State
+//   const [walletKeypair, setWalletKeypair] = useState<import('@solana/web3.js').Keypair | null>(null);
+//   const [walletAddress, setWalletAddress] = useState('');
+//   const [privateKeyString, setPrivateKeyString] = useState('');
+//   const [balance, setBalance] = useState(0);
+//   const [authToken, setAuthToken] = useState(localStorage.getItem('authToken') || null);
+//   const [isRegistered, setIsRegistered] = useState(!!localStorage.getItem('authToken'));
+//   const [tradeLogs, setTradeLogs] = useState<string[]>([]);
+//   const [isBotRunning, setIsBotRunning] = useState(false);
+//   const [showCopyMessage, setShowCopyMessage] = useState<'address' | 'key' | null>(null);
+//   const [hasCheckedBalance, setHasCheckedBalance] = useState(false);
+//   const [showPrivateKeyWarning, setShowPrivateKeyWarning] = useState(!localStorage.getItem('privateKeyAcknowledged'));
+//   const [minimumBalanceMet, setMinimumBalanceMet] = useState(false);
+//   const [customRpc, setCustomRpc] = useState({ https: '', wss: '' });
+//   const [isPremium, setIsPremium] = useState(false);
+
+//   // Fetch transaction history
+//   useEffect(() => {
+//     const fetchTransactions = async () => {
+//       try {
+//         const response = await fetch('/api/trade/history', {
+//           headers: { 'Authorization': `Bearer ${authToken}` },
+//         });
+//         const data = await response.json();
+//         setTransactions(
+//           data.map((trade: TradeResponse) => {
+//             const ts = trade.buy_timestamp ?? trade.sell_timestamp ?? new Date().toISOString();
+//             return {
+//               id: trade.id,
+//               type: trade.trade_type as TransactionItem['type'],
+//               amount: trade.amount_sol.toString(),
+//               token: trade.token_symbol || 'Unknown',
+//               date: new Date(ts).toLocaleDateString(),
+//               time: new Date(ts).toLocaleTimeString(),
+//             };
+//           })
+//         );
+//       } catch (error) {
+//         const errorMessage = error instanceof Error ? error.message : String(error);
+//         logToUI(`Error fetching transactions: ${errorMessage}`);
+//       }
+//     };
+//     if (authToken) fetchTransactions();
+//   }, [authToken]);
+
+//   // Fetch user premium status
+//   useEffect(() => {
+//     const fetchPremiumStatus = async () => {
+//       try {
+//         const response = await fetch('/api/user/profile', {
+//           headers: { 'Authorization': `Bearer ${authToken}` },
+//         });
+//         const data = await response.json();
+//         setIsPremium(data.is_premium);
+//         setCustomRpc({ https: data.custom_rpc_https || '', wss: data.custom_rpc_wss || '' });
+//       } catch (error) {
+//         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+//         logToUI(`Error fetching user profile: ${errorMessage}`);
+//       }
+//     };
+//     if (authToken) fetchPremiumStatus();
+//   }, [authToken]);
+
+//   const handleAcknowledgePrivateKey = () => {
+//     localStorage.setItem('privateKeyAcknowledged', 'true');
+//     setShowPrivateKeyWarning(false);
+//   };
+
+//   const handleImportToWallet = () => {
+//     logToUI('To import your wallet to Phantom/Solflare, copy your private key and paste it into the wallet’s "Import Private Key" option.');
+//     navigator.clipboard.writeText(privateKeyString);
+//     setShowCopyMessage('key');
+//     setTimeout(() => setShowCopyMessage(null), 2000);
+//   };
+
+//   // Check minimum balance (0.3 SOL)
+//   useEffect(() => {
+//     if (walletKeypair && hasCheckedBalance) {
+//       setMinimumBalanceMet(balance >= 0.3);
+//     }
+//   }, [balance, hasCheckedBalance]);
+
+//   // Refs
+//   const tradeLogsRef = useRef<HTMLPreElement>(null);
+//   const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
+
+//   // Transaction History
+//   const [transactions, setTransactions] = useState<TransactionItem[]>([
+//     {
+//       id: '1',
+//       type: 'traded',
+//       amount: '0.001',
+//       token: 'DRAGON',
+//       date: '15th August 2025',
+//       time: '3:45pm',
+//     },
+//     {
+//       id: '2',
+//       type: 'exchanged',
+//       amount: '0.001',
+//       token: 'PHOENIX',
+//       date: '5th September 2023',
+//       time: '9:00am',
+//     },
+//     {
+//       id: '3',
+//       type: 'sold',
+//       amount: '0.001',
+//       token: 'TIGER',
+//       date: '1st January 2026',
+//       time: '12:30pm',
+//     },
+//   ]);
+
+//   const handleSubscribePremium = async () => {
+//     try {
+//       const response = await fetch('/api/subscribe/premium', {
+//         method: 'POST',
+//         headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ email: 'user@example.com' }),
+//       });
+//       const data = await response.json();
+//       logToUI('Premium subscription initiated. Please complete payment.');
+//       window.location.href = data.payment_intent.client_secret;
+//     } catch (error) {
+//       const errorMessage = error instanceof Error ? error.message : String(error);
+//       logToUI(`Subscription error: ${errorMessage}`);
+//     }
+//   };
+
+//   // Form handlers
+//   const handleBuyFormChange = (field: keyof BuyFormData, value: string) => {
+//     setBuyForm((prev) => ({ ...prev, [field]: value }));
+//   };
+
+//   const handleSellFormChange = (field: keyof SellFormData, value: string | boolean) => {
+//     setSellForm((prev) => ({ ...prev, [field]: value }));
+//   };
+
+//   const handleSafetyFormChange = (field: keyof typeof safetyForm, value: string | boolean) => {
+//     setSafetyForm((prev) => ({ ...prev, [field]: value }));
+//   };
+
+//   // Formatting functions for percentage inputs
+//   const formatPercentageOnFocus = (value: string): string => {
+//     return value.replace('%', '').trim();
+//   };
+
+//   const formatPercentageOnBlur = (value: string): string => {
+//     if (!value.trim()) return '0%';
+//     const cleanValue = value.replace('%', '').trim();
+//     return cleanValue ? `${cleanValue}%` : '0%';
+//   };
+
+//   // Formatting functions for SOL inputs
+//   const formatSolOnFocus = (value: string): string => {
+//     return value.replace('SOL', '').trim();
+//   };
+
+//   const formatSolOnBlur = (value: string): string => {
+//     if (!value.trim()) return '0.0000 SOL';
+//     const cleanValue = value.replace('SOL', '').trim();
+//     return cleanValue ? `${cleanValue} SOL` : '0.0000 SOL';
+//   };
+
+//   // Logging function
+//   const logToUI = useCallback((message: string) => {
+//     setTradeLogs((prevLogs: string[]) => [
+//       ...prevLogs,
+//       `[${new Date().toLocaleTimeString()}] ${message}`,
+//     ]);
+//   }, []);
+
+//   // Auto-scroll logs
+//   useEffect(() => {
+//     if (tradeLogsRef.current) {
+//       tradeLogsRef.current.scrollTop = tradeLogsRef.current.scrollHeight;
+//     }
+//   }, [tradeLogs]);
+
+//   // Fetch balance function
+//   const fetchBalance = useCallback(
+//     async (publicKey: import('@solana/web3.js').PublicKey): Promise<void> => {
+//       try {
+//         const lamports: number = await connection.getBalance(publicKey);
+//         const solBalance: number = lamports / 1_000_000_000;
+//         setBalance(solBalance);
+//         logToUI(`Balance updated: ${solBalance.toFixed(4)} SOL`);
+//       } catch (error: any) {
+//         console.error('Error fetching balance:', error);
+//         setBalance(0);
+//         logToUI(`Error fetching balance: ${error.message}`);
+//       }
+//     },
+//     [connection, logToUI]
+//   );
+
+//   // Initialize wallet
+//   useEffect(() => {
+//     const keypair = getOrCreateWallet();
+//     setWalletKeypair(keypair);
+//     const address = keypair.publicKey.toBase58();
+//     setWalletAddress(address);
+
+//     try {
+//       const storedKeyBase64 = localStorage.getItem('solana_bot_pk_base64');
+//       if (!storedKeyBase64) throw new Error('No key in storage');
+
+//       const privateKeyBytes = new Uint8Array(JSON.parse(atob(storedKeyBase64)));
+//       const base58PrivateKey = bs58.encode(privateKeyBytes);
+//       setPrivateKeyString(base58PrivateKey);
+//     } catch (e) {
+//       console.error('Error displaying private key:', e);
+//       setPrivateKeyString('Error: Could not display private key.');
+//     }
+
+//     fetchBalance(keypair.publicKey);
+//     setHasCheckedBalance(true);
+//   }, [fetchBalance]);
+
+//   // Copy handlers
+//   const handleCopyAddress = async () => {
+//     try {
+//       await navigator.clipboard.writeText(walletAddress);
+//       setShowCopyMessage('address');
+//       setTimeout(() => setShowCopyMessage(null), 2000);
+//     } catch (err) {
+//       console.error('Failed to copy address:', err);
+//     }
+//   };
+
+//   const handleCopyPrivateKey = async () => {
+//     try {
+//       await navigator.clipboard.writeText(privateKeyString);
+//       setShowCopyMessage('key');
+//       setTimeout(() => setShowCopyMessage(null), 2000);
+//     } catch (err) {
+//       console.error('Failed to copy private key:', err);
+//     }
+//   };
+
+//   const handleCheckSolDeposit = () => {
+//     if (walletKeypair) {
+//       fetchBalance(walletKeypair.publicKey);
+//     }
+//   };
+
+//   // Bot control functions
+//   const handleRunBot = async () => {
+//     if (!authToken || !walletAddress) {
+//       alert('Please ensure wallet is registered and you have an auth token.');
+//       return;
+//     }
+//     logToUI('Sending request to backend to start bot/monitoring...');
+//     setIsBotRunning(true);
+//   };
+
+//   const handleStopBot = async () => {
+//     if (!authToken || !walletAddress) {
+//       alert('Wallet not authenticated.');
+//       return;
+//     }
+//     logToUI('Sending request to backend to stop bot...');
+//     setIsBotRunning(false);
+//   };
+
+//   const handleFundWallet = () => {
+//     alert(`Please send SOL to: ${walletAddress}`);
+//     logToUI(`Wallet address copied to clipboard: ${walletAddress}`);
+//     navigator.clipboard.writeText(walletAddress);
+//   };
+
+//   // Transaction text helper
+//   const getTransactionText = (transaction: TransactionItem): string => {
+//     switch (transaction.type) {
+//       case 'traded':
+//         return `Traded ${transaction.amount} SOL of ${transaction.token}.`;
+//       case 'exchanged':
+//         return `Exchanged ${transaction.amount} SOL of ${transaction.token}.`;
+//       case 'sold':
+//         return `Sold ${transaction.amount} SOL of ${transaction.token}.`;
+//       case 'completed':
+//         return `Completed a sale of ${transaction.amount} SOL of ${transaction.token}.`;
+//       case 'liquidated':
+//         return `Liquidated ${transaction.amount} SOL of ${transaction.token}.`;
+//       default:
+//         return '';
+//     }
+//   };
+
+//   // Handle login popup
+//   const handleUpgradeClick = () => {
+//     setShowLoginPopup(true);
+//   };
+
+//   if (!walletKeypair) return <div className="text-white text-center py-8">Loading wallet...</div>;
+
+//   return (
+//     <div className="min-h-screen w-full bg-gradient-to-b from-[#10b98166] to-secondary relative">
+//       {/* Background Image */}
+//       <div
+//         className="absolute inset-0 bg-cover bg-center opacity-20"
+//         style={{ backgroundImage: 'url(/images/img_grid_layers_v2.png)' }}
+//       />
+
+//       <div className="relative z-10">
+//         {/* Header */}
+//         <header className="bg-primary border-b border-[#ffffff21] h-16 flex items-center justify-between px-4 md:px-8">
+//           <div className="flex items-center gap-4">
+//             <img src="/images/img_frame_1171277880.svg" alt="Logo" className="w-3 h-3" />
+//             <div className="text-white text-sm font-black font-inter">
+//               <span className="text-white">FLASH </span>
+//               <span className="text-success">SNIPER</span>
+//             </div>
+//           </div>
+
+//           <button
+//             className="md:hidden text-white p-2"
+//             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+//           >
+//             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+//             </svg>
+//           </button>
+
+//           <div className="hidden md:flex items-center gap-8">
+//             <span className="text-white text-sm font-medium">Documentation</span>
+//             <span className="text-white text-sm font-medium">Frequently Asked Questions</span>
+//           </div>
+
+//           {isMobileMenuOpen && (
+//             <div className="absolute top-16 left-0 right-0 bg-primary border-b border-[#ffffff21] md:hidden">
+//               <div className="flex flex-col p-4 space-y-4">
+//                 <span className="text-white text-sm font-medium">Documentation</span>
+//                 <span className="text-white text-sm font-medium">Frequently Asked Questions</span>
+//               </div>
+//             </div>
+//           )}
+//         </header>
+
+//         {/* Hero Section */}
+//         <div className="flex flex-col items-center justify-center py-8 md:py-16 px-4 md:px-8">
+//           <h1 className="text-white text-lg font-black text-center mb-4 md:mb-6">Welcome to</h1>
+//           <div className="flex items-center gap-4 mb-6 md:mb-8">
+//             <img src="/images/img_frame_1171277880.svg" alt="Logo" className="w-6 h-6 md:w-8 md:h-8" />
+//             <div className="text-white text-2xl md:text-4xl font-black font-inter">
+//               <span className="text-white">FLASH </span>
+//               <span className="text-success">SNIPER</span>
+//             </div>
+//           </div>
+//           <p className="text-white text-sm font-medium text-center max-w-2xl mb-6 md:mb-8 leading-relaxed px-4">
+//             Velocity. Security. Accuracy. Take control of the Solana market with the quickest and most reliable sniper tool available.
+//           </p>
+//           <div className="text-center">
+//             <p className="text-white text-sm font-medium mb-2">Scroll down to snipe</p>
+//             <div className="w-px h-4 bg-white mx-auto"></div>
+//           </div>
+//         </div>
+
+//         {/* Main Content */}
+//         <div className="flex flex-col lg:flex-row">
+//           {/* Right Panel - Trading Interface */}
+//           <div className="lg:order-2 lg:flex-1 bg-overlay">
+//             <div className="bg-primary border-t border-b border-[#ffffff1e] h-12 flex">
+//               <button
+//                 onClick={() => setActiveWalletTab('wallet')}
+//                 className={`flex items-center gap-3 px-4 md:px-6 h-full border-b-2 ${
+//                   activeWalletTab === 'wallet' ? 'text-success border-success' : 'text-white border-transparent'
+//                 }`}
+//               >
+//                 <img src="/images/img_wallet01_white_a700.svg" alt="Wallet" className="w-4 h-4" />
+//                 <span className="text-sm font-medium">Wallet</span>
+//               </button>
+//               <button
+//                 onClick={() => setActiveWalletTab('buySell')}
+//                 className={`flex items-center gap-3 px-4 md:px-6 h-full border-b-2 ${
+//                   activeWalletTab === 'buySell' ? 'text-success border-success' : 'text-white border-transparent'
+//                 }`}
+//               >
+//                 <img src="/images/img_exchange01_teal_400.svg" alt="Buy/Sell" className="w-4 h-4" />
+//                 <span className="text-sm font-medium">Buy/Sell</span>
+//               </button>
+//             </div>
+
+//             <div className="p-4 space-y-4">
+//               {activeWalletTab === 'wallet' ? (
+//                 <div className="p-4 space-y-4">
+//                   {showPrivateKeyWarning && (
+//                     <div className="bg-warning-light border border-[#e7a13a4c] rounded-lg px-4 py-3 shadow-sm">
+//                       <span className="text-warning font-satoshi font-medium text-[13px] leading-[18px]">
+//                         Warning: Save your private key securely. Do not share it. It will not be stored by us.
+//                       </span>
+//                       <button
+//                         onClick={handleAcknowledgePrivateKey}
+//                         className="mt-2 bg-success text-white px-4 py-2 rounded-lg text-sm"
+//                       >
+//                         Acknowledge
+//                       </button>
+//                     </div>
+//                   )}
+//                   <div className="bg-dark-2 rounded-lg border border-[#262944] shadow-lg">
+//                     <div className="flex items-center gap-3 p-4 border-b border-[#000010] shadow-sm">
+//                       <img src="/images/img_wallet01_white_a700.svg" alt="Wallet" className="w-[18px] h-[18px]" />
+//                       <span className="text-light font-satoshi font-medium text-[13px] leading-[18px]">Your Wallet</span>
+//                     </div>
+//                     <div className="p-3 space-y-3">
+//                       <div className="relative">
+//                         <input
+//                           type="text"
+//                           value={walletAddress}
+//                           readOnly
+//                           className="w-full bg-primary border border-[#20233a] rounded-lg px-3 py-3 text-white font-satoshi font-medium text-[13px] leading-[18px] shadow-sm"
+//                         />
+//                         {showCopyMessage === 'address' && (
+//                           <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-success text-white px-2 py-1 rounded text-xs">Copied!</div>
+//                         )}
+//                       </div>
+//                       <div className="flex gap-2">
+//                         <button
+//                           onClick={handleCopyAddress}
+//                           className="flex-1 bg-accent border-t border-[#22253e] rounded-lg px-3 py-3 text-success font-satoshi font-medium text-[13px] leading-[18px] hover:bg-opacity-80 transition-colors shadow-sm"
+//                         >
+//                           Copy address
+//                         </button>
+//                         <button
+//                           onClick={handleCopyPrivateKey}
+//                           className="flex-1 bg-accent border-t border-[#22253e] rounded-lg px-3 py-3 text-success font-satoshi font-medium text-[13px] leading-[18px] hover:bg-opacity-80 transition-colors shadow-sm relative"
+//                         >
+//                           Copy private key
+//                           {showCopyMessage === 'key' && (
+//                             <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-success text-white px-2 py-1 rounded text-xs">Copied!</div>
+//                           )}
+//                         </button>
+//                       </div>
+//                       <button
+//                         onClick={handleImportToWallet}
+//                         className="w-full bg-accent border-t border-[#22253e] rounded-lg px-3 py-3 text-success font-satoshi font-medium text-[13px] leading-[18px] hover:bg-opacity-80 transition-colors shadow-sm"
+//                       >
+//                         Import to Phantom/Solflare
+//                       </button>
+//                       {(balance < 0.3 || !hasCheckedBalance) && (
+//                         <div className="flex items-center justify-center pt-2">
+//                           <button
+//                             onClick={() => {
+//                               handleCheckSolDeposit();
+//                               setHasCheckedBalance(true);
+//                             }}
+//                             className="flex items-center justify-center w-12 h-12 bg-success rounded-full shadow-lg hover:bg-opacity-90 transition-colors"
+//                             title="Check SOL Balance"
+//                           >
+//                             <span className="text-2xl">👍</span>
+//                           </button>
+//                           <span className="ml-3 text-white-transparent font-satoshi font-medium text-[11px] leading-[10px]">
+//                             Click to check your SOL balance (Minimum 0.3 SOL required)
+//                           </span>
+//                         </div>
+//                       )}
+//                     </div>
+//                   </div>
+//                   {balance < 0.3 && hasCheckedBalance && (
+//                     <div className="bg-warning-light border border-[#e7a13a4c] rounded-lg px-4 py-3 shadow-sm">
+//                       <span className="text-warning font-satoshi font-medium text-[13px] leading-[18px]">
+//                         Please send at least 0.3 SOL to this wallet to enable bot operations.
+//                       </span>
+//                     </div>
+//                   )}
+//                   <button
+//                     onClick={isBotRunning ? handleStopBot : handleRunBot}
+//                     className={`w-full rounded-lg px-4 py-3 font-satoshi font-medium text-[13px] leading-[18px] border transition-all duration-200 shadow-sm ${
+//                       isBotRunning
+//                         ? 'bg-red-600 border-red-600 text-white hover:bg-red-700'
+//                         : 'bg-success border-white text-white hover:bg-opacity-90'
+//                     }`}
+//                     disabled={balance < 0.3 || !hasCheckedBalance}
+//                   >
+//                     {isBotRunning ? 'Stop Bot' : 'Run Bot'}
+//                   </button>
+
+//                   <p className="text-white-transparent font-satoshi font-medium text-[11px] leading-[15px] text-center">
+//                     Start or stop anytime. 1% fee per trade. Starting means you accept our disclaimer
+//                   </p>
+//                 </div>
+//               ) : (
+//                 <>
+//                   {/* Buy Section */}
+//                   <div className="bg-dark-1 rounded-lg shadow-lg">
+//                     <div className="flex items-center gap-3 p-4 border-b border-[#000010]">
+//                       <img src="/images/img_bitcoinshopping.svg" alt="Buy" className="w-5 h-5" />
+//                       <span className="text-light text-base font-medium">Buy</span>
+//                     </div>
+
+//                     <div className="p-4 space-y-4">
+//                       {balance <= 0 && (
+//                         <button
+//                           onClick={handleFundWallet}
+//                           className="w-full p-3 bg-warning-light border border-[#e7a13a4c] rounded-lg text-warning text-sm font-medium"
+//                         >
+//                           Fund your wallet to use the bot
+//                         </button>
+//                       )}
+
+//                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//                         <div>
+//                           <ProfessionalInput
+//                             value={buyForm.amount}
+//                             onChange={(value) => handleBuyFormChange('amount', value)}
+//                             placeholder="Enter amount"
+//                             suffix="SOL"
+//                             formatOnFocus={formatSolOnFocus}
+//                             formatOnBlur={formatSolOnBlur}
+//                             label="Amount"
+//                           />
+//                         </div>
+//                       </div>
+//                     </div>
+//                   </div>
+
+//                   {/* Sell Section */}
+//                   <div className="bg-dark-2 rounded-lg shadow-lg">
+//                     <div className="flex items-center gap-3 p-4 border-b border-[#000010]">
+//                       <img src="/images/img_bitcoin03.svg" alt="Sell" className="w-5 h-5" />
+//                       <span className="text-light text-base font-medium">Sell</span>
+//                     </div>
+
+//                     <div className="p-4 space-y-4 border-b border-[#000010]">
+//                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//                         <div>
+//                           <ProfessionalInput
+//                             value={sellForm.takeProfit}
+//                             onChange={(value) => handleSellFormChange('takeProfit', value)}
+//                             placeholder="Enter take profit"
+//                             suffix="%"
+//                             formatOnFocus={formatPercentageOnFocus}
+//                             formatOnBlur={formatPercentageOnBlur}
+//                             label="Take profit"
+//                           />
+//                         </div>
+//                         <div>
+//                           <ProfessionalInput
+//                             value={sellForm.stopLoss}
+//                             onChange={(value) => handleSellFormChange('stopLoss', value)}
+//                             placeholder="Enter stop loss"
+//                             suffix="%"
+//                             formatOnFocus={formatPercentageOnFocus}
+//                             formatOnBlur={formatPercentageOnBlur}
+//                             label="Stop loss"
+//                           />
+//                         </div>
+//                       </div>
+//                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//                         <div>
+//                           <ProfessionalInput
+//                             value={sellForm.timeout}
+//                             onChange={(value) => handleSellFormChange('timeout', value)}
+//                             placeholder="Enter timeout"
+//                             suffix=" seconds"
+//                             label="Timeout"
+//                           />
+//                         </div>
+//                       </div>
+//                       <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center gap-3">
+//                         <input
+//                           type="checkbox"
+//                           checked={sellForm.useOwnRPC}
+//                           onChange={(e) => handleSellFormChange('useOwnRPC', e.target.checked)}
+//                           className="w-6 h-6"
+//                         />
+//                         <span className="text-muted text-sm font-medium">Use your own RPC</span>
+//                       </div>
+//                       {isPremium && sellForm.useOwnRPC && (
+//                         <div className="space-y-4">
+//                           <div>
+//                             <label className="block text-muted text-sm font-medium mb-2">RPC HTTPS Endpoint</label>
+//                             <input
+//                               type="text"
+//                               value={customRpc.https}
+//                               onChange={(e) => setCustomRpc({ ...customRpc, https: e.target.value })}
+//                               placeholder="Enter HTTPS RPC endpoint"
+//                               className="w-full bg-accent border-t border-[#22253e] rounded-lg p-3 text-white text-sm font-medium"
+//                             />
+//                           </div>
+//                           <div>
+//                             <label className="block text-muted text-sm font-medium mb-2">RPC WSS Endpoint</label>
+//                             <input
+//                               type="text"
+//                               value={customRpc.wss}
+//                               onChange={(e) => setCustomRpc({ ...customRpc, wss: e.target.value })}
+//                               placeholder="Enter WSS RPC endpoint"
+//                               className="w-full bg-accent border-t border-[#22253e] rounded-lg p-3 text-white text-sm font-medium"
+//                             />
+//                           </div>
+//                           <button
+//                             onClick={async () => {
+//                               try {
+//                                 await fetch('/api/user/update-rpc', {
+//                                   method: 'POST',
+//                                   headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+//                                   body: JSON.stringify(customRpc),
+//                                 });
+//                                 logToUI('Custom RPC settings saved.');
+//                               } catch (error) {
+//                                 const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+//                                 logToUI(`Error saving RPC settings: ${errorMessage}`);
+//                               }
+//                             }}
+//                             className="w-full bg-success text-white text-sm font-medium py-3 rounded-lg"
+//                           >
+//                             Save RPC Settings
+//                           </button>
+//                         </div>
+//                       )}
+//                     </div>
+//                   </div>
+
+//                   {/* Safety Section */}
+//                   <div className="bg-dark-2 rounded-lg shadow-lg relative">
+//                     <div className="flex items-center gap-3 p-4 border-b border-[#000010]">
+//                       <img src="/images/img_shield.svg" alt="Safety" className="w-5 h-5" />
+//                       <span className="text-light text-base font-medium">Safety</span>
+//                     </div>
+//                     <div className={`p-4 space-y-4 ${!isPremium ? 'blur-[2px] pointer-events-none' : ''}`}>
+//                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//                         <div>
+//                           <ProfessionalInput
+//                             value={safetyForm.top10HoldersMax}
+//                             onChange={(value) => handleSafetyFormChange('top10HoldersMax', value)}
+//                             placeholder="Enter max %"
+//                             suffix="%"
+//                             formatOnFocus={formatPercentageOnFocus}
+//                             formatOnBlur={formatPercentageOnBlur}
+//                             label="Top 10 Holders Max"
+//                           />
+//                         </div>
+//                         <div>
+//                           <ProfessionalInput
+//                             value={safetyForm.bundledMax}
+//                             onChange={(value) => handleSafetyFormChange('bundledMax', value)}
+//                             placeholder="Enter max bundled"
+//                             label="Bundled Max"
+//                           />
+//                         </div>
+//                       </div>
+//                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//                         <div>
+//                           <ProfessionalInput
+//                             value={safetyForm.maxSameBlockBuys}
+//                             onChange={(value) => handleSafetyFormChange('maxSameBlockBuys', value)}
+//                             placeholder="Enter max buys"
+//                             label="Max Same Block Buys"
+//                           />
+//                         </div>
+//                         <div>
+//                           <ProfessionalInput
+//                             value={safetyForm.safetyCheckPeriod}
+//                             onChange={(value) => handleSafetyFormChange('safetyCheckPeriod', value)}
+//                             placeholder="Enter period"
+//                             suffix=" seconds"
+//                             label="Safety Check Period"
+//                           />
+//                         </div>
+//                       </div>
+//                       <div>
+//                         <label className="block text-muted text-sm font-medium mb-2">Choose DEXes</label>
+//                         <select
+//                           value={safetyForm.selectedDex}
+//                           onChange={(e) => handleSafetyFormChange('selectedDex', e.target.value)}
+//                           className="w-full bg-accent border-t border-[#22253e] rounded-lg p-3 text-white text-sm font-medium"
+//                         >
+//                           <option value="Raydium">Raydium</option>
+//                           <option value="Jupiter">Jupiter</option>
+//                           <option value="OKX">OKX</option>
+//                           <option value="Orca">Orca</option>
+//                           <option value="Meteora">Meteora</option>
+//                         </select>
+//                       </div>
+//                       <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center gap-3">
+//                         <input
+//                           type="checkbox"
+//                           checked={safetyForm.immutableMetadata}
+//                           onChange={(e) => handleSafetyFormChange('immutableMetadata', e.target.checked)}
+//                           className="w-6 h-6"
+//                         />
+//                         <span className="text-muted text-sm font-medium">Immutable Metadata</span>
+//                       </div>
+//                       <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center gap-3">
+//                         <input
+//                           type="checkbox"
+//                           checked={safetyForm.mintAuthorityRenounced}
+//                           onChange={(e) => handleSafetyFormChange('mintAuthorityRenounced', e.target.checked)}
+//                           className="w-6 h-6"
+//                         />
+//                         <span className="text-muted text-sm font-medium">Mint Authority Renounced</span>
+//                       </div>
+//                       <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center gap-3">
+//                         <input
+//                           type="checkbox"
+//                           checked={safetyForm.freezeAuthorityRenounced}
+//                           onChange={(e) => handleSafetyFormChange('freezeAuthorityRenounced', e.target.checked)}
+//                           className="w-6 h-6"
+//                         />
+//                         <span className="text-muted text-sm font-medium">Freeze Authority Renounced</span>
+//                       </div>
+//                     </div>
+//                     {!isPremium && (
+//                       <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
+//                         <div className="text-center p-4">
+//                           <h3 className="text-white text-lg font-medium mb-4">Unlock Advanced Filters with Premium</h3>
+//                           <p className="text-white-transparent text-sm mb-4">
+//                             Limited 20% OFF Deal ends soon! Get access to advanced filters like Top Holders Max, Bundled Max, Max Same Block Buys, and custom DEXes (or Pump.fun Graduated tokens) to optimize your trades and avoid scams.
+//                           </p>
+//                           <button
+//                             onClick={handleUpgradeClick}
+//                             className="bg-success text-white text-sm font-medium py-2 px-4 rounded-lg mr-2"
+//                           >
+//                             Upgrade and Profit
+//                           </button>
+//                           <a
+//                             href="/pricing"
+//                             className="bg-accent text-white text-sm font-medium py-2 px-4 rounded-lg"
+//                           >
+//                             Pricing
+//                           </a>
+//                         </div>
+//                       </div>
+//                     )}
+//                   </div>
+
+//                   {/* Login Popup */}
+//                   {showLoginPopup && (
+//                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+//                       <div className="bg-dark-2 rounded-lg p-6 w-96">
+//                         <h3 className="text-white text-lg font-medium mb-4">Sign In to Upgrade</h3>
+//                         <button
+//                           className="w-full bg-accent text-white text-sm font-medium py-3 rounded-lg mb-2"
+//                           onClick={() => logToUI('Sign in with Email link clicked')}
+//                         >
+//                           Sign in with Email
+//                         </button>
+//                         <button
+//                           className="w-full bg-accent text-white text-sm font-medium py-3 rounded-lg"
+//                           onClick={() => logToUI('Sign in with Google clicked')}
+//                         >
+//                           Sign in with Google
+//                         </button>
+//                         <button
+//                           className="w-full text-white-transparent text-sm font-medium mt-4"
+//                           onClick={() => setShowLoginPopup(false)}
+//                         >
+//                           Cancel
+//                         </button>
+//                       </div>
+//                     </div>
+//                   )}
+
+//                   {!isPremium && (
+//                     <div className="p-4">
+//                       <button
+//                         onClick={handleSubscribePremium}
+//                         className="w-full bg-success text-white text-sm font-medium py-3 rounded-lg"
+//                       >
+//                         Upgrade to Premium ($99/month)
+//                       </button>
+//                     </div>
+//                   )}
+
+//                   {!isBotRunning ? (
+//                     <button
+//                       onClick={handleRunBot}
+//                       className="w-full bg-success text-white text-sm font-medium py-3 rounded-lg border border-white shadow-sm hover:bg-opacity-90 transition-colors"
+//                       disabled={balance <= 0}
+//                     >
+//                       Run Bot
+//                     </button>
+//                   ) : (
+//                     <button
+//                       onClick={handleStopBot}
+//                       className="w-full bg-error text-white text-sm font-medium py-3 rounded-lg border border-white shadow-sm hover:bg-opacity-90 transition-colors"
+//                     >
+//                       Stop Bot
+//                     </button>
+//                   )}
+
+//                   <p className="text-white-transparent text-xs font-medium text-center leading-relaxed">
+//                     Start or stop anytime. 1% fee per trade. Starting means you accept our disclaimer
+//                   </p>
+//                 </>
+//               )}
+//             </div>
+//           </div>
+
+//           {/* Left Panel - Transaction Logs */}
+//           <div className="lg:order-1 lg:w-[823px] bg-secondary border-r border-[#ffffff21]">
+//             <div className="bg-primary border-t border-b border-[#ffffff1e] h-12 flex">
+//               <button
+//                 onClick={() => setActiveTab('logs')}
+//                 className={`flex items-center gap-3 px-4 md:px-6 h-full border-b-2 ${
+//                   activeTab === 'logs' ? 'text-success border-success' : 'text-white border-transparent'
+//                 }`}
+//               >
+//                 <img src="/images/img_license_white_a700.svg" alt="Logs" className={`w-4 h-4 ${activeTab === 'logs' ? '' : 'opacity-70'}`} />
+//                 <span className="text-sm font-medium">Logs</span>
+//               </button>
+//               <button
+//                 onClick={() => setActiveTab('transactions')}
+//                 className={`flex items-center gap-3 px-4 md:px-6 h-full border-b-2 ${
+//                   activeTab === 'transactions' ? 'text-success border-success' : 'text-white border-transparent'
+//                 }`}
+//               >
+//                 <img
+//                   src="/images/img_transactionhistory_teal_400.svg"
+//                   alt="Transactions"
+//                   className={`w-4 h-4 ${activeTab === 'transactions' ? '' : 'opacity-70'}`}
+//                 />
+//                 <span className="text-sm font-medium">Transactions</span>
+//               </button>
+//             </div>
+
+//             <div className="bg-secondary border-b border-[#ffffff1e] h-11 flex items-center justify-between px-4">
+//               <span className="text-white text-sm font-medium">Token snipped: 3</span>
+//               <span className="text-white text-sm font-medium">Total profit: {balance.toFixed(4)} SOL</span>
+//             </div>
+
+//             {activeTab === 'logs' ? (
+//               <div className="bg-secondary h-[400px] md:h-[600px] overflow-y-auto p-4">
+//                 <pre className="text-white text-sm font-mono" ref={tradeLogsRef}>
+//                   {tradeLogs.join('\n')}
+//                 </pre>
+//               </div>
+//             ) : (
+//               <div className="bg-secondary h-[400px] md:h-[600px] overflow-y-auto">
+//                 {transactions.map((transaction) => (
+//                   <div key={transaction.id} className="flex items-start gap-4 p-4 border-b border-[#ffffff1e] last:border-b-0">
+//                     <div className="w-6 h-6 bg-error-light rounded-full flex-shrink-0 mt-0.5"></div>
+//                     <div className="flex-1">
+//                       <div className="flex items-center justify-between mb-2">
+//                         <span className="text-white text-sm font-medium">{getTransactionText(transaction)}</span>
+//                         <div className="flex items-center gap-2">
+//                           <span className="text-white text-sm font-medium">View on:</span>
+//                           <img src="/images/img_image_2.png" alt="View" className="w-6 h-6" />
+//                         </div>
+//                       </div>
+//                       <span className="text-secondary text-xs font-medium">
+//                         {transaction.date} at {transaction.time}
+//                       </span>
+//                     </div>
+//                   </div>
+//                 ))}
+//               </div>
+//             )}
+//           </div>
+//         </div>
+
+//         {/* Footer */}
+//         <footer className="bg-secondary border-t border-[#ffffff21] h-12 flex items-center justify-between px-4 md:px-8">
+//           <span className="text-white text-sm font-medium">© 2025 | FlashSniper.com | Disclaimer</span>
+//           <div className="flex items-center gap-6 md:gap-10">
+//             <a href="https://twitter.com/flashsniper" target="_blank">
+//               <img src="/images/img_newtwitter.svg" alt="Twitter" className="w-4 h-4" />
+//             </a>
+//             <a href="https://t.me/flashsniper" target="_blank">
+//               <img src="/images/img_telegram.svg" alt="Telegram" className="w-4 h-4" />
+//             </a>
+//             <a href="https://discord.gg/flashsniper" target="_blank">
+//               <img src="/images/img_discord.svg" alt="Discord" className="w-4 h-4" />
+//             </a>
+//           </div>
+//         </footer>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default FlashSniperTradingInterface;
+
+
+
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getOrCreateWallet } from '@/utils/wallet.js';
 import { Connection, clusterApiUrl } from '@solana/web3.js';
 import bs58 from 'bs58';
 import { executeTrade } from '@/services/trade';
 import { useTradeMonitor } from '@/hooks/useTradeMonitor';
-
-
+import { useNavigate } from 'react-router-dom';
 
 interface TransactionItem {
   id: string;
@@ -28,34 +1143,197 @@ interface SellFormData {
   slippage: string;
   timeout: string;
   priorityFee: string;
-  trailingStopLoss: boolean;
   useOwnRPC: boolean;
+  trailingStopLossPct?: string;
 }
 
+interface TradeResponse {
+  id: string;
+  trade_type: string;
+  amount_sol: number;
+  token_symbol?: string;
+  buy_timestamp?: string;
+  sell_timestamp?: string;
+}
+
+interface ProfessionalInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  suffix?: string;
+  type?: string;
+  formatOnBlur?: (value: string) => string;
+  formatOnFocus?: (value: string) => string;
+  label: string;
+}
+
+const ProfessionalInput: React.FC<ProfessionalInputProps> = ({
+  value,
+  onChange,
+  placeholder,
+  suffix,
+  type = 'text',
+  formatOnBlur,
+  formatOnFocus,
+  label,
+}) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const [displayValue, setDisplayValue] = useState(value);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    setIsFocused(true);
+    let rawValue = value;
+    if (formatOnFocus) {
+      rawValue = formatOnFocus(value);
+    } else if (suffix && value.endsWith(suffix)) {
+      rawValue = value.replace(suffix, '').trim();
+    }
+    setDisplayValue(rawValue);
+    e.target.select();
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    setIsFocused(false);
+    let formattedValue = displayValue.trim();
+    if (formatOnBlur) {
+      formattedValue = formatOnBlur(formattedValue);
+    } else if (suffix && formattedValue && !formattedValue.endsWith(suffix)) {
+      formattedValue = `${formattedValue}${suffix}`;
+    }
+    if (!formattedValue.trim()) {
+      formattedValue = value;
+    }
+    setDisplayValue(formattedValue);
+    onChange(formattedValue);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setDisplayValue(newValue);
+    if (!suffix && !formatOnBlur) {
+      onChange(newValue);
+    }
+  };
+
+  useEffect(() => {
+    if (!isFocused) {
+      setDisplayValue(value);
+    }
+  }, [value, isFocused]);
+
+  const handleTooltipClick = () => {
+    setShowTooltip(!showTooltip);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
+        setShowTooltip(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const showSuffix = suffix && !isFocused && displayValue && !displayValue.endsWith(suffix);
+
+  const getTooltipText = () => {
+    switch (label) {
+      case 'Amount':
+        return 'The amount of SOL to use for the buy transaction.';
+      case 'Take profit':
+        return 'Set the percentage at which to take profits.';
+      case 'Stop loss':
+        return 'Set the percentage at which to cut losses.';
+      case 'Timeout':
+        return 'Duration before the trade is canceled if not executed.';
+      case 'Top 10 Holders Max':
+        return 'Maximum percentage of tokens held by top 10 holders.';
+      case 'Bundled Max':
+        return 'Limit on bundled transactions to avoid scams.';
+      case 'Max Same Block Buys':
+        return 'Maximum buys in the same block to prevent manipulation.';
+      case 'Safety Check Period':
+        return 'Time period for safety checks before trading.';
+      default:
+        return 'This is a helper text for the input field.';
+    }
+  };
+
+  return (
+    <div className="relative">
+      <div className="flex items-center gap-2 mb-2">
+        <label className="block text-muted text-sm font-medium">{label}</label>
+        <div className="relative">
+          <span
+            className="flex items-center justify-center w-4 h-4 bg-teal-400 rounded-full text-white text-xs cursor-pointer"
+            onClick={handleTooltipClick}
+            aria-label="Help tooltip"
+          >
+            ?
+          </span>
+          {showTooltip && (
+            <div
+              ref={tooltipRef}
+              className="absolute z-10 bg-dark-2 text-white text-xs p-2 rounded-lg shadow-lg w-48 -top-10 left-6"
+            >
+              {getTooltipText()}
+            </div>
+          )}
+        </div>
+      </div>
+      <input
+        ref={inputRef}
+        type={type}
+        value={isFocused ? displayValue : value}
+        onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        placeholder={isFocused ? placeholder : ''}
+        className="w-full bg-accent border-t border-[#22253e] rounded-lg p-3 text-white text-sm font-medium outline-none transition-all duration-200 focus:border-emerald-400 focus:bg-white/5 pr-10"
+      />
+      {showSuffix && (
+        <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted text-sm pointer-events-none">
+          {suffix}
+        </span>
+      )}
+    </div>
+  );
+};
+
 const FlashSniperTradingInterface: React.FC = () => {
-  // UI State
   const [activeTab, setActiveTab] = useState<'logs' | 'transactions'>('transactions');
   const [activeWalletTab, setActiveWalletTab] = useState<'wallet' | 'buySell'>('buySell');
-  const [copied, setCopied] = useState(false);
-  
-  // Form State
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [buyForm, setBuyForm] = useState<BuyFormData>({
-    amount: '0.12000',
-    priorityFee: '0.12000',
-    slippage: '30%'
+    amount: '0.12000 SOL',
+    priorityFee: '0.12000 SOL',
+    slippage: '30%',
   });
-  
   const [sellForm, setSellForm] = useState<SellFormData>({
     takeProfit: '40%',
     stopLoss: '20%',
     slippage: '40%',
     timeout: '60 seconds',
-    priorityFee: '0.1000',
-    trailingStopLoss: false,
-    useOwnRPC: false
+    priorityFee: '0.1000 SOL',
+    useOwnRPC: false,
   });
-
-  // Wallet and Trading State
+  const [safetyForm, setSafetyForm] = useState({
+    top10HoldersMax: '50%',
+    bundledMax: '5',
+    maxSameBlockBuys: '3',
+    safetyCheckPeriod: '300 seconds',
+    selectedDex: 'Raydium',
+    immutableMetadata: false,
+    mintAuthorityRenounced: false,
+    freezeAuthorityRenounced: false,
+  });
   const [walletKeypair, setWalletKeypair] = useState<import('@solana/web3.js').Keypair | null>(null);
   const [walletAddress, setWalletAddress] = useState('');
   const [privateKeyString, setPrivateKeyString] = useState('');
@@ -64,44 +1342,98 @@ const FlashSniperTradingInterface: React.FC = () => {
   const [isRegistered, setIsRegistered] = useState(!!localStorage.getItem('authToken'));
   const [tradeLogs, setTradeLogs] = useState<string[]>([]);
   const [isBotRunning, setIsBotRunning] = useState(false);
-  const [isRunning, setIsRunning] = useState(false);
   const [showCopyMessage, setShowCopyMessage] = useState<'address' | 'key' | null>(null);
-  const [showBalance, setShowBalance] = useState<boolean>(false); // Controls balance visibility
   const [hasCheckedBalance, setHasCheckedBalance] = useState(false);
-  
-  // Bot Settings
-  const [botSettings, setBotSettings] = useState({
-    buy_amount_sol: 0.05,
-    buy_priority_fee_lamports: 1_000_000,
-    buy_slippage_bps: 500,
-    sell_take_profit_pct: 50.0,
-    sell_stop_loss_pct: 10.0,
-    sell_timeout_seconds: 300,
-    sell_priority_fee_lamports: 1_000_000,
-    sell_slippage_bps: 500,
-    enable_trailing_stop_loss: false,
-    trailing_stop_loss_pct: null,
-    filter_socials_added: true,
-    filter_liquidity_burnt: true,
-    filter_immutable_metadata: true,
-    filter_mint_authority_renounced: true,
-    filter_freeze_authority_revoked: true,
-    filter_pump_fun_migrated: true,
-    filter_check_pool_size_min_sol: 0.5,
-    filter_top_holders_max_pct: null,
-    filter_bundled_max: null,
-    filter_max_same_block_buys: null,
-    filter_safety_check_period_seconds: null,
-    bot_check_interval_seconds: 30,
-    is_premium: false,
-  });
+  const [showPrivateKeyWarning, setShowPrivateKeyWarning] = useState(!localStorage.getItem('privateKeyAcknowledged'));
+  const [minimumBalanceMet, setMinimumBalanceMet] = useState(false);
+  const [customRpc, setCustomRpc] = useState({ https: '', wss: '' });
+  const [isPremium, setIsPremium] = useState(false);
+  const navigate = useNavigate();
 
-  // Refs
+  // Debug logging for state changes
+  useEffect(() => {
+    logToUI(`isPremium: ${isPremium}, useOwnRPC: ${sellForm.useOwnRPC}`);
+  }, [isPremium, sellForm.useOwnRPC]);
+
+  // Fetch transaction history
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await fetch('/api/trade/history', {
+          headers: { 'Authorization': `Bearer ${authToken}` },
+        });
+        const data = await response.json();
+        setTransactions(
+          data.map((trade: TradeResponse) => {
+            const ts = trade.buy_timestamp ?? trade.sell_timestamp ?? new Date().toISOString();
+            return {
+              id: trade.id,
+              type: trade.trade_type as TransactionItem['type'],
+              amount: trade.amount_sol.toString(),
+              token: trade.token_symbol || 'Unknown',
+              date: new Date(ts).toLocaleDateString(),
+              time: new Date(ts).toLocaleTimeString(),
+            };
+          })
+        );
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logToUI(`Error fetching transactions: ${errorMessage}`);
+      }
+    };
+    if (authToken) fetchTransactions();
+  }, [authToken]);
+
+  // Fetch user premium status
+  useEffect(() => {
+    const fetchPremiumStatus = async () => {
+      if (!authToken) {
+        logToUI('No auth token available for fetching premium status');
+        return;
+      }
+      try {
+        const response = await fetch('/api/user/profile', {
+          headers: { 'Authorization': `Bearer ${authToken}` },
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        logToUI(`Profile API response: is_premium=${data.is_premium}`);
+        setIsPremium(data.is_premium || false);
+        setCustomRpc({
+          https: data.custom_rpc_https || '',
+          wss: data.custom_rpc_wss || '',
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        logToUI(`Error fetching user profile: ${errorMessage}`);
+      }
+    };
+    fetchPremiumStatus();
+  }, [authToken]);
+
+  const handleAcknowledgePrivateKey = () => {
+    localStorage.setItem('privateKeyAcknowledged', 'true');
+    setShowPrivateKeyWarning(false);
+  };
+
+  const handleImportToWallet = () => {
+    logToUI('To import your wallet to Phantom/Solflare, copy your private key and paste it into the wallet’s "Import Private Key" option.');
+    navigator.clipboard.writeText(privateKeyString);
+    setShowCopyMessage('key');
+    setTimeout(() => setShowCopyMessage(null), 2000);
+  };
+
+  useEffect(() => {
+    if (walletKeypair && hasCheckedBalance) {
+      setMinimumBalanceMet(balance >= 0.3);
+    }
+  }, [balance, hasCheckedBalance]);
+
   const tradeLogsRef = useRef<HTMLPreElement>(null);
-  const websocketRef = useRef<WebSocket | null>(null);
   const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
 
-  // Transaction History (mocked for now)
   const [transactions, setTransactions] = useState<TransactionItem[]>([
     {
       id: '1',
@@ -109,7 +1441,7 @@ const FlashSniperTradingInterface: React.FC = () => {
       amount: '0.001',
       token: 'DRAGON',
       date: '15th August 2025',
-      time: '3:45pm'
+      time: '3:45pm',
     },
     {
       id: '2',
@@ -117,7 +1449,7 @@ const FlashSniperTradingInterface: React.FC = () => {
       amount: '0.001',
       token: 'PHOENIX',
       date: '5th September 2023',
-      time: '9:00am'
+      time: '9:00am',
     },
     {
       id: '3',
@@ -125,83 +1457,72 @@ const FlashSniperTradingInterface: React.FC = () => {
       amount: '0.001',
       token: 'TIGER',
       date: '1st January 2026',
-      time: '12:30pm'
+      time: '12:30pm',
     },
-    {
-      id: '4',
-      type: 'completed',
-      amount: '0.001',
-      token: 'EAGLE',
-      date: '10th October 2024',
-      time: '4:15pm'
-    },
-    {
-      id: '5',
-      type: 'liquidated',
-      amount: '0.001',
-      token: 'WOLF',
-      date: '30th November 2023',
-      time: '8:00am'
-    }
   ]);
 
-  // Logging function
-  interface LogToUI {
-    (message: string): void;
-  }
+  const handleSubscribePremium = async () => {
+    try {
+      const response = await fetch('/api/subscribe/premium', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'user@example.com' }),
+      });
+      const data = await response.json();
+      logToUI('Premium subscription initiated. Please complete payment.');
+      window.location.href = data.payment_intent.client_secret;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logToUI(`Subscription error: ${errorMessage}`);
+    }
+  };
 
-  interface NewTransaction extends TransactionItem {}
+  const handleBuyFormChange = (field: keyof BuyFormData, value: string) => {
+    setBuyForm((prev) => ({ ...prev, [field]: value }));
+  };
 
-  const logToUI: LogToUI = useCallback((message: string) => {
+  const handleSellFormChange = (field: keyof SellFormData, value: string | boolean) => {
+    setSellForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSafetyFormChange = (field: keyof typeof safetyForm, value: string | boolean) => {
+    setSafetyForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const formatPercentageOnFocus = (value: string): string => {
+    return value.replace('%', '').trim();
+  };
+
+  const formatPercentageOnBlur = (value: string): string => {
+    if (!value.trim()) return '0%';
+    const cleanValue = value.replace('%', '').trim();
+    return cleanValue ? `${cleanValue}%` : '0%';
+  };
+
+  const formatSolOnFocus = (value: string): string => {
+    return value.replace('SOL', '').trim();
+  };
+
+  const formatSolOnBlur = (value: string): string => {
+    if (!value.trim()) return '0.0000 SOL';
+    const cleanValue = value.replace('SOL', '').trim();
+    return cleanValue ? `${cleanValue} SOL` : '0.0000 SOL';
+  };
+
+  const logToUI = useCallback((message: string) => {
     setTradeLogs((prevLogs: string[]) => [
       ...prevLogs,
       `[${new Date().toLocaleTimeString()}] ${message}`,
     ]);
-    // Add to transactions if it's a trade message
-    if (
-      message.includes('Traded') ||
-      message.includes('Sold') ||
-      message.includes('Exchanged')
-    ) {
-      const newTransaction: NewTransaction = {
-        id: Date.now().toString(),
-        type: message.includes('Traded')
-          ? 'traded'
-          : message.includes('Sold')
-          ? 'sold'
-          : 'exchanged',
-        amount: '0.001', // Extract from message in real implementation
-        token: 'TOKEN', // Extract from message in real implementation
-        date: new Date().toLocaleDateString('en-US', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        }),
-        time: new Date().toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-      };
-      setTransactions((prev: TransactionItem[]) => [newTransaction, ...prev]);
-    }
   }, []);
 
-  // Initialize trade monitor
-  useTradeMonitor(walletKeypair, walletAddress, authToken, logToUI);
-
-  // Auto-scroll when new logs are added
   useEffect(() => {
     if (tradeLogsRef.current) {
       tradeLogsRef.current.scrollTop = tradeLogsRef.current.scrollHeight;
     }
   }, [tradeLogs]);
 
-  // Fetch balance function
-  interface FetchBalance {
-    (publicKey: import('@solana/web3.js').PublicKey): Promise<void>;
-  }
-
-  const fetchBalance: FetchBalance = useCallback(
+  const fetchBalance = useCallback(
     async (publicKey: import('@solana/web3.js').PublicKey): Promise<void> => {
       try {
         const lamports: number = await connection.getBalance(publicKey);
@@ -209,7 +1530,7 @@ const FlashSniperTradingInterface: React.FC = () => {
         setBalance(solBalance);
         logToUI(`Balance updated: ${solBalance.toFixed(4)} SOL`);
       } catch (error: any) {
-        console.error("Error fetching balance:", error);
+        console.error('Error fetching balance:', error);
         setBalance(0);
         logToUI(`Error fetching balance: ${error.message}`);
       }
@@ -217,91 +1538,6 @@ const FlashSniperTradingInterface: React.FC = () => {
     [connection, logToUI]
   );
 
-  // Register wallet with backend
-  interface RegisterWalletResponse {
-    access_token: string;
-    [key: string]: any;
-  }
-
-  interface RegisterWalletError {
-    detail?: string;
-    [key: string]: any;
-  }
-
-  interface RegisterWalletWithBackend {
-    (keypair: import('@solana/web3.js').Keypair): Promise<void>;
-  }
-
-  const registerWalletWithBackend: RegisterWalletWithBackend = useCallback(
-    async (keypair: import('@solana/web3.js').Keypair): Promise<void> => {
-      const pubKey: string = keypair.publicKey.toBase58();
-      const privateKeyBytes: Uint8Array = keypair.secretKey;
-      const privateKeyBase64: string = btoa(JSON.stringify(Array.from(privateKeyBytes)));
-
-      try {
-        const response: Response = await fetch('https://api-v1.flashsnipper.com/auth/register-or-login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            wallet_address: pubKey,
-            encrypted_private_key_bundle: privateKeyBase64,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData: RegisterWalletError = await response.json();
-          throw new Error(errorData.detail || 'Failed to register/login wallet with backend.');
-        }
-
-        const data: RegisterWalletResponse = await response.json();
-        localStorage.setItem('authToken', data.access_token);
-        setAuthToken(data.access_token);
-        setIsRegistered(true);
-        logToUI("Wallet successfully registered/logged in with backend.");
-      } catch (error: any) {
-        logToUI(`Error registering/logging in wallet with backend: ${error.message}`);
-        console.error("Error registering/logging in wallet with backend:", error);
-      }
-    },
-    [logToUI]
-  );
-
-  // Fetch user settings
-  useEffect(() => {
-    const fetchUserSettings = async () => {
-      if (authToken && walletAddress) {
-        try {
-          const response = await fetch(`https://api-v1.flashsnipper.com/user/settings/${walletAddress}`, {
-            headers: {
-              'Authorization': `Bearer ${authToken}`
-            }
-          });
-          if (!response.ok) {
-            throw new Error('Failed to fetch user settings');
-          }
-          const settingsData = await response.json();
-          setBotSettings(prevSettings => ({
-            ...prevSettings,
-            ...settingsData,
-            filter_top_holders_max_pct: settingsData.filter_top_holders_max_pct || null,
-            trailing_stop_loss_pct: settingsData.trailing_stop_loss_pct || null,
-            is_premium: settingsData.is_premium || false,
-          }));
-          logToUI("User bot settings loaded.");
-        } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
-          logToUI(`Error loading user settings: ${errorMsg}`);
-          console.error("Error loading user settings:", error);
-        }
-      }
-    };
-
-    fetchUserSettings();
-  }, [authToken, walletAddress, logToUI]);
-
-  // Initialize wallet
   useEffect(() => {
     const keypair = getOrCreateWallet();
     setWalletKeypair(keypair);
@@ -310,114 +1546,19 @@ const FlashSniperTradingInterface: React.FC = () => {
 
     try {
       const storedKeyBase64 = localStorage.getItem('solana_bot_pk_base64');
-      if (!storedKeyBase64) throw new Error("No key in storage");
-
+      if (!storedKeyBase64) throw new Error('No key in storage');
       const privateKeyBytes = new Uint8Array(JSON.parse(atob(storedKeyBase64)));
       const base58PrivateKey = bs58.encode(privateKeyBytes);
       setPrivateKeyString(base58PrivateKey);
     } catch (e) {
-      console.error("Error displaying private key:", e);
-      setPrivateKeyString("Error: Could not display private key.");
+      console.error('Error displaying private key:', e);
+      setPrivateKeyString('Error: Could not display private key.');
     }
 
     fetchBalance(keypair.publicKey);
+    setHasCheckedBalance(true);
+  }, [fetchBalance]);
 
-    if (!isRegistered && keypair) {
-      registerWalletWithBackend(keypair);
-    }
-  }, [fetchBalance, isRegistered, registerWalletWithBackend]);
-
-  // WebSocket connection for real-time logs
-  // useEffect(() => {
-  //   if (walletAddress && authToken && !websocketRef.current) {
-  //     const wsUrl = `ws://api-v1.flashsnipper.com/ws/connect/${walletAddress}?token=${authToken}`;
-  //     websocketRef.current = new WebSocket(wsUrl);
-
-  //     websocketRef.current.onopen = () => {
-  //       logToUI("WebSocket connection established.");
-  //     };
-
-  //     websocketRef.current.onmessage = (event) => {
-  //       const message = JSON.parse(event.data);
-  //       logToUI(`WS Message: ${JSON.stringify(message)}`);
-
-  //       if (message.type === "trade_instruction" && walletKeypair) {
-  //         logToUI(`Received trade instruction from backend: ${message.message}`);
-  //         executeTrade(walletKeypair, walletAddress, authToken, {
-  //           mint_address: message.mint_address,
-  //           amount_sol: message.amount_sol,
-  //           trade_type: message.trade_type,
-  //           token_symbol: message.token_symbol || "UNKNOWN",
-  //           slippage_bps: botSettings.buy_slippage_bps,
-  //           priority_fee_lamports: botSettings.buy_priority_fee_lamports
-  //         });
-  //       } else if (message.type === "log") {
-  //         logToUI(`Bot Log: ${message.message}`);
-  //       } else if (message.type === "bot_status") {
-  //         setIsBotRunning(message.status === "running");
-  //         logToUI(`Bot Status: ${message.status}`);
-  //       } else if (message.type === "trade_update") {
-  //         logToUI(`Trade Update for ${message.mint_address}: ${message.status} (TX: ${message.tx_hash || 'N/A'})`);
-  //       }
-  //     };
-
-  //     websocketRef.current.onerror = (error) => {
-  //       const err = error as any;
-  //       logToUI(`WebSocket Error: ${err?.message || "Unknown error"}`);
-  //       console.error("WebSocket Error:", error);
-  //     };
-
-  //     websocketRef.current.onclose = () => {
-  //       logToUI("WebSocket connection closed. Attempting to reconnect in 5 seconds...");
-  //       websocketRef.current = null;
-  //       setTimeout(() => {
-  //         if (walletAddress && authToken && !websocketRef.current) {
-  //           const wsUrl = `ws://api-v1.flashsnipper.com/ws/connect/${walletAddress}?token=${authToken}`;
-  //           websocketRef.current = new WebSocket(wsUrl);
-  //           websocketRef.current.onopen = () => logToUI("WebSocket connection re-established.");
-  //           websocketRef.current.onmessage = (event) => { /* ... */ };
-  //           websocketRef.current.onerror = (error) => { /* ... */ };
-  //           websocketRef.current.onclose = () => { /* ... */ };
-  //         }
-  //       }, 5000);
-  //     };
-
-  //     return () => {
-  //       if (websocketRef.current) {
-  //         websocketRef.current.close();
-  //       }
-  //     };
-  //   }
-  // }, [walletAddress, authToken, walletKeypair, logToUI, botSettings]);
-
-
-  // UI Helpers
-  const getTransactionText = (transaction: TransactionItem): string => {
-    switch (transaction.type) {
-      case 'traded':
-        return `Traded ${transaction.amount} SOL of ${transaction.token}.`;
-      case 'exchanged':
-        return `Exchanged ${transaction.amount} SOL of ${transaction.token}.`;
-      case 'sold':
-        return `Sold ${transaction.amount} SOL of ${transaction.token}.`;
-      case 'completed':
-        return `Completed a sale of ${transaction.amount} SOL of ${transaction.token}.`;
-      case 'liquidated':
-        return `Liquidated ${transaction.amount} SOL of ${transaction.token}.`;
-      default:
-        return '';
-    }
-  };
-
-  const handleBuyFormChange = (field: keyof BuyFormData, value: string) => {
-    setBuyForm(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSellFormChange = (field: keyof SellFormData, value: string | boolean) => {
-    setSellForm(prev => ({ ...prev, [field]: value }));
-  };
-
-  
   const handleCopyAddress = async () => {
     try {
       await navigator.clipboard.writeText(walletAddress);
@@ -446,140 +1587,20 @@ const FlashSniperTradingInterface: React.FC = () => {
 
   const handleRunBot = async () => {
     if (!authToken || !walletAddress) {
-      alert("Please ensure wallet is registered and you have an auth token.");
+      alert('Please ensure wallet is registered and you have an auth token.');
       return;
     }
-    logToUI("Sending request to backend to start bot/monitoring...");
-    try {
-      const response = await fetch('https://api-v1.flashsnipper.com/bot/start', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ wallet_address: walletAddress })
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to start bot.');
-      }
-      logToUI(`Bot start request: ${data.status}`);
-      setIsBotRunning(true);
-    } catch (error) {
-      logToUI(`Error starting bot: ${error instanceof Error ? error.message : String(error)}`);
-      console.error("Error starting bot:", error);
-    }
+    logToUI('Sending request to backend to start bot/monitoring...');
+    setIsBotRunning(true);
   };
 
   const handleStopBot = async () => {
     if (!authToken || !walletAddress) {
-      alert("Wallet not authenticated.");
+      alert('Wallet not authenticated.');
       return;
     }
-    logToUI("Sending request to backend to stop bot...");
-    try {
-      const response = await fetch('https://api-v1.flashsnipper.com/bot/stop', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ wallet_address: walletAddress })
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to stop bot.');
-      }
-      logToUI(`Bot stop request: ${data.status}`);
-      setIsBotRunning(false);
-    } catch (error) {
-      logToUI(`Error stopping bot: ${error instanceof Error ? error.message : String(error)}`);
-      console.error("Error stopping bot:", error);
-    }
-  };
-
-  const handleManualBuy = async () => {
-    if (!walletKeypair || !authToken || !walletAddress) {
-      alert("Wallet not loaded or not authenticated.");
-      return;
-    }
-    logToUI("Attempting manual BUY trade...");
-    const result = await executeTrade(walletKeypair, walletAddress, authToken, {
-      mint_address: "EPjFWdd5AufqSSqeM2qN1xzybapTVG4itwqZNfwpPJ",
-      amount_sol: parseFloat(buyForm.amount),
-      trade_type: "buy",
-      token_symbol: "USDC",
-      slippage_bps: parseInt(buyForm.slippage.replace('%', '')) * 100,
-      priority_fee_lamports: parseFloat(buyForm.priorityFee) * 1_000_000_000
-    });
-    if (result.success) {
-      logToUI("Manual BUY trade initiated successfully!");
-    } else {
-      logToUI(`Manual BUY trade failed: ${result.error}`);
-    }
-  };
-
-  const handleManualSell = async () => {
-    if (!walletKeypair || !authToken || !walletAddress) {
-      alert("Wallet not loaded or not authenticated.");
-      return;
-    }
-    logToUI("Attempting manual SELL trade...");
-    const result = await executeTrade(walletKeypair, walletAddress, authToken, {
-      mint_address: "EPjFWdd5AufqSSqeM2qN1xzybapTVG4itwqZNfwpPJ",
-      amount_sol: 1,
-      trade_type: "sell",
-      token_symbol: "USDC",
-      previousBuyPrice: 1,
-      slippage_bps: parseInt(sellForm.slippage.replace('%', '')) * 100,
-      priority_fee_lamports: parseFloat(sellForm.priorityFee) * 1_000_000_000
-    });
-    if (result.success) {
-      logToUI("Manual SELL trade initiated successfully!");
-    } else {
-      logToUI(`Manual SELL trade failed: ${result.error}`);
-    }
-  };
-
-  interface SaveBotSettingsEvent extends React.FormEvent<HTMLFormElement> {}
-
-  interface SaveBotSettingsResponse {
-    [key: string]: any;
-  }
-
-  interface SaveBotSettingsError {
-    detail?: string;
-    [key: string]: any;
-  }
-
-  const handleSaveBotSettings = async (event: SaveBotSettingsEvent): Promise<void> => {
-    event.preventDefault();
-    if (!authToken || !walletAddress) {
-      alert("Please ensure wallet is registered and you have an auth token.");
-      return;
-    }
-    logToUI("Saving bot settings...");
-    try {
-      const response: Response = await fetch(`https://api-v1.flashsnipper.com/user/settings/${walletAddress}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify(botSettings)
-      });
-
-      const data: SaveBotSettingsResponse = await response.json();
-      if (!response.ok) {
-        const errorData: SaveBotSettingsError = data;
-        throw new Error(errorData.detail || 'Failed to save bot settings.');
-      }
-      logToUI("Bot settings saved successfully!");
-    } catch (error: any) {
-      logToUI(`Error saving bot settings: ${error.message}`);
-      console.error("Error saving bot settings:", error);
-    }
+    logToUI('Sending request to backend to stop bot...');
+    setIsBotRunning(false);
   };
 
   const handleFundWallet = () => {
@@ -588,19 +1609,37 @@ const FlashSniperTradingInterface: React.FC = () => {
     navigator.clipboard.writeText(walletAddress);
   };
 
+  const getTransactionText = (transaction: TransactionItem): string => {
+    switch (transaction.type) {
+      case 'traded':
+        return `Traded ${transaction.amount} SOL of ${transaction.token}.`;
+      case 'exchanged':
+        return `Exchanged ${transaction.amount} SOL of ${transaction.token}.`;
+      case 'sold':
+        return `Sold ${transaction.amount} SOL of ${transaction.token}.`;
+      case 'completed':
+        return `Completed a sale of ${transaction.amount} SOL of ${transaction.token}.`;
+      case 'liquidated':
+        return `Liquidated ${transaction.amount} SOL of ${transaction.token}.`;
+      default:
+        return '';
+    }
+  };
+
+  const handleUpgradeClick = () => {
+    setShowLoginPopup(true);
+  };
+
   if (!walletKeypair) return <div className="text-white text-center py-8">Loading wallet...</div>;
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-[#10b98166] to-secondary relative">
-      {/* Background Image */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center opacity-20"
         style={{ backgroundImage: 'url(/images/img_grid_layers_v2.png)' }}
       />
-      
       <div className="relative z-10">
-        {/* Header */}
-        <header className="bg-primary border-b border-[#ffffff21] h-16 flex items-center justify-between px-8">
+        <header className="bg-primary border-b border-[#ffffff21] h-16 flex items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-4">
             <img src="/images/img_frame_1171277880.svg" alt="Logo" className="w-3 h-3" />
             <div className="text-white text-sm font-black font-inter">
@@ -608,88 +1647,601 @@ const FlashSniperTradingInterface: React.FC = () => {
               <span className="text-success">SNIPER</span>
             </div>
           </div>
-          <div className="flex items-center gap-8">
+          <button
+            className="md:hidden text-white p-2"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <div className="hidden md:flex items-center gap-8">
             <span className="text-white text-sm font-medium">Documentation</span>
             <span className="text-white text-sm font-medium">Frequently Asked Questions</span>
           </div>
+          {isMobileMenuOpen && (
+            <div className="absolute top-16 left-0 right-0 bg-primary border-b border-[#ffffff21] md:hidden">
+              <div className="flex flex-col p-4 space-y-4">
+                <span className="text-white text-sm font-medium">Documentation</span>
+                <span className="text-white text-sm font-medium">Frequently Asked Questions</span>
+              </div>
+            </div>
+          )}
         </header>
-
-        {/* Hero Section */}
-        <div className="flex flex-col items-center justify-center py-16 px-8">
-          <h1 className="text-white text-lg font-black text-center mb-6">Welcome to</h1>
-          <div className="flex items-center gap-4 mb-8">
-            <img src="/images/img_frame_1171277880.svg" alt="Logo" className="w-8 h-8" />
-            <div className="text-white text-4xl font-black font-inter">
+        <div className="flex flex-col items-center justify-center py-8 md:py-16 px-4 md:px-8">
+          <h1 className="text-white text-lg font-black text-center mb-4 md:mb-6">Welcome to</h1>
+          <div className="flex items-center gap-4 mb-6 md:mb-8">
+            <img src="/images/img_frame_1171277880.svg" alt="Logo" className="w-6 h-6 md:w-8 md:h-8" />
+            <div className="text-white text-2xl md:text-4xl font-black font-inter">
               <span className="text-white">FLASH </span>
               <span className="text-success">SNIPER</span>
             </div>
           </div>
-          <p className="text-white text-sm font-medium text-center max-w-2xl mb-8 leading-relaxed">
-            Velocity. Security. Accuracy. Take control of the Solana market with the quickest and most reliable sniper tool available. Your advantage in the Solana market begins now. Are you prepared to snipe with assurance?
+          <p className="text-white text-sm font-medium text-center max-w-2xl mb-6 md:mb-8 leading-relaxed px-4">
+            Velocity. Security. Accuracy. Take control of the Solana market with the quickest and most reliable sniper tool available.
           </p>
           <div className="text-center">
             <p className="text-white text-sm font-medium mb-2">Scroll down to snipe</p>
             <div className="w-px h-4 bg-white mx-auto"></div>
           </div>
         </div>
+        <div className="flex flex-col lg:flex-row">
+          <div className="lg:order-2 lg:flex-1 bg-overlay">
+            <div className="bg-primary border-t border-b border-[#ffffff1e] h-12 flex">
+              <button
+                onClick={() => setActiveWalletTab('wallet')}
+                className={`flex items-center gap-3 px-4 md:px-6 h-full border-b-2 ${
+                  activeWalletTab === 'wallet' ? 'text-success border-success' : 'text-white border-transparent'
+                }`}
+              >
+                <img src="/images/img_wallet01_white_a700.svg" alt="Wallet" className="w-4 h-4" />
+                <span className="text-sm font-medium">Wallet</span>
+              </button>
+              <button
+                onClick={() => setActiveWalletTab('buySell')}
+                className={`flex items-center gap-3 px-4 md:px-6 h-full border-b-2 ${
+                  activeWalletTab === 'buySell' ? 'text-success border-success' : 'text-white border-transparent'
+                }`}
+              >
+                <img src="/images/img_exchange01_teal_400.svg" alt="Buy/Sell" className="w-4 h-4" />
+                <span className="text-sm font-medium">Buy/Sell</span>
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              {activeWalletTab === 'wallet' ? (
+                <div className="p-4 space-y-4">
+                  {showPrivateKeyWarning && (
+                    <div className="bg-warning-light border border-[#e7a13a4c] rounded-lg px-4 py-3 shadow-sm">
+                      <span className="text-warning font-satoshi font-medium text-[13px] leading-[18px]">
+                        Warning: Save your private key securely. Do not share it. It will not be stored by us.
+                      </span>
+                      <button
+                        onClick={handleAcknowledgePrivateKey}
+                        className="mt-2 bg-success text-white px-4 py-2 rounded-lg text-sm"
+                      >
+                        Acknowledge
+                      </button>
+                    </div>
+                  )}
+                  <div className="bg-dark-2 rounded-lg border border-[#262944] shadow-lg">
+                    <div className="flex items-center gap-3 p-4 border-b border-[#000010] shadow-sm">
+                      <img src="/images/img_wallet01_white_a700.svg" alt="Wallet" className="w-[18px] h-[18px]" />
+                      <span className="text-light font-satoshi font-medium text-[13px] leading-[18px]">Your Wallet</span>
+                    </div>
+                    <div className="p-3 space-y-3">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={walletAddress}
+                          readOnly
+                          className="w-full bg-primary border border-[#20233a] rounded-lg px-3 py-3 text-white font-satoshi font-medium text-[13px] leading-[18px] shadow-sm"
+                        />
+                        {showCopyMessage === 'address' && (
+                          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-success text-white px-2 py-1 rounded text-xs">Copied!</div>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleCopyAddress}
+                          className="flex-1 bg-accent border-t border-[#22253e] rounded-lg px-3 py-3 text-success font-satoshi font-medium text-[13px] leading-[18px] hover:bg-opacity-80 transition-colors shadow-sm"
+                        >
+                          Copy address
+                        </button>
+                        <button
+                          onClick={handleCopyPrivateKey}
+                          className="flex-1 bg-accent border-t border-[#22253e] rounded-lg px-3 py-3 text-success font-satoshi font-medium text-[13px] leading-[18px] hover:bg-opacity-80 transition-colors shadow-sm relative"
+                        >
+                          Copy private key
+                          {showCopyMessage === 'key' && (
+                            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-success text-white px-2 py-1 rounded text-xs">Copied!</div>
+                          )}
+                        </button>
+                      </div>
+                      {/* <button
+                        onClick={handleImportToWallet}
+                        className="w-full bg-accent border-t border-[#22253e] rounded-lg px-3 py-3 text-success font-satoshi font-medium text-[13px] leading-[18px] hover:bg-opacity-80 transition-colors shadow-sm"
+                      >
+                        Import to Phantom/Solflare
+                      </button> */}
+                      {(balance < 0.3 || !hasCheckedBalance) && (
+                        <div className="flex items-center justify-center pt-2">
+                          <button
+                            onClick={() => {
+                              handleCheckSolDeposit();
+                              setHasCheckedBalance(true);
+                            }}
+                            className="flex items-center justify-center w-12 h-12 bg-success rounded-full shadow-lg hover:bg-opacity-90 transition-colors"
+                            title="Check SOL Balance"
+                          >
+                            <span className="text-2xl">👍</span>
+                          </button>
+                          <span className="ml-3 text-white-transparent font-satoshi font-medium text-[11px] leading-[10px]">
+                            Click to check your SOL balance (Minimum 0.3 SOL required)
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {balance < 0.3 && hasCheckedBalance && (
+                    <div className="bg-warning-light border border-[#e7a13a4c] rounded-lg px-4 py-3 shadow-sm">
+                      <span className="text-warning font-satoshi font-medium text-[13px] leading-[18px]">
+                        Please send at least 0.3 SOL to this wallet to enable bot operations.
+                      </span>
+                    </div>
+                  )}
+                  <button
+                    onClick={isBotRunning ? handleStopBot : handleRunBot}
+                    className={`w-full rounded-lg px-4 py-3 font-satoshi font-medium text-[13px] leading-[18px] border transition-all duration-200 shadow-sm ${
+                      isBotRunning
+                        ? 'bg-red-600 border-red-600 text-white hover:bg-red-700'
+                        : 'bg-success border-white text-white hover:bg-opacity-90'
+                    }`}
+                    disabled={balance < 0.3 || !hasCheckedBalance}
+                  >
+                    {isBotRunning ? 'Stop Bot' : 'Run Bot'}
+                  </button>
+                  <p className="text-white-transparent font-satoshi font-medium text-[11px] leading-[15px] text-center">
+                    Start or stop anytime. 1% fee per trade. Starting means you accept our disclaimer
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-dark-1 rounded-lg shadow-lg">
+                    <div className="flex items-center gap-3 p-4 border-b border-[#000010]">
+                      <img src="/images/img_bitcoinshopping.svg" alt="Buy" className="w-5 h-5" />
+                      <span className="text-light text-base font-medium">Buy</span>
+                    </div>
+                    <div className="p-4 space-y-4">
+                      {balance <= 0 && (
+                        <button
+                          onClick={handleFundWallet}
+                          className="w-full p-3 bg-warning-light border border-[#e7a13a4c] rounded-lg text-warning text-sm font-medium"
+                        >
+                          Fund your wallet to use the bot
+                        </button>
+                      )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <ProfessionalInput
+                            value={buyForm.amount}
+                            onChange={(value) => handleBuyFormChange('amount', value)}
+                            placeholder="Enter amount"
+                            suffix="SOL"
+                            formatOnFocus={formatSolOnFocus}
+                            formatOnBlur={formatSolOnBlur}
+                            label="Amount"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-dark-2 rounded-lg shadow-lg">
+                    <div className="flex items-center gap-3 p-4 border-b border-[#000010]">
+                      <img src="/images/img_bitcoin03.svg" alt="Sell" className="w-5 h-5" />
+                      <span className="text-light text-base font-medium">Sell</span>
+                    </div>
+                    <div className="p-4 space-y-4 border-b border-[#000010]">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <ProfessionalInput
+                            value={sellForm.takeProfit}
+                            onChange={(value) => handleSellFormChange('takeProfit', value)}
+                            placeholder="Enter take profit"
+                            suffix="%"
+                            formatOnFocus={formatPercentageOnFocus}
+                            formatOnBlur={formatPercentageOnBlur}
+                            label="Take profit"
+                          />
+                        </div>
+                        <div>
+                          <ProfessionalInput
+                            value={sellForm.stopLoss}
+                            onChange={(value) => handleSellFormChange('stopLoss', value)}
+                            placeholder="Enter stop loss"
+                            suffix="%"
+                            formatOnFocus={formatPercentageOnFocus}
+                            formatOnBlur={formatPercentageOnBlur}
+                            label="Stop loss"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <ProfessionalInput
+                            value={sellForm.timeout}
+                            onChange={(value) => handleSellFormChange('timeout', value)}
+                            placeholder="Enter timeout"
+                            suffix=" seconds"
+                            label="Timeout"
+                          />
+                        </div>
+                      </div>
+                      <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={sellForm.useOwnRPC}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            handleSellFormChange('useOwnRPC', checked);
+                            logToUI(`Use own RPC toggled: ${checked}`);
+                          }}
+                          className="w-6 h-6"
+                        />
+                        <span className="text-muted text-sm font-medium">Use your own RPC</span>
+                      </div>
+                      {sellForm.useOwnRPC && (
+                        <>
+                          {isPremium ? (
+                            <div className="space-y-4">
+                              <div>
+                                <label className="block text-muted text-sm font-medium mb-2">RPC HTTPS Endpoint</label>
+                                <input
+                                  type="text"
+                                  value={customRpc.https}
+                                  onChange={(e) => setCustomRpc({ ...customRpc, https: e.target.value })}
+                                  placeholder="Enter HTTPS RPC endpoint"
+                                  className="w-full bg-accent border-t border-[#22253e] rounded-lg p-3 text-white text-sm font-medium"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-muted text-sm font-medium mb-2">RPC WSS Endpoint</label>
+                                <input
+                                  type="text"
+                                  value={customRpc.wss}
+                                  onChange={(e) => setCustomRpc({ ...customRpc, wss: e.target.value })}
+                                  placeholder="Enter WSS RPC endpoint"
+                                  className="w-full bg-accent border-t border-[#22253e] rounded-lg p-3 text-white text-sm font-medium"
+                                />
+                              </div>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch('/api/user/update-rpc', {
+                                      method: 'POST',
+                                      headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                                      body: JSON.stringify(customRpc),
+                                    });
+                                    if (!response.ok) {
+                                      throw new Error(`HTTP error! Status: ${response.status}`);
+                                    }
+                                    logToUI('Custom RPC settings saved.');
+                                  } catch (error) {
+                                    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                                    logToUI(`Error saving RPC settings: ${errorMessage}`);
+                                  }
+                                }}
+                                className="w-full bg-success text-white text-sm font-medium py-3 rounded-lg"
+                              >
+                                Save RPC Settings
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="bg-warning-light border border-[#e7a13a4c] rounded-lg p-3 text-warning text-sm font-medium">
+                              Custom RPC endpoints are available with a Premium subscription.{' '}
+                              <button
+                                onClick={handleUpgradeClick}
+                                className="underline text-success"
+                              >
+                                Upgrade now
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-        {/* Main Content */}
-        <div className="flex">
-          {/* Left Panel - Transaction Logs */}
-          <div className="w-[823px] bg-secondary border-r border-[#ffffff21]">
-            {/* Tab Navigation */}
+                  {/* Safety Section */}
+                  <div className="bg-dark-2 rounded-lg shadow-lg relative">
+                    <div className="flex items-center gap-3 p-4 border-b border-[#000010]">
+                      <img src="/images/img_shield.svg" alt="Safety" className="w-5 h-5" />
+                      <span className="text-light text-base font-medium">Safety</span>
+                    </div>
+                    <div className={`p-4 space-y-4 ${!isPremium ? 'blur-[0.5px] pointer-events-none' : ''}`}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <ProfessionalInput
+                            value={safetyForm.top10HoldersMax}
+                            onChange={(value) => handleSafetyFormChange('top10HoldersMax', value)}
+                            placeholder="Enter max %"
+                            suffix="%"
+                            formatOnFocus={formatPercentageOnFocus}
+                            formatOnBlur={formatPercentageOnBlur}
+                            label="Top 10 Holders Max"
+                          />
+                        </div>
+                        <div>
+                          <ProfessionalInput
+                            value={safetyForm.bundledMax}
+                            onChange={(value) => handleSafetyFormChange('bundledMax', value)}
+                            placeholder="Enter max bundled"
+                            label="Bundled Max"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <ProfessionalInput
+                            value={safetyForm.maxSameBlockBuys}
+                            onChange={(value) => handleSafetyFormChange('maxSameBlockBuys', value)}
+                            placeholder="Enter max buys"
+                            label="Max Same Block Buys"
+                          />
+                        </div>
+                        <div>
+                          <ProfessionalInput
+                            value={safetyForm.safetyCheckPeriod}
+                            onChange={(value) => handleSafetyFormChange('safetyCheckPeriod', value)}
+                            placeholder="Enter period"
+                            suffix=" seconds"
+                            label="Safety Check Period"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-muted text-sm font-medium mb-2">Choose DEXes</label>
+                        <select
+                          value={safetyForm.selectedDex}
+                          onChange={(e) => handleSafetyFormChange('selectedDex', e.target.value)}
+                          className="w-full bg-accent border-t border-[#22253e] rounded-lg p-3 text-white text-sm font-medium"
+                        >
+                          <option value="Raydium">Raydium</option>
+                          <option value="Jupiter">Jupiter</option>
+                          <option value="OKX">OKX</option>
+                          <option value="Orca">Orca</option>
+                          <option value="Meteora">Meteora</option>
+                        </select>
+                      </div>
+                      <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={safetyForm.immutableMetadata}
+                          onChange={(e) => handleSafetyFormChange('immutableMetadata', e.target.checked)}
+                          className="w-6 h-6"
+                        />
+                        <span className="text-muted text-sm font-medium">Immutable Metadata</span>
+                      </div>
+                      <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={safetyForm.mintAuthorityRenounced}
+                          onChange={(e) => handleSafetyFormChange('mintAuthorityRenounced', e.target.checked)}
+                          className="w-6 h-6"
+                        />
+                        <span className="text-muted text-sm font-medium">Mint Authority Renounced</span>
+                      </div>
+                      <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={safetyForm.freezeAuthorityRenounced}
+                          onChange={(e) => handleSafetyFormChange('freezeAuthorityRenounced', e.target.checked)}
+                          className="w-6 h-6"
+                        />
+                        <span className="text-muted text-sm font-medium">Freeze Authority Renounced</span>
+                      </div>
+                    </div>
+
+                  {/* Premium Safety Upgrade */}
+                    {!isPremium && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-lg">
+                        <div className="text-center p-6 bg-dark-2 rounded-lg border border-[#22253e] shadow-lg">
+                          <h3 className="text-white text-lg font-medium mb-4">Unlock Advanced Filters with Premium</h3>
+                          <p className="text-white-transparent text-sm mb-6 leading-relaxed">
+                            Limited 20% OFF Deal ends soon! Get access to advanced filters like <strong>Top Holders Max, Bundled Max, Max Same Block Buys, and custom DEXes (or Pump.fun Graduated tokens)</strong> to optimize your trades and avoid scams.
+                          </p>
+                          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button
+                              onClick={handleUpgradeClick}
+                              className="bg-success text-white text-sm font-medium py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-opacity-90 transition-colors"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                                />
+                              </svg>
+                              Upgrade and Profit
+                            </button>
+                            <button
+                              onClick={() => navigate('/#pricing')}
+                              className="bg-accent text-white text-sm font-medium py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-opacity-90 transition-colors"
+                            >
+                              Pricing
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Login Popup Modal */}
+                  {showLoginPopup && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                      <div className="bg-dark-2 rounded-lg p-6 sm:p-8 w-full max-w-[90vw] sm:max-w-[400px] border border-[#22253e] shadow-xl">
+                        <div className="flex justify-between items-center mb-6">
+                          <h3 className="text-white text-xl font-medium">Sign In to Upgrade</h3>
+                          <button
+                            onClick={() => setShowLoginPopup(false)}
+                            className="text-white-transparent hover:text-white transition-colors"
+                            aria-label="Close modal"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="space-y-4">
+                          <button
+                            className="w-full bg-accent border-t border-[#22253e] text-white text-sm font-medium py-3 rounded-lg hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2"
+                            onClick={() => logToUI('Sign in with Email link clicked')}
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M3 8l9-6 9 6v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M3 8l9 6 9-6"
+                              />
+                            </svg>
+                            Sign in with Email
+                          </button>
+                          <div className="flex items-center justify-center gap-4">
+                            <div className="flex-1 h-px bg-[#22253e]"></div>
+                            <span className="text-white-transparent text-sm font-medium">OR</span>
+                            <div className="flex-1 h-px bg-[#22253e]"></div>
+                          </div>
+                          <button
+                            className="w-full bg-accent border-t border-[#22253e] text-white text-sm font-medium py-3 rounded-lg hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2"
+                            onClick={() => logToUI('Sign in with Google clicked')}
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M12.24 10.667H7.936v2.666h4.304c-.186 1.114-.746 2.054-1.614 2.667-.866.613-1.986.946-3.206.946-2.48 0-4.574-1.68-5.34-3.946-.133-.373-.2-.76-.2-1.16 0-.4.067-.787.2-1.16.766-2.267 2.86-3.947 5.34-3.947 1.24 0 2.36.333 3.226.946l1.92-1.92C10.776 3.48 8.876 2.667 6.976 2.667c-3.24 0-6.094 1.613-7.814 4.08-.533.773-.986 1.64-1.306 2.587-.32.947-.48 1.947-.48 3 0 1.053.16 2.053.48 3 .32.947.773 1.814 1.306 2.587 1.72 2.467 4.574 4.08 7.814 4.08 1.92 0 3.64-.507 5.094-1.467 1.454-.96 2.587-2.32 3.334-3.986.746-1.667.986-3.494.706-5.294-.08-.533-.24-1.04-.426-1.507l-4.96.007z"
+                              />
+                            </svg>
+                            Sign in with Google
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+          
+                  {!isBotRunning ? (
+                    <button
+                      onClick={handleRunBot}
+                      className="w-full bg-success text-white text-sm font-medium py-3 rounded-lg border border-white shadow-sm hover:bg-opacity-90 transition-colors"
+                      disabled={balance <= 0}
+                    >
+                      Run Bot
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleStopBot}
+                      className="w-full bg-error text-white text-sm font-medium py-3 rounded-lg border border-white shadow-sm hover:bg-opacity-90 transition-colors"
+                    >
+                      Stop Bot
+                    </button>
+                  )}
+                  <p className="text-white-transparent text-xs font-medium text-center leading-relaxed">
+                    Start or stop anytime. 1% fee per trade. Starting means you accept our disclaimer
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="lg:order-1 lg:w-[823px] bg-secondary border-r border-[#ffffff21]">
             <div className="bg-primary border-t border-b border-[#ffffff1e] h-12 flex">
               <button
                 onClick={() => setActiveTab('logs')}
-                className={`flex items-center gap-3 px-6 h-full border-b-2 ${
+                className={`flex items-center gap-3 px-4 md:px-6 h-full border-b-2 ${
                   activeTab === 'logs' ? 'text-success border-success' : 'text-white border-transparent'
                 }`}
               >
-                <img 
-                  src="/images/img_license_white_a700.svg" 
-                  alt="Logs" 
-                  className={`w-4 h-4 ${activeTab === 'logs' ? '' : 'opacity-70'}`}
-                />
+                <img src="/images/img_license_white_a700.svg" alt="Logs" className={`w-4 h-4 ${activeTab === 'logs' ? '' : 'opacity-70'}`} />
                 <span className="text-sm font-medium">Logs</span>
               </button>
               <button
                 onClick={() => setActiveTab('transactions')}
-                className={`flex items-center gap-3 px-6 h-full border-b-2 ${
+                className={`flex items-center gap-3 px-4 md:px-6 h-full border-b-2 ${
                   activeTab === 'transactions' ? 'text-success border-success' : 'text-white border-transparent'
                 }`}
               >
-                <img 
-                  src="/images/img_transactionhistory_teal_400.svg" 
-                  alt="Transactions" 
+                <img
+                  src="/images/img_transactionhistory_teal_400.svg"
+                  alt="Transactions"
                   className={`w-4 h-4 ${activeTab === 'transactions' ? '' : 'opacity-70'}`}
                 />
                 <span className="text-sm font-medium">Transactions</span>
               </button>
             </div>
-
-            {/* Stats Bar */}
             <div className="bg-secondary border-b border-[#ffffff1e] h-11 flex items-center justify-between px-4">
               <span className="text-white text-sm font-medium">Token snipped: 3</span>
               <span className="text-white text-sm font-medium">Total profit: {balance.toFixed(4)} SOL</span>
             </div>
-
-            {/* Content based on active tab */}
             {activeTab === 'logs' ? (
-              <div className="bg-secondary h-[600px] overflow-y-auto p-4">
+              <div className="bg-secondary h-[400px] md:h-[600px] overflow-y-auto p-4">
                 <pre className="text-white text-sm font-mono" ref={tradeLogsRef}>
-                  {/* {tradeLogs.join('\n')} */}
+                  {tradeLogs.join('\n')}
                 </pre>
               </div>
             ) : (
-              <div className="bg-secondary h-[600px] overflow-y-auto">
+              <div className="bg-secondary h-[400px] md:h-[600px] overflow-y-auto">
                 {transactions.map((transaction) => (
                   <div key={transaction.id} className="flex items-start gap-4 p-4 border-b border-[#ffffff1e] last:border-b-0">
                     <div className="w-6 h-6 bg-error-light rounded-full flex-shrink-0 mt-0.5"></div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-white text-sm font-medium">
-                          {getTransactionText(transaction)}
-                        </span>
+                        <span className="text-white text-sm font-medium">{getTransactionText(transaction)}</span>
                         <div className="flex items-center gap-2">
                           <span className="text-white text-sm font-medium">View on:</span>
                           <img src="/images/img_image_2.png" alt="View" className="w-6 h-6" />
@@ -704,369 +2256,19 @@ const FlashSniperTradingInterface: React.FC = () => {
               </div>
             )}
           </div>
-
-          {/* Right Panel - Trading Interface */}
-            {/* Right Panel - Trading Interface */}
-            <div className="flex-1 bg-overlay">
-              {/* Wallet Tab Navigation */}
-              <div className="bg-primary border-t border-b border-[#ffffff1e] h-12 flex">
-                <button
-                  onClick={() => setActiveWalletTab('wallet')}
-                  className={`flex items-center gap-3 px-6 h-full border-b-2 ${
-                    activeWalletTab === 'wallet' ? 'text-success border-success' : 'text-white border-transparent'
-                  }`}
-                >
-                  <img 
-                    src="/images/img_wallet01_white_a700.svg" 
-                    alt="Wallet" 
-                    className="w-4 h-4" 
-                  />
-                  <span className="text-sm font-medium">Wallet</span>
-                </button>
-                <button
-                  onClick={() => setActiveWalletTab('buySell')}
-                  className={`flex items-center gap-3 px-6 h-full border-b-2 ${
-                    activeWalletTab === 'buySell' ? 'text-success border-success' : 'text-white border-transparent'
-                  }`}
-                >
-                  <img 
-                    src="/images/img_exchange01_teal_400.svg" 
-                    alt="Buy/Sell" 
-                    className="w-4 h-4" 
-                  />
-                  <span className="text-sm font-medium">Buy/Sell</span>
-                </button>
-              </div>
-
-              <div className="p-4 space-y-4">
-                {activeWalletTab === 'wallet' ? (
-                  <div className="p-4 space-y-4">
-                    {/* Wallet Card */}
-                    <div className="bg-dark-2 rounded-lg border border-[#262944] shadow-lg">
-                      <div className="flex items-center gap-3 p-4 border-b border-[#000010] shadow-sm">
-                        <img
-                          src="/images/img_wallet01_white_a700.svg"
-                          alt="Wallet"
-                          className="w-[18px] h-[18px]"
-                        />
-                        <span className="text-light font-satoshi font-medium text-[13px] leading-[18px]">
-                          Your Wallet
-                        </span>
-                      </div>
-
-                      <div className="p-3 space-y-3">
-                        {/* Wallet Address */}
-                        <div className="relative">
-                          <input
-                            type="text"
-                            value={walletAddress}
-                            readOnly
-                            className="w-full bg-primary border border-[#20233a] rounded-lg px-3 py-3 text-white font-satoshi font-medium text-[13px] leading-[18px] shadow-sm"
-                          />
-                          {showCopyMessage === 'address' && (
-                            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-success text-white px-2 py-1 rounded text-xs">
-                              Copied!
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex gap-2">
-                          <button
-                            onClick={handleCopyAddress}
-                            className="flex-1 bg-accent border-t border-[#22253e] rounded-lg px-3 py-3 text-success font-satoshi font-medium text-[13px] leading-[18px] hover:bg-opacity-80 transition-colors shadow-sm"
-                          >
-                            Copy address
-                          </button>
-                          <button
-                            onClick={handleCopyPrivateKey}
-                            className="flex-1 bg-accent border-t border-[#22253e] rounded-lg px-3 py-3 text-success font-satoshi font-medium text-[13px] leading-[18px] hover:bg-opacity-80 transition-colors shadow-sm relative"
-                          >
-                            Copy private key
-                            {showCopyMessage === 'key' && (
-                              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-success text-white px-2 py-1 rounded text-xs">
-                                Copied!
-                              </div>
-                            )}
-                          </button>
-                        </div>
-
-                        {/* Current Balance - Always shown after first check */}
-                        {/* <div className="relative">
-                          <input
-                            type="text"
-                            value={`${balance.toFixed(4)} SOL`}
-                            readOnly
-                            className="w-full bg-primary border border-[#20233a] rounded-lg px-3 py-3 text-white font-satoshi font-medium text-[13px] leading-[18px] shadow-sm"
-                          />
-                        </div> */}
-
-                        {/* Thumbs Up Button for Balance Check - Only shown if balance hasn't been checked yet */}
-                        {(balance < 0.0 || !hasCheckedBalance) && (
-                          <div className="flex items-center justify-center pt-2">
-                            <button
-                              onClick={() => {
-                                handleCheckSolDeposit();
-                                setHasCheckedBalance(true);
-                              }}
-                              className="flex items-center justify-center w-12 h-12 bg-success rounded-full shadow-lg hover:bg-opacity-90 transition-colors"
-                              title="Check SOL Balance"
-                            >
-                              <span className="text-2xl">👍</span>
-                            </button>
-                            <span className="ml-3 text-white-transparent font-satoshi font-medium text-[11px] leading-[10px]">
-                              Click to check your SOL balance
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Warning Message - Only shown if balance is less than 0.2 SOL */}
-                    {balance < 0.2 && (
-                      <div className="bg-warning-light border border-[#e7a13a4c] rounded-lg px-4 py-3 shadow-sm">
-                        <span className="text-warning font-satoshi font-medium text-[13px] leading-[18px]">
-                          Please send a minimum of 0.2 sol to this wallet to get started
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Run Bot Button */}
-                    <button
-                      onClick={isBotRunning ? handleStopBot : handleRunBot}
-                      className={`w-full rounded-lg px-4 py-3 font-satoshi font-medium text-[13px] leading-[18px] border transition-all duration-200 shadow-sm ${
-                        isBotRunning
-                          ? 'bg-red-600 border-red-600 text-white hover:bg-red-700'
-                          : 'bg-success border-white text-white hover:bg-opacity-90'
-                      }`}
-                      disabled={balance < 0.2} // Disable if balance is less than 0.2 SOL
-                    >
-                      {isBotRunning ? 'Stop Bot' : 'Run Bot'}
-                    </button>
-
-                    {/* Disclaimer */}
-                    <p className="text-white-transparent font-satoshi font-medium text-[11px] leading-[15px] text-center">
-                      Start or stop anytime. 1% fee per trade. Starting means you accept our disclaimer
-                    </p>
-                  </div>
-
-                ) : (
-                  <>
-                    {/* Buy Section */}
-                    <div className="bg-dark-1 rounded-lg shadow-lg">
-                      <div className="flex items-center gap-3 p-4 border-b border-[#000010]">
-                        <img src="/images/img_bitcoinshopping.svg" alt="Buy" className="w-5 h-5" />
-                        <span className="text-light text-base font-medium">Buy</span>
-                      </div>
-
-                      <div className="p-4 space-y-4">
-                        {/* Fund Wallet Alert */}
-                        {balance <= 0 && (
-                          <button
-                            onClick={handleFundWallet}
-                            className="w-full p-3 bg-warning-light border border-[#e7a13a4c] rounded-lg text-warning text-sm font-medium"
-                          >
-                            Fund your wallet to use the bot
-                          </button>
-                        )}
-
-                        {/* Amount and Priority Fee */}
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-muted text-sm font-medium mb-2">Amount</label>
-                            <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center justify-between">
-                              <input
-                                type="text"
-                                value={buyForm.amount}
-                                onChange={(e) => handleBuyFormChange('amount', e.target.value)}
-                                className="bg-transparent text-muted text-sm font-medium outline-none flex-1"
-                              />
-                              <span className="text-muted text-sm">SOL</span>
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-muted text-sm font-medium mb-2">Priority fee</label>
-                            <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center justify-between">
-                              <input
-                                type="text"
-                                value={buyForm.priorityFee}
-                                onChange={(e) => handleBuyFormChange('priorityFee', e.target.value)}
-                                className="bg-transparent text-muted text-sm font-medium outline-none flex-1"
-                              />
-                              <span className="text-muted text-sm">SOL</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Slippage */}
-                        <div>
-                          <label className="block text-muted text-sm font-medium mb-2">Slippage</label>
-                          <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center justify-between">
-                            <input
-                              type="text"
-                              value={buyForm.slippage}
-                              onChange={(e) => handleBuyFormChange('slippage', e.target.value)}
-                              className="bg-transparent text-muted text-sm font-medium outline-none flex-1"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Manual Buy Button */}
-                        <button
-                          onClick={handleManualBuy}
-                          className="w-full bg-primary text-white text-sm font-medium py-3 rounded-lg border border-primary-dark shadow-sm hover:bg-opacity-90 transition-colors"
-                          disabled={balance <= 0}
-                        >
-                          Manual Buy
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Sell Section */}
-                    <div className="bg-dark-2 rounded-lg shadow-lg">
-                      <div className="flex items-center gap-3 p-4 border-b border-[#000010]">
-                        <img src="/images/img_bitcoin03.svg" alt="Sell" className="w-5 h-5" />
-                        <span className="text-light text-base font-medium">Sell</span>
-                      </div>
-
-                      <div className="p-4 space-y-4 border-b border-[#000010]">
-                        {/* Take Profit and Stop Loss */}
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-muted text-sm font-medium mb-2">Take profit</label>
-                            <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center justify-between">
-                              <input
-                                type="text"
-                                value={sellForm.takeProfit}
-                                onChange={(e) => handleSellFormChange('takeProfit', e.target.value)}
-                                className="bg-transparent text-muted text-sm font-medium outline-none flex-1"
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-muted text-sm font-medium mb-2">Stop loss</label>
-                            <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center justify-between">
-                              <input
-                                type="text"
-                                value={sellForm.stopLoss}
-                                onChange={(e) => handleSellFormChange('stopLoss', e.target.value)}
-                                className="bg-transparent text-muted text-sm font-medium outline-none flex-1"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Slippage and Timeout */}
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-muted text-sm font-medium mb-2">Slippage</label>
-                            <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center justify-between">
-                              <input
-                                type="text"
-                                value={sellForm.slippage}
-                                onChange={(e) => handleSellFormChange('slippage', e.target.value)}
-                                className="bg-transparent text-muted text-sm font-medium outline-none flex-1"
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-muted text-sm font-medium mb-2">Timeout</label>
-                            <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center justify-between">
-                              <input
-                                type="text"
-                                value={sellForm.timeout}
-                                onChange={(e) => handleSellFormChange('timeout', e.target.value)}
-                                className="bg-transparent text-muted text-sm font-medium outline-none flex-1"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Priority Fee */}
-                        <div>
-                          <label className="block text-muted text-sm font-medium mb-2">Priority fee</label>
-                          <input
-                            type="text"
-                            value={sellForm.priorityFee}
-                            onChange={(e) => handleSellFormChange('priorityFee', e.target.value)}
-                            className="w-full bg-accent border-t border-[#22253e] rounded-lg p-3 text-muted text-sm font-medium outline-none"
-                            placeholder="0.1000"
-                          />
-                        </div>
-
-                        {/* Trailing Stop Loss */}
-                        <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center gap-3">
-                          <input
-                            type="checkbox"
-                            checked={sellForm.trailingStopLoss}
-                            onChange={(e) => handleSellFormChange('trailingStopLoss', e.target.checked)}
-                            className="w-6 h-6"
-                          />
-                          <span className="text-muted text-sm font-medium">Trailing stop loss</span>
-                        </div>
-                      </div>
-
-                      {/* Use Own RPC */}
-                      <div className="p-4">
-                        <div className="bg-accent border-t border-[#22253e] rounded-lg p-3 flex items-center gap-3">
-                          <input
-                            type="checkbox"
-                            checked={sellForm.useOwnRPC}
-                            onChange={(e) => handleSellFormChange('useOwnRPC', e.target.checked)}
-                            className="w-6 h-6"
-                          />
-                          <span className="text-muted text-sm font-medium">Use your own RPC?</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Manual Sell Button */}
-                    <button
-                      onClick={handleManualSell}
-                      className="w-full bg-error text-white text-sm font-medium py-3 rounded-lg border border-error-dark shadow-sm hover:bg-opacity-90 transition-colors"
-                      disabled={balance <= 0}
-                    >
-                      Manual Sell
-                    </button>
-
-                    {/* Run/Stop Bot Button */}
-                    {!isBotRunning ? (
-                      <button
-                        onClick={handleRunBot}
-                        className="w-full bg-success text-white text-sm font-medium py-3 rounded-lg border border-white shadow-sm hover:bg-opacity-90 transition-colors"
-                        disabled={balance <= 0}
-                      >
-                        Run Bot
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleStopBot}
-                        className="w-full bg-error text-white text-sm font-medium py-3 rounded-lg border border-white shadow-sm hover:bg-opacity-90 transition-colors"
-                      >
-                        Stop Bot
-                      </button>
-                    )}
-
-                    {/* Disclaimer */}
-                    <p className="text-white-transparent text-xs font-medium text-center leading-relaxed">
-                      Start or stop anytime. 1% fee per trade. Starting means you accept our disclaimer
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-
-
-          
         </div>
-
-        {/* Footer */}
-        <footer className="bg-secondary border-t border-[#ffffff21] h-12 flex items-center justify-between px-8">
+        <footer className="bg-secondary border-t border-[#ffffff21] h-12 flex items-center justify-between px-4 md:px-8">
           <span className="text-white text-sm font-medium">© 2025 | FlashSniper.com | Disclaimer</span>
-          <div className="flex items-center gap-10">
-            <img src="/images/img_newtwitter.svg" alt="Twitter" className="w-4 h-4" />
-            <img src="/images/img_telegram.svg" alt="Telegram" className="w-4 h-4" />
-            <img src="/images/img_discord.svg" alt="Discord" className="w-4 h-4" />
+          <div className="flex items-center gap-6 md:gap-10">
+            <a href="https://twitter.com/flashsniper" target="_blank" rel="noopener noreferrer">
+              <img src="/images/img_newtwitter.svg" alt="Twitter" className="w-4 h-4" />
+            </a>
+            <a href="https://t.me/flashsniper" target="_blank" rel="noopener noreferrer">
+              <img src="/images/img_telegram.svg" alt="Telegram" className="w-4 h-4" />
+            </a>
+            <a href="https://discord.gg/flashsniper" target="_blank" rel="noopener noreferrer">
+              <img src="/images/img_discord.svg" alt="Discord" className="w-4 h-4" />
+            </a>
           </div>
         </footer>
       </div>

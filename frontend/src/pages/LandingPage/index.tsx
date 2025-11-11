@@ -1,23 +1,55 @@
+// src/pages/LandingPage/index.tsx
 import { Button } from "@/components/ui/Button";
-import { ComponentNodeSection, FeaturesListSection, FeaturesSection, ImageGallerySection, LayoutSection, MainContentSection, OverlapGroupSection, OverlapSection } from "@/sections";
+import { FeaturesSection, PricingSection, FAQSection } from "@/sections";
 import { HeroSection } from "@/sections";
-import React from "react";
-import { Link } from "react-router-dom";
+import { Footer } from "@/components/common/Footer";
+import React, { useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 const LandingPage = (): JSX.Element => {
+  const location = useLocation(); // Add useLocation to get URL hash
+
   const navigationItems = [
-    { label: "Home", active: true },
-    { label: "Features", active: false },
-    { label: "Pricing", active: false },
-    { label: "FAQs", active: false },
+    { label: "Home", active: true, href: "#home" },
+    { label: "Features", active: false, href: "#features" },
+    { label: "Pricing", active: false, href: "#pricing" },
+    { label: "FAQs", active: false, href: "#faq" },
   ];
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const offset = 80; // Account for fixed navbar
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  // Handle initial scroll based on URL hash
+  useEffect(() => {
+    if (location.hash) {
+      const sectionId = location.hash.substring(1); // Remove the # symbol
+      setTimeout(() => scrollToSection(sectionId), 0); // Delay to ensure DOM is ready
+    }
+  }, [location.hash]);
+
+  const handleNavClick = (href: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    const sectionId = href.substring(1); // Remove the # symbol
+    scrollToSection(sectionId);
+  };
 
   return (
     <div className="relative w-full min-h-screen overflow-x-hidden">
       {/* Navigation Bar */}
       <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-5">
         <div className="flex items-center justify-between gap-6 p-2 bg-[#ffffff1a] rounded-[48px] border border-solid border-[#10b98133] backdrop-blur-[3.5px] backdrop-brightness-[100%] [-webkit-backdrop-filter:blur(3.5px)_brightness(100%)] shadow-lg">
-          {/* Logo with TURBOSNIPER text */}
+          {/* Logo with FLASH SNIPER text */}
           <div className="flex items-center justify-center gap-3 px-2 py-1">
             <div className="flex items-center gap-2">
               {/* Spiral green spring logo */}
@@ -30,10 +62,10 @@ const LandingPage = (): JSX.Element => {
                   style={{ animationDuration: "3s" }}
                 ></div>
               </div>
-              {/* Two-tone TURBOSNIPER text */}
+              {/* Two-tone FLASH SNIPER text */}
               <span className="font-bold text-sm tracking-wider">
                 <span className="text-white">FLASH</span>
-                <span className="text-[#10B981]">SNIPPER</span>
+                <span className="text-[#10B981]">SNIPER</span>
               </span>
             </div>
           </div>
@@ -41,14 +73,15 @@ const LandingPage = (): JSX.Element => {
           {/* Navigation Items - Hidden on mobile, shown on tablet and up */}
           <div className="hidden md:flex items-center gap-1">
             {navigationItems.map((item, index) => (
-              <div
+              <button
                 key={`nav-item-${index}`}
+                onClick={(e) => handleNavClick(item.href, e)}
                 className="flex items-center justify-center gap-2.5 px-4 py-2 rounded-[50px] overflow-hidden hover:bg-white/10 cursor-pointer transition-colors"
               >
                 <div className="text-sm font-medium text-white tracking-wide whitespace-nowrap">
                   {item.label}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
 
@@ -84,21 +117,25 @@ const LandingPage = (): JSX.Element => {
       </nav>
 
       {/* Hero Section */}
-      <HeroSection />
+      <section id="home">
+        <HeroSection />
+      </section>
 
-      {/* Additional sections (commented out for now) */}
-      {/* 
+      {/* Additional sections */}
       <div className="w-full">
-        <FeaturesSection />
-        <OverlapSection />
-        <OverlapGroupSection />
-        <FeaturesListSection />
-        <MainContentSection />
-        <ComponentNodeSection />
-        <LayoutSection />
-        <ImageGallerySection />
-      </div> 
-      */}
+        <section id="features">
+          <FeaturesSection />
+        </section>
+        <section id="pricing">
+          <PricingSection />
+        </section>
+        <section id="faq">
+          <FAQSection />
+        </section>
+      </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
