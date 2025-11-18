@@ -17,14 +17,6 @@ logger = logging.getLogger(__name__)
 # Load your environment variables and API keys.
 load_dotenv()
 
-PUMPPORTAL_WALLET_PUBLIC_KEY = os.getenv("PUMPPORTAL_WALLET_PUBLIC_KEY")
-PUMPPORTAL_WALLET_PRIVATE_KEY = os.getenv("PUMPPORTAL_WALLET_PRIVATE_KEY")
-PUMPPORTAL_API_KEY = os.getenv("PUMPPORTAL_API_KEY")
-
-ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY", "abc")
-DEX_AGGREGATOR_API_HOST = os.getenv("DEX_AGGREGATOR_API_HOST")
-SOLSCAN_API = os.getenv("SOLSCAN_API")
-
 router = APIRouter(
     prefix="/token",
     tags=['Token']

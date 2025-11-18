@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from app.dependencies import get_current_user_by_wallet
 from app.models import User
-from app.utils.logger import get_logger
+from app.utils.bot_logger import get_logger
 
 logger = get_logger(__name__)
 

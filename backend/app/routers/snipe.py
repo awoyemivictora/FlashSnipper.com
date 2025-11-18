@@ -7,7 +7,7 @@ from app.database import get_db
 from app.models import Snipe, User
 from app.schemas import SnipeCreate, SnipeResponse
 from app.dependencies import get_current_user_by_wallet
-from app.utils.logger import get_logger
+from app.utils.bot_logger import get_logger
 from typing import List, Dict, Any
 
 logger = get_logger(__name__)

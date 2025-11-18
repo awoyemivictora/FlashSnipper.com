@@ -4,7 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 import logging
 from app.database import get_db
-from app.models import User, Snipe, Trade
+from app.dependencies import get_current_user_by_wallet
+from app.models import User, Trade
 from app.security import get_current_user
 from app.schemas import UserBotSettingsResponse, UserBotSettingsUpdate, UserProfile, SnipeLog, TradeLog
 
@@ -22,35 +23,34 @@ router = APIRouter(
 
 
 # ---- User Profile Endpoint ----
-@router.get("/me", response_model=UserProfile)
+@router.get("/profile", response_model=UserProfile)
 async def read_users_me(current_user: User = Depends(get_current_user)):
     """
     Retrieves the authenticated user's profile.
     """
     return UserProfile(
         wallet_address=current_user.wallet_address,
-        is_active=current_user.is_active,
         is_premium=current_user.is_premium
     )
     
 
 # ----- User Snipes (Logs) Endpoint ----
-@router.get("/me/snipes", response_model=List[SnipeLog])
-async def get_my_snipes(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    """
-    Retrieves all snipe records for the authenticated user.
-    """
-    try:
-        result = await db.execute(
-            select(Snipe)
-            .filter(Snipe.user_wallet_address == current_user.wallet_address)
-            .order_by(Snipe.started_at.desc())
-        )
-        snipes = result.scalars().all()
-        return [SnipeLog.from_orm(snipe) for snipe in snipes]
-    except Exception as e:
-        logger.error(f"Error fetching snipes for user {current_user.wallet_address}: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching user snipes")
+# @router.get("/me/snipes", response_model=List[SnipeLog])
+# async def get_my_snipes(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+#     """
+#     Retrieves all snipe records for the authenticated user.
+#     """
+#     try:
+#         result = await db.execute(
+#             select(Snipe)
+#             .filter(Snipe.user_wallet_address == current_user.wallet_address)
+#             .order_by(Snipe.started_at.desc())
+#         )
+#         snipes = result.scalars().all()
+#         return [SnipeLog.from_orm(snipe) for snipe in snipes]
+#     except Exception as e:
+#         logger.error(f"Error fetching snipes for user {current_user.wallet_address}: {e}")
+#         raise HTTPException(status_code=500, detail="Error fetching user snipes")
     
 
 
@@ -198,5 +198,19 @@ async def update_user_settings(
             detail=f"Failed to update settings: {str(e)}"
         )
 
+
+@router.put("/bot-settings", response_model=UserBotSettingsResponse)
+async def update_bot_settings(
+    settings: UserBotSettingsUpdate,
+    current_user: User = Depends(get_current_user_by_wallet),
+    db: AsyncSession = Depends(get_db)
+):
+    for field, value in settings.dict(exclude_unset=True).items():
+        if field == "is_premium" and not current_user.is_premium:
+            raise HTTPException(status_code=403, detail="Cannot modify premium status.")
+        setattr(current_user, field, value)
+    await db.merge(current_user)
+    await db.commit()
+    return current_user
 
 

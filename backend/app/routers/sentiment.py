@@ -4,7 +4,7 @@ from sqlalchemy.future import select
 from app.database import get_db
 from app.models import AIAnalysis, User
 from app.schemas import AIAnalysisRequest, AIAnalysisResponse
-from app.utils.logger import get_logger
+from app.utils.bot_logger import get_logger
 from app.dependencies import get_current_user_by_wallet, get_premium_user # Import get_premium_user
 from datetime import datetime, timedelta
 

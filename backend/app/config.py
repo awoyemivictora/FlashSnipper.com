@@ -1,6 +1,8 @@
 import os
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from dotenv import load_dotenv
+import redis
 
 load_dotenv() # Load environment variables from .env file
 
@@ -18,16 +20,28 @@ class Settings(BaseSettings):
     DEXSCREENER_API_URL: str = os.getenv("DEXSCREENER_API_URL", "https://api.dexscreener.com/latest/dex/tokens/")
     RUGCHECK_API_URL: str = os.getenv("RUGCHECK_API_URL", "https://api.rugcheck.xyz/v1/tokens/") # Confirm actual endpoint
     
-    TWITTER_BEARER_TOKEN: str = os.getenv("TWITTER_BEARER_TOKEN") # For Twitter API v2
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
+    TWITTER_BEARER_TOKEN: Optional[str] = os.getenv("TWITTER_BEARER_TOKEN") # For Twitter API v2
+    OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
     
-    STRIPE_PREMIUM_PRICE_ID = os.getenv("STRIPE_PREMIUM_PRICE_ID", "price_xxx")
-
-    # STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY")
-    # STRIPE_WEBHOOK_SECRET: str = os.getenv("STRIPE_WEBHOOK_SECRET")
-    # PAYSTACK_SECRET_KEY: str = os.getenv("PAYSTACK_SECRET_KEY")
-    # PAYSTACK_PUBLIC_KEY: str = os.getenv("PAYSTACK_PUBLIC_KEY")
+    STRIPE_PREMIUM_PRICE_ID: str = os.getenv("STRIPE_PREMIUM_PRICE_ID", "99")
+    STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")
 
     ENCRYPTION_KEY: str = os.getenv("ENCRYPTION_KEY", "a_very_strong_32_byte_key_for_aes_encryption!") # 32-byte key for AES256
-
+    WEBACY_TOKEN: str = os.getenv("WEBACY_TOKEN", "")
+    
+    REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
+    REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))  # Fixed: was "ე6379"
+    REDIS_DB: int = int(os.getenv("REDIS_DB", "0"))
+    
+    DEX_AGGREGATOR_API_HOST: str = os.getenv("DEX_AGGREGATOR_API_HOST")
+    
+    
 settings = Settings()
+
+
+
+# ----------------------------------------------------------------------
+# Build the Redis client **after** settings are validated
+# ----------------------------------------------------------------------
+redis_client = redis.Redis(host=settings.REDIS_HOST, port=6379, db=0, decode_responses=False)
+

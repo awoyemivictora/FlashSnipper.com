@@ -12,7 +12,7 @@ if not DATABASE_URL:
     raise ValueError("No DATABASE_URL set for SQLAlchemy connection")
 
 # This will create a connection to the database (async)
-async_engine = create_async_engine(DATABASE_URL, echo=True)
+async_engine = create_async_engine(DATABASE_URL, echo=False)
 
 # This will create an async session that talks to the database
 AsyncSessionLocal = sessionmaker(
