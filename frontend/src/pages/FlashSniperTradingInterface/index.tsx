@@ -680,7 +680,7 @@ const FlashSniperTradingInterface: React.FC = () => {
         id: `log-${Date.now()}`,
         type: 'log',
         log_type: 'success',
-        message: '🚀 Trading bot started successfully! Monitoring for new tokens...',
+        message: '🚀 Trading bot started successfully! Monitoring for new token pools from Raydium...',
         timestamp: new Date().toISOString()
       };
       handleLogMessage(successLog);

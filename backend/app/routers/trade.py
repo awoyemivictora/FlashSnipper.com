@@ -522,76 +522,76 @@ async def send_signed_transaction(request: SendSignedTransactionRequest):
         logger.error(f"Error sending signed transaction: {e}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to send transaction: {e}")
 
-@router.post("/log-trade")
-async def log_trade(request: LogTradeRequest, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
-    """
-    Receives trade details from the frontend to log in the backend database.
-    This replaces the database updates in your old trader.js.
-    """
-    if current_user.wallet_address != request.user_wallet_address:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not authorized to log trade for this wallet.")
+# @router.post("/log-trade")
+# async def log_trade(request: LogTradeRequest, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+#     """
+#     Receives trade details from the frontend to log in the backend database.
+#     This replaces the database updates in your old trader.js.
+#     """
+#     if current_user.wallet_address != request.user_wallet_address:
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not authorized to log trade for this wallet.")
 
-    logger.info(f"Logging {request.trade_type} trade for {request.user_wallet_address} on {request.mint_address}")
+#     logger.info(f"Logging {request.trade_type} trade for {request.user_wallet_address} on {request.mint_address}")
 
-    try:
-        # Decide which table to update based on trade_type, or use a single `Trade` table
-        # Your `Trade` model in `app/models.py` should be able to store all this.
-        trade_record = Trade(
-            user_wallet_address=request.user_wallet_address,
-            mint_address=request.mint_address,
-            token_symbol=request.token_symbol,
-            trade_type=request.trade_type,
-            amount_sol=request.amount_sol,
-            amount_tokens=request.amount_tokens,
-            price_sol_per_token=request.price_sol_per_token,
-            price_usd_at_trade=request.price_usd_at_trade,
-            tx_hash=request.tx_hash,
-            log_message=request.log_message,
-            profit_usd=request.profit_usd,
-            profit_sol=request.profit_sol,
-            # Add new fields for buy/sell
-            buy_price=request.buy_price,
-            entry_price=request.entry_price,
-            stop_loss=request.stop_loss,
-            take_profit=request.take_profit,
-            token_amounts_purchased=request.token_amounts_purchased,
-            token_decimals=request.token_decimals,
-            sell_reason=request.sell_reason,
-            swap_provider=request.swap_provider
-        )
-        db.add(trade_record)
-        await db.commit()
-        await db.refresh(trade_record)
+#     try:
+#         # Decide which table to update based on trade_type, or use a single `Trade` table
+#         # Your `Trade` model in `app/models.py` should be able to store all this.
+#         trade_record = Trade(
+#             user_wallet_address=request.user_wallet_address,
+#             mint_address=request.mint_address,
+#             token_symbol=request.token_symbol,
+#             trade_type=request.trade_type,
+#             amount_sol=request.amount_sol,
+#             amount_tokens=request.amount_tokens,
+#             price_sol_per_token=request.price_sol_per_token,
+#             price_usd_at_trade=request.price_usd_at_trade,
+#             tx_hash=request.tx_hash,
+#             log_message=request.log_message,
+#             profit_usd=request.profit_usd,
+#             profit_sol=request.profit_sol,
+#             # Add new fields for buy/sell
+#             buy_price=request.buy_price,
+#             entry_price=request.entry_price,
+#             stop_loss=request.stop_loss,
+#             take_profit=request.take_profit,
+#             token_amounts_purchased=request.token_amounts_purchased,
+#             token_decimals=request.token_decimals,
+#             sell_reason=request.sell_reason,
+#             swap_provider=request.swap_provider
+#         )
+#         db.add(trade_record)
+#         await db.commit()
+#         await db.refresh(trade_record)
 
-        # You might also update `TokenMetadata` here if you had `is_bought`, `is_sold` flags
-        # related to specific tokens in your database.
-        # This part depends on how you want to manage token metadata vs. trade history.
-        # Example for `TokenMetadata` update (requires `TokenMetadata` model and logic):
-        # if request.trade_type == "buy":
-        #    # Update TokenMetadata for 'is_bought' etc.
-        #    metadata = await db.execute(select(TokenMetadata).filter_by(mint_address=request.mint_address)).scalar_one_or_none()
-        #    if metadata:
-        #        metadata.is_bought = True
-        #        metadata.buy_timestamp = datetime.now()
-        #        metadata.buy_price = request.buy_price
-        #        # ... other fields
-        # else: # sell
-        #    # Update TokenMetadata for 'is_sold' etc.
-        #    metadata = await db.execute(select(TokenMetadata).filter_by(mint_address=request.mint_address)).scalar_one_or_none()
-        #    if metadata:
-        #        metadata.is_sold = True
-        #        metadata.sell_timestamp = datetime.now()
-        #        # ... other fields
-        # await db.commit() # Commit metadata changes if done here
+#         # You might also update `TokenMetadata` here if you had `is_bought`, `is_sold` flags
+#         # related to specific tokens in your database.
+#         # This part depends on how you want to manage token metadata vs. trade history.
+#         # Example for `TokenMetadata` update (requires `TokenMetadata` model and logic):
+#         # if request.trade_type == "buy":
+#         #    # Update TokenMetadata for 'is_bought' etc.
+#         #    metadata = await db.execute(select(TokenMetadata).filter_by(mint_address=request.mint_address)).scalar_one_or_none()
+#         #    if metadata:
+#         #        metadata.is_bought = True
+#         #        metadata.buy_timestamp = datetime.now()
+#         #        metadata.buy_price = request.buy_price
+#         #        # ... other fields
+#         # else: # sell
+#         #    # Update TokenMetadata for 'is_sold' etc.
+#         #    metadata = await db.execute(select(TokenMetadata).filter_by(mint_address=request.mint_address)).scalar_one_or_none()
+#         #    if metadata:
+#         #        metadata.is_sold = True
+#         #        metadata.sell_timestamp = datetime.now()
+#         #        # ... other fields
+#         # await db.commit() # Commit metadata changes if done here
 
-        await websocket_manager.send_personal_message(
-            json.dumps({"type": "trade_log", "data": trade_record.dict()}), # Send full trade record
-            request.user_wallet_address
-        )
-        return {"status": "Trade logged successfully"}
-    except Exception as e:
-        logger.error(f"Error logging trade for {request.user_wallet_address}: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to log trade: {e}")
+#         await websocket_manager.send_personal_message(
+#             json.dumps({"type": "trade_log", "data": trade_record.dict()}), # Send full trade record
+#             request.user_wallet_address
+#         )
+#         return {"status": "Trade logged successfully"}
+#     except Exception as e:
+#         logger.error(f"Error logging trade for {request.user_wallet_address}: {e}", exc_info=True)
+#         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to log trade: {e}")
 
 @router.get("/profit-per-trade")
 async def get_total_profit(

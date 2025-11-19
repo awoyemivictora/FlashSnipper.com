@@ -4148,3 +4148,1362 @@ DETAIL:  Key (wallet_address)=(6ANsGCDwweA5YcRMAfu8TYxAhh28BHFYgPbpiCZdmAVn) alr
 2025-11-18 08:01:51,107 - app.utils.webacy_api - ERROR - Webacy API error for 6J5Axed6sKhY7n7PjnmmUoFTxJR6rNoZ4azcQ1cKBqcx: 403
 2025-11-18 08:01:58,123 - app.utils.webacy_api - ERROR - Webacy API error for 6J5Axed6sKhY7n7PjnmmUoFTxJR6rNoZ4azcQ1cKBqcx: 403
 2025-11-18 08:02:05,539 - app.utils.webacy_api - ERROR - Webacy API error for 6J5Axed6sKhY7n7PjnmmUoFTxJR6rNoZ4azcQ1cKBqcx: 403
+2025-11-18 08:09:58,501 - app.utils.webacy_api - ERROR - Webacy API error for 6J5Axed6sKhY7n7PjnmmUoFTxJR6rNoZ4azcQ1cKBqcx: 403
+2025-11-18 08:10:06,568 - app.utils.webacy_api - ERROR - Webacy API error for 6J5Axed6sKhY7n7PjnmmUoFTxJR6rNoZ4azcQ1cKBqcx: 403
+2025-11-18 21:28:45,971 - app.routers.auth - INFO - Generated nonce: JgtX8dk6M4Nt7mGPP_695Q==
+2025-11-18 21:28:45,995 - app.routers.auth - INFO - Wallet verified successfully: 6nw5mqBbr7gW4muAeiPSiu8QNV5keWTCdEjxpY2RUE5h
+2025-11-18 21:28:46,006 - app.routers.auth - INFO - Generated frontend encryption key: Shb9oNJ5fnvuZUdjMXOadQ==
+2025-11-18 21:28:46,029 - app.routers.auth - INFO - Generated frontend encryption key: D16Y-5e18N6Qe1yIbzC0eQ==
+2025-11-18 21:28:46,050 - app.security - INFO - Encrypting private key with backend master key
+2025-11-18 21:28:46,052 - app.routers.auth - INFO - Private key encrypted with backend master key for 6nw5mqBbr7gW4muAeiPSiu8QNV5keWTCdEjxpY2RUE5h
+2025-11-18 21:28:46,071 - app.security - INFO - Encrypting private key with backend master key
+2025-11-18 21:28:46,071 - app.routers.auth - INFO - Private key encrypted with backend master key for 6nw5mqBbr7gW4muAeiPSiu8QNV5keWTCdEjxpY2RUE5h
+2025-11-18 21:28:46,117 - app.routers.auth - INFO - New user registered: 6nw5mqBbr7gW4muAeiPSiu8QNV5keWTCdEjxpY2RUE5h
+2025-11-18 21:28:46,132 - app.security - INFO - Created JWT for wallet: 6nw5mqBbr7gW4muAeiPSiu8QNV5keWTCdEjxpY2RUE5h
+2025-11-18 21:28:46,161 - app.routers.auth - ERROR - Unexpected error in register-or-login: Traceback (most recent call last):
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 545, in _prepare_and_execute
+    self._rows = deque(await prepared_stmt.fetch(*parameters))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/asyncpg/prepared_stmt.py", line 176, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/asyncpg/prepared_stmt.py", line 267, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda protocol: protocol.bind_execute(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            self._state, args, '', limit, True, timeout))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/asyncpg/prepared_stmt.py", line 256, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg/protocol/protocol.pyx", line 206, in bind_execute
+asyncpg.exceptions.UniqueViolationError: duplicate key value violates unique constraint "users_pkey"
+DETAIL:  Key (wallet_address)=(6nw5mqBbr7gW4muAeiPSiu8QNV5keWTCdEjxpY2RUE5h) already exists.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1963, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 943, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self._prepare_and_execute(operation, parameters)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 508, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 792, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "users_pkey"
+DETAIL:  Key (wallet_address)=(6nw5mqBbr7gW4muAeiPSiu8QNV5keWTCdEjxpY2RUE5h) already exists.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/user/clients/flashsnipper.com/backend/app/routers/auth.py", line 174, in register_or_login_wallet
+    await db.commit()
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/session.py", line 1014, in commit
+    await greenlet_spawn(self.sync_session.commit)
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 203, in greenlet_spawn
+    result = context.switch(value)
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 1313, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 1288, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 4345, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 4480, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 4441, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py", line 1048, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1415, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/sql/elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1637, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1842, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1982, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 2351, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1963, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 943, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self._prepare_and_execute(operation, parameters)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 508, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 792, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "users_pkey"
+DETAIL:  Key (wallet_address)=(6nw5mqBbr7gW4muAeiPSiu8QNV5keWTCdEjxpY2RUE5h) already exists.
+[SQL: INSERT INTO users (wallet_address, encrypted_private_key, is_premium, premium_start_date, premium_end_date, custom_rpc_https, custom_rpc_wss, filter_socials_added, filter_liquidity_burnt, filter_immutable_metadata, filter_mint_authority_renounced, filter_freeze_authority_revoked, filter_check_pool_size_min_sol, filter_top_holders_max_pct, filter_safety_check_period_seconds, buy_amount_sol, buy_slippage_bps, sell_take_profit_pct, sell_stop_loss_pct, sell_timeout_seconds, trailing_stop_loss_pct, bot_check_interval_seconds) VALUES ($1::VARCHAR, $2::VARCHAR, $3::BOOLEAN, $4::TIMESTAMP WITHOUT TIME ZONE, $5::TIMESTAMP WITHOUT TIME ZONE, $6::VARCHAR, $7::VARCHAR, $8::BOOLEAN, $9::BOOLEAN, $10::BOOLEAN, $11::BOOLEAN, $12::BOOLEAN, $13::FLOAT, $14::FLOAT, $15::INTEGER, $16::FLOAT, $17::INTEGER, $18::FLOAT, $19::FLOAT, $20::INTEGER, $21::FLOAT, $22::INTEGER)]
+[parameters: ('6nw5mqBbr7gW4muAeiPSiu8QNV5keWTCdEjxpY2RUE5h', 'gAAAAABpHNb-CP9pycMu9GPfLaEJt6eYPAXPhI0UHIUX3IOSl1a_Y8tcmEenwW478-fMclBSer2zSb-oXT2GBG8VrtNxIX7t5Wn783A251uhG_CfcofmWl0PTFqKcSO-OPhXDHnztCWsXRSeCLFT8HKkseNKF5fLz9JqFis6zwKtk-Ul5ixNj04=', False, None, None, None, None, True, True, True, True, True, 10.0, 30.0, 300, 0.1, 1000, 50.0, 20.0, 3600, 10.0, 10)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+2025-11-18 21:48:34,491 - app.routers.auth - INFO - Generated nonce: AkZEtP1q6d0tD2MVMapKzA==
+2025-11-18 21:48:34,544 - app.routers.auth - INFO - Wallet verified successfully: J7VUhhPhey6PdDyzpjKyoQi4Eyjz4pjJXi7Ya83k4Wkr
+2025-11-18 21:48:34,551 - app.routers.auth - INFO - Generated frontend encryption key: L8CXm9zDlZCrFNhQE6-LQQ==
+2025-11-18 21:48:34,558 - app.routers.auth - INFO - Generated frontend encryption key: tLpJhAV3_H7_Qyr0ZeftFg==
+2025-11-18 21:48:34,578 - app.security - INFO - Encrypting private key with backend master key
+2025-11-18 21:48:34,581 - app.routers.auth - INFO - Private key encrypted with backend master key for J7VUhhPhey6PdDyzpjKyoQi4Eyjz4pjJXi7Ya83k4Wkr
+2025-11-18 21:48:34,599 - app.security - INFO - Encrypting private key with backend master key
+2025-11-18 21:48:34,599 - app.routers.auth - INFO - Private key encrypted with backend master key for J7VUhhPhey6PdDyzpjKyoQi4Eyjz4pjJXi7Ya83k4Wkr
+2025-11-18 21:48:34,648 - app.routers.auth - INFO - New user registered: J7VUhhPhey6PdDyzpjKyoQi4Eyjz4pjJXi7Ya83k4Wkr
+2025-11-18 21:48:34,652 - app.routers.auth - INFO - New user registered: J7VUhhPhey6PdDyzpjKyoQi4Eyjz4pjJXi7Ya83k4Wkr
+2025-11-18 21:48:34,660 - app.security - INFO - Created JWT for wallet: J7VUhhPhey6PdDyzpjKyoQi4Eyjz4pjJXi7Ya83k4Wkr
+2025-11-18 21:48:34,672 - app.routers.auth - ERROR - Unexpected error in register-or-login: Traceback (most recent call last):
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 545, in _prepare_and_execute
+    self._rows = deque(await prepared_stmt.fetch(*parameters))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/asyncpg/prepared_stmt.py", line 176, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/asyncpg/prepared_stmt.py", line 267, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda protocol: protocol.bind_execute(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            self._state, args, '', limit, True, timeout))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/asyncpg/prepared_stmt.py", line 256, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg/protocol/protocol.pyx", line 206, in bind_execute
+asyncpg.exceptions.UniqueViolationError: duplicate key value violates unique constraint "users_pkey"
+DETAIL:  Key (wallet_address)=(J7VUhhPhey6PdDyzpjKyoQi4Eyjz4pjJXi7Ya83k4Wkr) already exists.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1963, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 943, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self._prepare_and_execute(operation, parameters)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 508, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 792, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "users_pkey"
+DETAIL:  Key (wallet_address)=(J7VUhhPhey6PdDyzpjKyoQi4Eyjz4pjJXi7Ya83k4Wkr) already exists.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/user/clients/flashsnipper.com/backend/app/routers/auth.py", line 213, in register_or_login_wallet
+    await db.commit()
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/session.py", line 1014, in commit
+    await greenlet_spawn(self.sync_session.commit)
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 203, in greenlet_spawn
+    result = context.switch(value)
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2032, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 1313, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 1288, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 4345, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 4480, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 4441, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py", line 1048, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1415, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/sql/elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1637, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1842, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1982, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 2351, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1963, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 943, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 580, in execute
+    self._adapt_connection.await_(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self._prepare_and_execute(operation, parameters)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 558, in _prepare_and_execute
+    self._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 508, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/user/clients/flashsnipper.com/backend/venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 792, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "users_pkey"
+DETAIL:  Key (wallet_address)=(J7VUhhPhey6PdDyzpjKyoQi4Eyjz4pjJXi7Ya83k4Wkr) already exists.
+[SQL: INSERT INTO users (wallet_address, encrypted_private_key, is_premium, premium_start_date, premium_end_date, custom_rpc_https, custom_rpc_wss, filter_socials_added, filter_liquidity_burnt, filter_immutable_metadata, filter_mint_authority_renounced, filter_freeze_authority_revoked, filter_check_pool_size_min_sol, filter_top_holders_max_pct, filter_safety_check_period_seconds, buy_amount_sol, buy_slippage_bps, sell_take_profit_pct, sell_stop_loss_pct, sell_timeout_seconds, trailing_stop_loss_pct, bot_check_interval_seconds) VALUES ($1::VARCHAR, $2::VARCHAR, $3::BOOLEAN, $4::TIMESTAMP WITHOUT TIME ZONE, $5::TIMESTAMP WITHOUT TIME ZONE, $6::VARCHAR, $7::VARCHAR, $8::BOOLEAN, $9::BOOLEAN, $10::BOOLEAN, $11::BOOLEAN, $12::BOOLEAN, $13::FLOAT, $14::FLOAT, $15::INTEGER, $16::FLOAT, $17::INTEGER, $18::FLOAT, $19::FLOAT, $20::INTEGER, $21::FLOAT, $22::INTEGER)]
+[parameters: ('J7VUhhPhey6PdDyzpjKyoQi4Eyjz4pjJXi7Ya83k4Wkr', 'gAAAAABpHNuiMME1S1P9-ol4_qMCtmNJ4hjYGojVpa8jmi9z4ha2Ph7xtR1nNcoIE5NRtGP0y3WsSmVU2XtGE-QdNVf5MkvAe1orMW0fgvG-H2cbMN_akr2S1NnUsAgrc2XmxtofNjB3azxN-ZYqw3csLbgT8X1z8jjd3R3Ben2PDxqpxAcTeSo=', False, None, None, None, None, True, True, True, True, True, 10.0, 30.0, 300, 0.1, 1000, 50.0, 20.0, 3600, 10.0, 10)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+2025-11-18 21:53:39,871 - app.routers.auth - INFO - Generated nonce: Ozt3Kjy72WRQmyU0jO2R4g==
+2025-11-18 21:53:39,929 - app.routers.auth - INFO - Wallet verified successfully: Aox8uS9VutLMCzAZGjP6vPHBhbNWn6ekfJ9NqSr7cjfQ
+2025-11-18 21:53:39,949 - app.routers.auth - INFO - Generated frontend encryption key: 9SQ1auvYFSoObJx4UChETA==
+2025-11-18 21:53:39,958 - app.routers.auth - INFO - Generated frontend encryption key: fSNCAcH4tzdPFSUm0SpxoA==
+2025-11-18 21:53:40,034 - app.security - INFO - Encrypting private key with backend master key
+2025-11-18 21:53:40,035 - app.routers.auth - INFO - Private key encrypted with backend master key for Aox8uS9VutLMCzAZGjP6vPHBhbNWn6ekfJ9NqSr7cjfQ
+2025-11-18 21:53:40,047 - app.security - INFO - Encrypting private key with backend master key
+2025-11-18 21:53:40,048 - app.routers.auth - INFO - Private key encrypted with backend master key for Aox8uS9VutLMCzAZGjP6vPHBhbNWn6ekfJ9NqSr7cjfQ
+2025-11-18 21:53:40,063 - app.routers.auth - ERROR - Database error during upsert: 'User' object has no attribute 'id'
+2025-11-18 21:53:40,072 - app.routers.auth - ERROR - Database error during upsert: 'User' object has no attribute 'id'
+2025-11-18 21:55:02,700 - app.routers.auth - INFO - Generated nonce: wD4on7mvwA6ezINv2pIMqw==
+2025-11-18 21:55:02,780 - app.routers.auth - INFO - Wallet verified successfully: 2LW8HadZy7dj5ggSqqnvAgXcqXWrpAHgFdqHmxbrDDb8
+2025-11-18 21:55:02,812 - app.routers.auth - INFO - Generated frontend encryption key: ELU_gIVaCJKnCXx1Uq-_Cg==
+2025-11-18 21:55:02,820 - app.routers.auth - INFO - Generated frontend encryption key: eZkaWnE4dSuyF4SsyVehQA==
+2025-11-18 21:55:02,837 - app.security - INFO - Encrypting private key with backend master key
+2025-11-18 21:55:02,838 - app.routers.auth - INFO - Private key encrypted with backend master key for 2LW8HadZy7dj5ggSqqnvAgXcqXWrpAHgFdqHmxbrDDb8
+2025-11-18 21:55:02,846 - app.security - INFO - Encrypting private key with backend master key
+2025-11-18 21:55:02,847 - app.routers.auth - INFO - Private key encrypted with backend master key for 2LW8HadZy7dj5ggSqqnvAgXcqXWrpAHgFdqHmxbrDDb8
+2025-11-18 21:55:02,881 - app.routers.auth - INFO - New user registered: 2LW8HadZy7dj5ggSqqnvAgXcqXWrpAHgFdqHmxbrDDb8
+2025-11-18 21:55:02,887 - app.security - INFO - Created JWT for wallet: 2LW8HadZy7dj5ggSqqnvAgXcqXWrpAHgFdqHmxbrDDb8
+2025-11-18 21:55:02,913 - app.routers.auth - INFO - Existing user updated: 2LW8HadZy7dj5ggSqqnvAgXcqXWrpAHgFdqHmxbrDDb8
+2025-11-18 21:55:02,914 - app.security - INFO - Created JWT for wallet: 2LW8HadZy7dj5ggSqqnvAgXcqXWrpAHgFdqHmxbrDDb8
+2025-11-19 09:19:03,029 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:03,837 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:04,698 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:05,492 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:06,213 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:06,913 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:07,618 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:14,801 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:15,918 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:16,634 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:17,328 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:18,099 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:18,817 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:19,529 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:20,323 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:28,096 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:28,804 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:29,488 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:30,284 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:30,977 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:31,694 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:32,587 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:33,334 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:40,648 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:41,584 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:42,287 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:43,001 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:43,878 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:44,691 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:45,435 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:46,155 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:54,299 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:55,142 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:55,885 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:56,628 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:57,331 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:58,062 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:58,767 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:19:59,554 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:06,539 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:07,247 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:07,970 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:09,095 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:09,816 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:10,514 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:11,233 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:11,941 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:19,500 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:20,228 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:20,950 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:21,648 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:22,385 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:23,108 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:23,839 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:24,548 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:34,323 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:35,313 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:36,107 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:36,970 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:37,701 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:38,415 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:39,181 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:39,904 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:47,429 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:48,131 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:48,835 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:49,646 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:50,556 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:51,320 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:52,056 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:52,804 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:20:59,959 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:00,702 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:01,440 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:02,181 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:02,884 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:03,597 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:04,323 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:05,048 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:12,724 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:13,482 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:14,226 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:14,970 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:15,664 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:16,444 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:17,149 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:18,068 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:26,225 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:26,978 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:27,717 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:28,452 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:29,189 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:29,900 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:30,598 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:31,290 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:39,206 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:40,006 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:40,691 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:41,474 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:42,173 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:42,902 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:43,613 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:44,335 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:52,934 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:53,671 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:54,418 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:55,137 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:55,852 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:56,572 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:57,306 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:21:58,026 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:07,606 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:08,342 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:09,075 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:09,788 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:10,546 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:11,257 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:11,963 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:12,659 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:21,577 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:22,276 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:23,000 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:23,898 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:24,646 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:25,508 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:26,445 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:27,185 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:35,036 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:35,977 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:36,685 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:37,421 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:38,098 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:38,806 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:39,617 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:40,343 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:49,441 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:50,245 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:51,067 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:51,797 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:52,804 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:53,491 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:54,378 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:22:55,203 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:02,673 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:03,415 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:04,117 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:04,991 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:05,832 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:06,531 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:07,255 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:08,067 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:15,046 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:15,770 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:16,484 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:18,390 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:19,093 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:19,804 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:20,581 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:21,366 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:28,242 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:28,948 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:29,782 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:30,487 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:31,205 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:31,958 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:32,650 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:33,374 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:40,886 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:41,629 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:42,347 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:43,084 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:43,784 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:44,499 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:45,186 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:45,896 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:53,942 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:54,643 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:55,335 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:56,254 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:57,024 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:57,730 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:58,564 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:23:59,260 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:07,318 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:08,164 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:08,890 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:09,605 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:10,343 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:11,070 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:11,768 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:12,505 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:20,494 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:21,218 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:21,993 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:22,731 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:23,492 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:24,229 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:24,981 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:25,708 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:33,558 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:34,236 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:34,977 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:35,644 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:35,743 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:36,435 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:36,544 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:37,289 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:37,294 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:38,020 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:38,028 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:39,129 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:39,130 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:40,025 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:40,769 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:41,491 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:51,514 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:52,231 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:52,973 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:53,701 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:54,454 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:55,184 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:55,900 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:24:56,719 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:08,310 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:09,048 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:09,753 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:10,492 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:11,400 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:12,198 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:12,892 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:13,754 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:25,331 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:26,090 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:26,859 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:27,675 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:28,381 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:29,159 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:29,870 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:30,603 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:42,059 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:42,818 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:43,525 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:44,384 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:45,161 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:45,914 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:46,633 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:47,425 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:59,084 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:25:59,838 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:00,601 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:01,316 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:02,032 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:02,766 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:03,482 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:04,428 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:15,980 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:16,687 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:17,405 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:18,239 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:18,955 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:19,657 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:20,393 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:21,176 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:35,011 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:35,744 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:36,454 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:37,195 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:37,932 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:38,712 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:39,420 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:40,132 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:52,064 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:52,773 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:53,544 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:54,255 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:54,976 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:55,709 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:56,440 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:26:57,160 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:09,190 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:09,949 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:10,666 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:11,384 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:12,106 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:12,907 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:13,619 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:14,363 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:26,381 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:27,105 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:27,804 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:28,542 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:29,417 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:30,235 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:30,960 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:31,840 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:43,387 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:44,098 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:44,790 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:45,586 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:46,288 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:46,975 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:47,690 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:27:48,427 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:01,230 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:02,109 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:02,854 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:03,595 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:04,318 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:05,036 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:05,825 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:06,546 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:18,497 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:19,178 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:19,986 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:20,812 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:21,516 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:22,264 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:23,050 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:23,751 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:35,598 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:36,532 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:37,226 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:37,948 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:38,732 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:39,466 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:40,516 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:41,287 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:52,949 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:53,660 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:54,383 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:55,092 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:55,937 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:56,657 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:57,463 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:28:58,472 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:10,204 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:10,924 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:11,644 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:12,435 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:13,231 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:14,043 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:14,740 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:15,489 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:26,964 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:27,820 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:28,535 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:29,529 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:30,353 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:31,095 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:31,823 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:32,558 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:44,815 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:45,617 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:46,343 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:47,135 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:47,851 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:48,830 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:49,565 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:29:50,302 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:01,823 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:02,617 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:03,339 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:04,241 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:05,113 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:05,874 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:06,608 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:07,318 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:19,253 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:20,191 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:20,903 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:21,872 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:22,608 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:23,394 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:24,192 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:24,907 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:37,703 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:38,462 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:39,211 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:39,972 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:40,672 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:41,402 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:42,096 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:42,819 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:55,896 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:56,693 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:57,426 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:58,210 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:59,019 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:30:59,736 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:00,561 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:01,370 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:13,137 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:13,879 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:14,667 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:15,398 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:16,226 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:16,957 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:17,993 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:18,791 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:30,132 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:30,835 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:31,559 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:32,315 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:33,184 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:33,909 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:34,849 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:35,576 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:47,257 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:47,965 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:48,711 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:49,515 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:50,385 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:51,113 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:51,855 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:31:52,584 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:04,875 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:05,581 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:06,311 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:07,122 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:07,940 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:08,650 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:09,387 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:10,116 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:22,079 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:22,771 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:23,665 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:24,365 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:25,070 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:25,771 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:26,523 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:27,234 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:39,294 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:39,996 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:40,722 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:41,433 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:42,180 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:42,902 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:43,647 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:44,404 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:56,302 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:57,265 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:58,034 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:58,758 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:32:59,462 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:00,191 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:00,922 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:01,640 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:12,917 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:13,648 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:14,346 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:15,242 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:16,030 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:16,763 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:17,485 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:18,183 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:29,598 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:30,360 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:31,061 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:31,784 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:32,526 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:33,236 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:33,956 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:34,841 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:46,461 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:47,197 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:47,978 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:48,693 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:49,525 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:50,248 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:51,077 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:33:51,885 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:03,806 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:04,518 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:05,315 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:06,035 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:06,830 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:07,573 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:08,402 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:09,143 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:21,648 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:22,347 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:23,132 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:23,874 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:24,570 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:25,274 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:25,960 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:26,969 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:38,319 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:39,028 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:39,755 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:40,465 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:41,251 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:41,965 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:42,700 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:43,572 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:55,494 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:56,366 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:57,077 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:57,811 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:58,521 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:34:59,485 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:00,200 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:01,001 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:12,700 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:13,502 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:14,294 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:15,032 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:15,756 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:16,767 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:17,461 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:18,166 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:30,429 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:31,189 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:31,954 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:32,677 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:33,390 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:34,078 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:34,777 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:35,671 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:46,822 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:47,531 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:48,482 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:49,180 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:49,882 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:50,575 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:51,492 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:35:52,426 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:03,991 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:04,699 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:05,411 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:06,103 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:07,016 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:07,774 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:08,487 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:09,193 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:21,507 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:22,221 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:22,960 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:23,690 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:24,441 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:25,174 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:25,995 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:26,820 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:39,367 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:40,095 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:40,863 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:41,613 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:42,383 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:43,090 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:43,828 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:44,540 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:55,817 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:56,575 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:57,318 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:58,021 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:58,738 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:36:59,608 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:00,397 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:01,100 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:13,142 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:13,911 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:14,810 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:15,712 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:16,431 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:17,152 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:17,887 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:19,460 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:30,048 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:30,763 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:31,683 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:32,367 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:33,186 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:33,884 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:34,623 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:35,429 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:46,866 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:47,574 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:48,551 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:49,373 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:50,089 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:50,776 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:51,504 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 09:37:52,318 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:13,037 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:13,821 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:14,536 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:15,243 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:15,991 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:16,862 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:17,590 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:18,318 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:28,644 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:29,391 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:30,196 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:30,902 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:31,623 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:32,356 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:33,092 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:33,824 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:41,207 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:41,909 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:42,846 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:43,564 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:44,299 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:45,053 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:45,847 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:46,588 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:54,082 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:54,812 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:55,558 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:56,293 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:57,046 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:57,764 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:58,485 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:26:59,438 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:09,217 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:09,953 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:10,675 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:11,385 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:12,100 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:12,803 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:13,542 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:14,437 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:21,785 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:22,520 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:23,232 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:23,959 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:24,677 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:25,608 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:26,324 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:27,175 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:34,674 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:35,383 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:36,106 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:36,804 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:37,504 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:38,236 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:38,964 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:39,684 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:47,012 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:47,716 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:48,452 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:49,186 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:49,890 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:50,755 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:51,464 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:52,204 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:27:59,591 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:00,365 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:01,102 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:01,838 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:02,576 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:03,297 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:04,022 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:04,742 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:12,654 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:13,611 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:14,371 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:15,095 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:15,797 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:16,548 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:17,449 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:18,145 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:25,511 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:26,245 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:27,275 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:27,985 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:28,707 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:29,526 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:30,256 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:30,980 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:38,360 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:39,208 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:39,972 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:40,690 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:41,399 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:42,248 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:42,951 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:43,762 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:51,268 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:52,053 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:52,773 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:53,494 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:54,213 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:55,044 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:55,810 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:28:56,534 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:03,896 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:04,625 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:05,378 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:06,101 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:06,818 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:07,621 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:08,453 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:09,245 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:16,579 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:17,286 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:18,075 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:18,929 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:19,701 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:20,461 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:21,406 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:22,129 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:29,654 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:30,532 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:31,259 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:31,957 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:32,661 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:33,377 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:34,164 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:35,039 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:42,403 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:43,122 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:43,825 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:44,548 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:45,252 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:46,021 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:46,746 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:47,581 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:54,911 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:55,620 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:56,370 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:57,094 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:57,836 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:58,579 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:29:59,281 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:00,021 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:07,475 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:08,215 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:08,933 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:09,656 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:10,362 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:11,111 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:12,082 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:12,824 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:20,479 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:21,205 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:21,925 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:22,649 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:23,372 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:24,255 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:25,056 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:25,846 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:33,244 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:34,054 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:35,031 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:35,976 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:36,713 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:37,477 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:38,199 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:39,056 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:46,846 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:47,588 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:48,299 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:49,029 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:49,772 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:50,507 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:51,262 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:51,973 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:30:59,351 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:00,167 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:01,101 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:01,819 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:02,775 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:03,497 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:04,213 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:05,204 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:12,606 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:13,335 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:14,231 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:15,002 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:15,965 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:16,877 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:17,606 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:18,317 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:27,551 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:28,413 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:29,321 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:30,195 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:31,055 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:31,779 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:32,534 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:33,346 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:40,865 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:41,572 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:42,293 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:42,995 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:43,737 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:44,504 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:45,218 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:46,036 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:53,381 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:54,096 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:54,831 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:55,541 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:56,281 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:57,185 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:57,952 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:31:58,726 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:06,396 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:07,269 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:08,053 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:09,436 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:10,764 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:11,731 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:12,681 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:13,708 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:23,822 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:24,608 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:25,393 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:26,308 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:27,576 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:28,857 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:34,227 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:35,945 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:44,453 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:45,225 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:45,959 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:46,688 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:47,475 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:48,184 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:48,900 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:49,733 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:57,044 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:57,966 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:58,741 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:32:59,556 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:00,431 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:01,149 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:01,892 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:02,595 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:10,002 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:10,737 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:11,443 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:12,156 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:12,902 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:13,705 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:14,502 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:15,222 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:22,708 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:23,433 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:24,180 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:24,932 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:25,654 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:26,377 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:27,106 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:27,910 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:35,402 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:36,216 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:37,053 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:37,796 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:38,516 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:39,279 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:40,103 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:40,820 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:48,521 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:49,349 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:50,218 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:50,924 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:51,650 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:52,389 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:53,301 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:33:54,040 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:01,475 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:02,195 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:02,926 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:03,654 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:04,371 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:05,090 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:05,791 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:06,498 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:13,899 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:14,611 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:15,342 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:16,097 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:16,871 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:17,597 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:18,324 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:19,143 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:26,500 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:27,238 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:28,040 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:28,757 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:29,492 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:30,214 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:30,932 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:31,685 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:39,076 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:39,829 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:40,554 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:41,291 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:42,005 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:42,796 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:43,768 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:44,534 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:52,926 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:53,637 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:54,695 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:55,405 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:56,117 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:56,843 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:57,572 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:34:58,276 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:05,618 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:06,345 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:07,087 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:07,820 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:08,588 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:09,320 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:10,059 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:10,836 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:18,309 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:19,166 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:19,865 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:20,648 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:21,373 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:22,118 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:22,822 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:23,566 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:31,564 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:32,465 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:33,243 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:33,989 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:34,735 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:35,562 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:36,296 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:35:36,998 - app.utils.tavily_api - ERROR - Tavily API error: 432
+2025-11-19 16:42:37,816 - app.utils.tavily_api - ERROR - Tavily API error: 432

@@ -1,6 +1,6 @@
 # app/models.py
 from sqlalchemy import (
-    Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text, func
+    Column, Index, Integer, String, Float, Boolean, DateTime, ForeignKey, Text, func
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from datetime import datetime
@@ -17,13 +17,37 @@ class Base(DeclarativeBase):
 class NewTokens(Base):
     __tablename__ = "new_tokens"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    pool_id: Mapped[Optional[str]] = mapped_column(String, nullable=False, primary_key=True)
     mint_address: Mapped[str] = mapped_column(String, index=True)
-    pool_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     signature: Mapped[str] = mapped_column(String)
     tx_type: Mapped[str] = mapped_column(String)
-    metadata_status: Mapped[str] = mapped_column(String, default="pending")
+    
+    # Enhanced status tracking
+    metadata_status: Mapped[str] = mapped_column(String, default="pending")  # pending → processing → completed → needs_update → failed
+    metadata_retry_count: Mapped[int] = mapped_column(Integer, default=0)
+    last_metadata_update: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    next_reprocess_time: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    
+    # Processing stages tracking (for debugging and partial completion)
+    dexscreener_processed: Mapped[bool] = mapped_column(Boolean, default=False)
+    raydium_processed: Mapped[bool] = mapped_column(Boolean, default=False)
+    webacy_processed: Mapped[bool] = mapped_column(Boolean, default=False)
+    tavily_processed: Mapped[bool] = mapped_column(Boolean, default=False)
+    profitability_processed: Mapped[bool] = mapped_column(Boolean, default=False)
+    
+    # Error tracking
+    last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    
+    # Performance metrics
+    total_processing_time_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    
+    # Indexes for better query performance
+    __table_args__ = (
+        Index('ix_new_tokens_status_timestamp', "metadata_status", "timestamp"),
+        Index('ix_new_tokens_reprocess_time', "next_reprocess_time"),
+        Index('ix_new_tokens_mint_status', "mint_address", "metadata_status"),
+    )
 
 
 class TokenMetadata(Base):
@@ -31,18 +55,22 @@ class TokenMetadata(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     mint_address: Mapped[str] = mapped_column(String, unique=True, index=True)
+
+    # DexScreener Core
     dexscreener_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     pair_address: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     price_native: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     price_usd: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     market_cap: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    pair_created_at: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    pair_created_at: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     websites: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     twitter: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     telegram: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     token_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     token_symbol: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     dex_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
+    # Volume & Price Changes
     volume_h24: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     volume_h6: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     volume_h1: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -52,22 +80,104 @@ class TokenMetadata(Base):
     price_change_h6: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     price_change_h24: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     socials_present: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Liquidity & Safety
     liquidity_burnt: Mapped[bool] = mapped_column(Boolean, default=False)
     liquidity_pool_size_sol: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    immutable_metadata: Mapped[bool] = mapped_column(Boolean, default=False)
-    mint_authority_renounced: Mapped[bool] = mapped_column(Boolean, default=False)
-    freeze_authority_revoked: Mapped[bool] = mapped_column(Boolean, default=False)
-    token_decimals: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    holder: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    top10_holders_percentage: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    burn_percent: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    launch_migrate_pool: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
+
+    # Webacy
     webacy_risk_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     webacy_risk_level: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     webacy_moon_potential: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    last_checked_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
+    # Raydium Pool Data
+    program_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    pool_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    mint_a: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    mint_b: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    token_logo_uri: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    token_decimals: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    mint_amount_a: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    mint_amount_b: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    fee_rate: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    open_time: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    tvl: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    # Day/Week/Month Stats
+    day_volume: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    day_volume_quote: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    day_volume_fee: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    day_apr: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    day_fee_apr: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    day_price_min: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    day_price_max: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    week_volume: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    week_volume_quote: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    week_volume_fee: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    week_apr: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    week_fee_apr: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    week_price_min: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    week_price_max: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    month_volume: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    month_volume_quote: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    month_volume_fee: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    month_apr: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    month_fee_apr: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    month_price_min: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    month_price_max: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    pool_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    market_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    lp_mint: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    lp_price: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    lp_amount: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    # Profitability Engine Output
+    profitability_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    profitability_confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    trading_recommendation: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    
+    # AI-generated risk & potential scores
+    risk_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    moon_potential: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    holder_concentration: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    liquidity_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    reasons: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    risk_adjusted_return: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    last_profitability_analysis: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    last_checked_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    
+    # Indexes for better performance
+    __table_args__ = (
+        Index('ix_token_metadata_last_checked', "last_checked_at"),
+        Index('ix_token_metadata_profitability', "profitability_score", "last_checked_at"),
+        Index('ix_token_metadata_recommendation', "trading_recommendation", "last_checked_at"),
+        Index('ix_token_recommendation_score', "trading_recommendation", "profitability_score", "last_checked_at"),
+    )
+
+
+class TokenMetadataArchive(Base):
+    __tablename__ = "token_metadata_archive"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    mint_address: Mapped[str] = mapped_column(String, index=True)
+    archived_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    data: Mapped[str] = mapped_column(Text)
+
+    __table_args__ = (
+        Index('ix_archive_mint', "mint_address"),
+        Index('ix_archive_archived_at', "archived_at"),
+    )
+    
 
 # ──────────────────────────────────────────────────────────────
-# 2. User + One-to-Many → Trades (THIS IS THE KEY)
+# 2. User + One-to-Many → Trades
 # ──────────────────────────────────────────────────────────────
 class User(Base):
     __tablename__ = "users"
@@ -82,7 +192,7 @@ class User(Base):
     custom_rpc_https: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     custom_rpc_wss: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    # Bot Filters (Free users get limited, Premium gets all)
+    # Bot Filters
     filter_socials_added: Mapped[bool] = mapped_column(Boolean, default=True)
     filter_liquidity_burnt: Mapped[bool] = mapped_column(Boolean, default=True)
     filter_immutable_metadata: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -101,7 +211,6 @@ class User(Base):
     trailing_stop_loss_pct: Mapped[float] = mapped_column(Float, default=10.0)
     bot_check_interval_seconds: Mapped[int] = mapped_column(Integer, default=10)
 
-    # Relationship: One User → Many Trades
     trades: Mapped[List["Trade"]] = relationship("Trade", back_populates="user", cascade="all, delete-orphan")
 
 
@@ -118,7 +227,7 @@ class Trade(Base):
 
     mint_address: Mapped[str] = mapped_column(String, index=True)
     token_symbol: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    trade_type: Mapped[str] = mapped_column(String)  # "buy" or "sell"
+    trade_type: Mapped[str] = mapped_column(String)
     amount_sol: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     amount_tokens: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     price_sol_per_token: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -139,12 +248,18 @@ class Trade(Base):
     buy_timestamp: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     sell_timestamp: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
-    # Relationship back to User
     user: Mapped["User"] = relationship("User", back_populates="trades")
+    
+    # Indexes for better performance
+    __table_args__ = (
+        Index('ix_trades_user_timestamp', "user_wallet_address", "buy_timestamp"),
+        Index('ix_trades_mint_user', "mint_address", "user_wallet_address"),
+        Index('ix_trades_profit', "user_wallet_address", "profit_usd"),
+    )
 
 
 # ──────────────────────────────────────────────────────────────
-# 4. Subscription (optional, for Stripe/PayPal later)
+# 4. Subscription
 # ──────────────────────────────────────────────────────────────
 class Subscription(Base):
     __tablename__ = "subscriptions"
@@ -157,7 +272,6 @@ class Subscription(Base):
     payment_provider_id: Mapped[str] = mapped_column(String)
     start_date: Mapped[datetime] = mapped_column(DateTime)
     end_date: Mapped[datetime] = mapped_column(DateTime)
-    
     
     
     

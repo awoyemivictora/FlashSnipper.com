@@ -7,3 +7,16 @@ give me a step by step blueprint to build a profitable solana snipping bot for p
 
 - Getting the new token data's from pumpportal api. then i have script in typescript to swap/sell using jupiter, dflow and okxswap.
 
+=================================
+EXPENSES
+1. Domain Yearly.- $50 ✅
+2. Vercel Monthly Hosting - $50
+3. Digital Ocean Server - $100 ✅
+4. Shyft Monthly Subscription - $200 ✅
+5. Webacy Monthly Subscription - $100 ✅
+5. Solscan Monthly Api - $200
+6. 
+=================================
+
+
+

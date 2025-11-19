@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")
 
     ENCRYPTION_KEY: str = os.getenv("ENCRYPTION_KEY", "a_very_strong_32_byte_key_for_aes_encryption!") # 32-byte key for AES256
+    WEBACY_API_URL: str = os.getenv("WEBACY_API_URL", "https://api.webacy.com/v1/risk")
     WEBACY_TOKEN: str = os.getenv("WEBACY_TOKEN", "")
     
     REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
@@ -34,6 +35,7 @@ class Settings(BaseSettings):
     REDIS_DB: int = int(os.getenv("REDIS_DB", "0"))
     
     DEX_AGGREGATOR_API_HOST: str = os.getenv("DEX_AGGREGATOR_API_HOST")
+    TAVILY_API_KEY: str = os.getenv("TAVILY_API_KEY")
     
     
 settings = Settings()
