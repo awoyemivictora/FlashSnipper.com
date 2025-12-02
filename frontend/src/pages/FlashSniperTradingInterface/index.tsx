@@ -7,7 +7,6 @@ import { debounce } from 'lodash';
 import { apiService } from '@/services/api';
 import { registerWallet, verifyWallet, getNonce } from '@/services/auth';
 import { config } from '@/config/production';
-import EnhancedTradingChart from '@/components/EnhancedTradingChart';
 
 
 
@@ -38,16 +37,34 @@ interface LogEntry {
   };
 }
 
+// interface TransactionItem {
+//   id: string;
+//   type: 'buy' | 'sell';
+//   token: string;
+//   token_logo: string;
+//   amount_sol: number;
+//   amount_tokens?: number;
+//   tx_hash?: string;
+//   timestamp: string;
+//   profit_sol?: number;
+//   mint_address?: string;
+//   explorer_urls?: {
+//     solscan: string;
+//     dexScreener: string;
+//     jupiter: string;
+//   };
+// }
+
 interface TransactionItem {
   id: string;
   type: 'buy' | 'sell';
   token: string;
   token_logo: string;
-  amount_sol: number;
-  amount_tokens?: number;
+  amount_sol: number | null; // Allow null
+  amount_tokens?: number | null; // Allow null
   tx_hash?: string;
   timestamp: string;
-  profit_sol?: number;
+  profit_sol?: number | null; // Allow null
   mint_address?: string;
   explorer_urls?: {
     solscan: string;
@@ -173,7 +190,6 @@ const LogEntryComponent: React.FC<{ log: LogEntry }> = ({ log }) => {
   );
 };
 
-// Enhanced transaction display component with safe date handling
 const TransactionItemComponent: React.FC<{ 
   transaction: TransactionItem;
   onOpenChart?: (mintAddress: string) => void;
@@ -181,10 +197,29 @@ const TransactionItemComponent: React.FC<{
   const formatTimestamp = (timestamp: string) => {
     try {
       const date = new Date(timestamp);
-      // Check if date is valid
       if (isNaN(date.getTime())) {
         return 'Invalid date';
       }
+      
+      // Check if timestamp is in ISO format
+      const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+      if (!isoRegex.test(timestamp)) {
+        // Try to parse as different format
+        const parsedDate = new Date(Date.parse(timestamp));
+        if (!isNaN(parsedDate.getTime())) {
+          return parsedDate.toLocaleString('en-US', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+          });
+        }
+        return 'Invalid date';
+      }
+      
       return date.toLocaleString('en-US', {
         day: 'numeric',
         month: 'long',
@@ -200,38 +235,115 @@ const TransactionItemComponent: React.FC<{
     }
   };
 
+  // Safe number formatting with better handling
+  const formatAmount = (amount: number | null | undefined): string => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '0.0000';
+    }
+    return amount.toLocaleString('en-US', {
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 4
+    });
+  };
+
+  // Format large token amounts (like 253061452000 from your logs)
+  const formatTokenAmount = (amount: number | null | undefined): string => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '0';
+    }
+    
+    // If it's a very large number, format it nicely
+    if (amount >= 1000000) {
+      return (amount / 1000000).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) + 'M';
+    } else if (amount >= 1000) {
+      return (amount / 1000).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) + 'K';
+    }
+    
+    return amount.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  const formatProfit = (profit: number | null | undefined): string => {
+    if (profit === null || profit === undefined || isNaN(profit)) {
+      return '0.0000';
+    }
+    return profit.toLocaleString('en-US', {
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 4,
+      signDisplay: 'always'
+    });
+  };
+
+  // Get display values
+  const getDisplayValues = () => {
+    if (transaction.type === "sell") {
+      return {
+        action: "Sold",
+        amount: transaction.amount_tokens !== undefined ? 
+          `${formatTokenAmount(transaction.amount_tokens)} ${transaction.token}` : 
+          `${transaction.token}`,
+        solAmount: formatAmount(transaction.amount_sol),
+        showProfit: true
+      };
+    } else {
+      return {
+        action: "Bought",
+        amount: transaction.amount_tokens !== undefined ? 
+          `${formatTokenAmount(transaction.amount_tokens)} ${transaction.token}` : 
+          `${transaction.token}`,
+        solAmount: formatAmount(transaction.amount_sol),
+        showProfit: false
+      };
+    }
+  };
+
+  const display = getDisplayValues();
+
+  // Add a proper placeholder for broken images
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iMjAiIGZpbGw9IiMyMDJBM0MiLz4KPHBhdGggZD0iTTIwIDEyVjI4TTEyIDIwSDI4IiBzdHJva2U9IiMxMEI5ODEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=';
+    e.currentTarget.onerror = null; // Prevent infinite loop
+  };
+
+
   return (
     <div className="flex items-center justify-between p-4 border-b border-[#333] hover:bg-dark-2 transition-colors">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-1">
         <img 
           src={transaction.token_logo} 
           alt={transaction.token}
           className="w-10 h-10 rounded-full"
-          onError={(e) => {
-            e.currentTarget.src = "/placeholder-token.png";
-          }}
+          onError={handleImageError}
         />
-        <div>
-          <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
             <strong className="text-white">
-              {transaction.type === "buy" ? "Bought" : "Sold"} 
-              {transaction.amount_tokens ? ` ${transaction.amount_tokens.toLocaleString()} ` : ' '}
-              {transaction.token}
+              {display.action} 
             </strong>
-            {transaction.profit_sol !== undefined && (
-              <span className={transaction.profit_sol > 0 ? "text-teal-400" : "text-red-500"}>
-                ({transaction.profit_sol > 0 ? "+" : ""}{transaction.profit_sol.toFixed(4)} SOL)
+            <span className="text-white font-medium">
+              {display.amount}
+            </span>
+            {display.showProfit && transaction.profit_sol !== undefined && transaction.profit_sol !== null && (
+              <span className={`text-sm ${transaction.profit_sol > 0 ? "text-teal-400" : "text-red-500"}`}>
+                ({formatProfit(transaction.profit_sol)} SOL)
               </span>
             )}
           </div>
           <p className="text-sm text-gray-400">
-            {transaction.amount_sol.toFixed(4)} SOL
+            {display.solAmount} SOL
           </p>
         </div>
       </div>
 
       <div className="flex items-center gap-3">
-        {/* FIXED: Chart button with proper mint_address check */}
         {transaction.type === "buy" && onOpenChart && transaction.mint_address && (
           <button
             onClick={() => onOpenChart(transaction.mint_address!)}
@@ -244,7 +356,7 @@ const TransactionItemComponent: React.FC<{
           </button>
         )}
 
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-gray-500 min-w-[140px] text-right">
           {formatTimestamp(transaction.timestamp)}
         </span>
         {transaction.explorer_urls && (
@@ -254,6 +366,7 @@ const TransactionItemComponent: React.FC<{
               target="_blank"
               rel="noopener noreferrer"
               className="opacity-70 hover:opacity-100 transition-opacity"
+              title="View on DexScreener"
             >
               <img src="/dexscreener.png" alt="DexScreener" className="w-5 h-5" />
             </a>
@@ -262,6 +375,7 @@ const TransactionItemComponent: React.FC<{
               target="_blank"
               rel="noopener noreferrer"
               className="opacity-70 hover:opacity-100 transition-opacity"
+              title="View on Solscan"
             >
               <img src="/solscan.png" alt="Solscan" className="w-5 h-5" />
             </a>
@@ -271,6 +385,7 @@ const TransactionItemComponent: React.FC<{
     </div>
   );
 };
+
 
 const ProfessionalInput: React.FC<ProfessionalInputProps> = ({
   value,
@@ -435,7 +550,7 @@ const FlashSniperTradingInterface: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [buyForm, setBuyForm] = useState<BuyFormData>({
-    amount: '0.12000 SOL',
+    amount: '0.01 SOL',
     priorityFee: '0.12000 SOL',
     slippage: '30%',
   });
@@ -536,6 +651,13 @@ const FlashSniperTradingInterface: React.FC = () => {
   // Add this function to handle new trades
   const handleNewTrade = (tradeData: any) => {
     if (tradeData.trade_type === 'buy') {
+      // Check if trade already exists to prevent duplicates
+      const existingTrade = activeTrades.find(t => t.mintAddress === tradeData.mint_address);
+      if (existingTrade) {
+        console.log('Trade already exists:', tradeData.mint_address);
+        return;
+      }
+
       const newTrade: ActiveTrade = {
         mintAddress: tradeData.mint_address,
         pairAddress: tradeData.pair_address,
@@ -546,7 +668,11 @@ const FlashSniperTradingInterface: React.FC = () => {
         buyTimestamp: tradeData.buy_timestamp || new Date().toISOString()
       };
 
-      setActiveTrades(prev => [...prev, newTrade]);
+      setActiveTrades(prev => {
+        // Remove any existing trade with same mintAddress before adding new one
+        const filtered = prev.filter(t => t.mintAddress !== newTrade.mintAddress);
+        return [...filtered, newTrade];
+      });
       
       // Auto-open chart for new trades
       setSelectedTrade(newTrade);
@@ -554,7 +680,7 @@ const FlashSniperTradingInterface: React.FC = () => {
 
       // Notify user
       const notificationLog: LogEntry = {
-        id: `chart-${Date.now()}`,
+        id: `chart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: 'log',
         log_type: 'success',
         message: `📈 Chart opened for ${tradeData.token_symbol}. Monitoring price movements...`,
@@ -563,17 +689,17 @@ const FlashSniperTradingInterface: React.FC = () => {
       handleLogMessage(notificationLog);
     }
 
-    // Remove trade when sold
-    if (tradeData.trade_type === 'sell') {
-      setActiveTrades(prev => prev.filter(trade => trade.mintAddress !== tradeData.mint_address));
-      
-      // Close chart if this was the selected trade
-      if (selectedTrade?.mintAddress === tradeData.mint_address) {
-        setShowChart(false);
-        setSelectedTrade(null);
-      }
+  // Remove trade when sold
+  if (tradeData.trade_type === 'sell') {
+    setActiveTrades(prev => prev.filter(trade => trade.mintAddress !== tradeData.mint_address));
+    
+    // Close chart if this was the selected trade
+    if (selectedTrade?.mintAddress === tradeData.mint_address) {
+      setShowChart(false);
+      setSelectedTrade(null);
     }
-  };
+  }
+};
 
   // Enhanced WebSocket connection with single instance
   useEffect(() => {
@@ -595,6 +721,7 @@ const FlashSniperTradingInterface: React.FC = () => {
     let reconnectAttempts = 0;
     const maxReconnectAttempts = 5;
 
+    // In your WebSocket connection useEffect, improve reconnection:
     const connect = () => {
       try {
         // Close existing connection if any
@@ -608,6 +735,7 @@ const FlashSniperTradingInterface: React.FC = () => {
           console.log('WebSocket connected');
           reconnectAttempts = 0;
           setWebsocket(ws);
+          
           // Send initial connection message
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ 
@@ -615,6 +743,15 @@ const FlashSniperTradingInterface: React.FC = () => {
               wallet_address: walletAddress 
             }));
           }
+          
+          const successLog: LogEntry = {
+            id: `ws-${Date.now()}`,
+            type: 'log',
+            log_type: 'success',
+            message: 'WebSocket connected successfully',
+            timestamp: new Date().toISOString()
+          };
+          handleLogMessage(successLog);
         };
 
         ws.onmessage = async (event) => {
@@ -630,6 +767,15 @@ const FlashSniperTradingInterface: React.FC = () => {
           console.log(`WebSocket disconnected: ${event.code} - ${event.reason}`);
           setWebsocket(null);
           
+          const disconnectLog: LogEntry = {
+            id: `ws-${Date.now()}`,
+            type: 'log',
+            log_type: 'warning',
+            message: `WebSocket disconnected. ${reconnectAttempts < maxReconnectAttempts ? 'Reconnecting...' : 'Max reconnection attempts reached.'}`,
+            timestamp: new Date().toISOString()
+          };
+          handleLogMessage(disconnectLog);
+          
           if (reconnectAttempts < maxReconnectAttempts) {
             const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
             reconnectAttempts++;
@@ -639,6 +785,14 @@ const FlashSniperTradingInterface: React.FC = () => {
 
         ws.onerror = (err) => {
           console.error('WebSocket error:', err);
+          const errorLog: LogEntry = {
+            id: `ws-${Date.now()}`,
+            type: 'log',
+            log_type: 'error',
+            message: 'WebSocket connection error',
+            timestamp: new Date().toISOString()
+          };
+          handleLogMessage(errorLog);
         };
 
       } catch (error) {
@@ -655,6 +809,39 @@ const FlashSniperTradingInterface: React.FC = () => {
     };
   }, [walletAddress, authToken]);
 
+  // Fetch active positions
+  useEffect(() => {
+    const fetchActivePositions = async () => {
+      if (!authToken) return;
+      
+      try {
+        const response = await apiService.request('/trade/active-positions', {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        
+        const formattedTrades: ActiveTrade[] = response.map((pos: any) => ({
+          mintAddress: pos.mint_address,
+          pairAddress: pos.pair_address,
+          tokenSymbol: pos.token_symbol,
+          entryPrice: pos.entry_price,
+          takeProfit: pos.take_profit_target ? pos.entry_price * (1 + pos.take_profit_target / 100) : undefined,
+          stopLoss: pos.stop_loss_target ? pos.entry_price * (1 - pos.stop_loss_target / 100) : undefined,
+          buyTimestamp: pos.buy_timestamp,
+          currentPrice: pos.current_price,
+          pnlPercent: pos.pnl_percent
+        }));
+        
+        setActiveTrades(formattedTrades);
+      } catch (error) {
+        console.error('Error fetching active positions:', error);
+      }
+    };
+
+    fetchActivePositions();
+    const interval = setInterval(fetchActivePositions, 10000); // Update every 10 seconds
+    return () => clearInterval(interval);
+  }, [authToken]);
+
   // Enhanced WebSocket message handler
   const handleWebSocketMessage = async (data: any) => {
     switch (data.type) {
@@ -662,6 +849,36 @@ const FlashSniperTradingInterface: React.FC = () => {
         handleLogMessage(data);
         break;
       case 'trade_instruction':
+        if (data.action === 'sell') {
+          // Create a sell transaction from trade_instruction
+          const sellTransaction: TransactionItem = {
+            id: `sell-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            type: 'sell',
+            token: data.token_symbol || 'UNKNOWN',
+            token_logo: data.token_logo || `https://dd.dexscreener.com/ds-logo/solana/${data.mint}.png`,
+            amount_sol: data.amount_sol || 0,
+            amount_tokens: data.token_amount || 0,
+            profit_sol: data.profit_usd ? data.profit_usd / 100 : undefined, // Convert if needed
+            tx_hash: data.signature,
+            timestamp: new Date().toISOString(),
+            mint_address: data.mint,
+            explorer_urls: data.signature ? {
+              solscan: `https://solscan.io/tx/${data.signature}`,
+              dexScreener: `https://dexscreener.com/solana/${data.mint}`,
+              jupiter: `https://jup.ag/token/${data.mint}`
+            } : undefined
+          };
+          
+          setTransactions(prev => {
+            const filtered = prev.filter(tx => tx.id !== sellTransaction.id);
+            return [sellTransaction, ...filtered.slice(0, 49)];
+          });
+          
+          // Also update total profit
+          if (data.profit_usd) {
+            setTotalProfit(prev => prev + (parseFloat(data.profit_usd) || 0));
+          }
+        }
         await handleTradeInstruction(data);
         break;
       case 'new_pool':
@@ -676,8 +893,58 @@ const FlashSniperTradingInterface: React.FC = () => {
         setBalance(data.balance);
         break;
       case 'trade_update':
-        handleTradeUpdate(data.trade);
-        handleNewTrade(data.trade); 
+        // Handle the trade update from the new format
+        const tradeData = data.trade;
+        
+        // Create a transaction item from the trade update
+        const transactionFromTrade: TransactionItem = {
+          id: tradeData.id || `trade-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          type: tradeData.type || 'buy',
+          token: tradeData.token_symbol || 'UNKNOWN',
+          token_logo: tradeData.token_logo || `https://dd.dexscreener.com/ds-logo/solana/${tradeData.mint_address}.png`,
+          amount_sol: tradeData.amount_sol || 0,
+          amount_tokens: tradeData.amount_tokens || 0,
+          tx_hash: tradeData.tx_hash,
+          timestamp: tradeData.timestamp || new Date().toISOString(),
+          mint_address: tradeData.mint_address,
+          explorer_urls: tradeData.explorer_urls || (tradeData.tx_hash ? {
+            solscan: `https://solscan.io/tx/${tradeData.tx_hash}`,
+            dexScreener: `https://dexscreener.com/solana/${tradeData.mint_address}`,
+            jupiter: `https://jup.ag/token/${tradeData.mint_address}`
+          } : undefined)
+        };
+        
+        // Add to transactions
+        setTransactions(prev => {
+          const filtered = prev.filter(tx => tx.id !== transactionFromTrade.id);
+          return [transactionFromTrade, ...filtered.slice(0, 49)];
+        });
+        
+        // Also handle as an active trade for buy transactions
+        if (tradeData.type === 'buy') {
+          const newTrade: ActiveTrade = {
+            mintAddress: tradeData.mint_address,
+            tokenSymbol: tradeData.token_symbol || 'UNKNOWN',
+            entryPrice: tradeData.price_usd_at_trade,
+            buyTimestamp: tradeData.timestamp || new Date().toISOString()
+          };
+          
+          setActiveTrades(prev => {
+            const filtered = prev.filter(t => t.mintAddress !== newTrade.mintAddress);
+            return [...filtered, newTrade];
+          });
+          
+          // Notify user
+          const notificationLog: LogEntry = {
+            id: `trade-${Date.now()}`,
+            type: 'log',
+            log_type: 'success',
+            message: `📈 Chart opened for ${tradeData.token_symbol}. Monitoring price movements...`,
+            timestamp: new Date().toISOString()
+          };
+          handleLogMessage(notificationLog);
+        }
+        
         break;
       case 'bot_status':
         setIsBotRunning(data.is_running);
@@ -704,6 +971,11 @@ const FlashSniperTradingInterface: React.FC = () => {
   const openTradeChart = (trade: ActiveTrade) => {
     setSelectedTrade(trade);
     setShowChart(true);
+    
+    // Scroll to top on mobile when opening chart
+    if (window.innerWidth < 1024) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Add close chart function
@@ -713,11 +985,11 @@ const FlashSniperTradingInterface: React.FC = () => {
   };
 
   // Add manual sell function
-  const handleManualSell = async () => {
-    if (!selectedTrade) return;
+  const handleManualSell = async (trade?: ActiveTrade) => {
+    const targetTrade = trade || selectedTrade;
+    if (!targetTrade) return;
     
     try {
-      // Implement manual sell logic here
       const response = await apiService.request('/trade/manual-sell', {
         method: 'POST',
         headers: { 
@@ -725,15 +997,35 @@ const FlashSniperTradingInterface: React.FC = () => {
           'Authorization': `Bearer ${authToken}` 
         },
         body: JSON.stringify({
-          mint_address: selectedTrade.mintAddress,
+          mint_address: targetTrade.mintAddress,
           amount_percentage: 100 // Sell 100%
         })
       });
       
-      // Close chart after sell
-      closeChart();
+      // Show success message
+      const successLog: LogEntry = {
+        id: `sell-${Date.now()}`,
+        type: 'log',
+        log_type: 'success',
+        message: `✅ Manual sell order placed for ${targetTrade.tokenSymbol}`,
+        timestamp: new Date().toISOString()
+      };
+      handleLogMessage(successLog);
+      
+      // Close chart if this was the selected trade
+      if (selectedTrade?.mintAddress === targetTrade.mintAddress) {
+        closeChart();
+      }
     } catch (error) {
       console.error('Manual sell error:', error);
+      const errorLog: LogEntry = {
+        id: `sell-error-${Date.now()}`,
+        type: 'log',
+        log_type: 'error',
+        message: `❌ Failed to sell ${targetTrade.tokenSymbol}: ${error}`,
+        timestamp: new Date().toISOString()
+      };
+      handleLogMessage(errorLog);
     }
   };
 
@@ -760,9 +1052,13 @@ const FlashSniperTradingInterface: React.FC = () => {
     setLogs(prev => [newLog, ...prev.slice(0, 199)]);
   };
 
+  // Update your handleTradeUpdate function to ensure unique IDs:
   const handleTradeUpdate = (trade: any) => {
+    // Create a more unique ID using timestamp and random string
+    const uniqueId = `${trade.timestamp || new Date().toISOString()}-${Math.random().toString(36).substr(2, 9)}-${trade.mint_address || 'unknown'}`;
+    
     const newTx: TransactionItem = {
-      id: trade.id || `${trade.timestamp}-${Math.random().toString(36).substr(2, 9)}`,
+      id: trade.id || uniqueId,
       type: trade.trade_type === 'buy' ? 'buy' : 'sell',
       token: trade.token_symbol || 'UNKNOWN',
       token_logo: trade.token_logo || `https://dd.dexscreener.com/ds-logo/solana/${trade.mint_address}.png`,
@@ -779,9 +1075,12 @@ const FlashSniperTradingInterface: React.FC = () => {
       } : undefined
     };
 
-    // setTransactions(prev => [newTx, ...prev.slice(0, 49)]);
-    // FIX: Prepend new transactions and keep only the most recent 50
-    setTransactions(prev => [newTx, ...prev.slice(0, 49)]);
+    // Use functional update to avoid stale state and ensure uniqueness
+    setTransactions(prev => {
+      // Filter out any existing transactions with the same ID to prevent duplicates
+      const filtered = prev.filter(tx => tx.id !== newTx.id);
+      return [newTx, ...filtered.slice(0, 49)];
+    });
   };
 
   const handleNewPoolDetection = (pool: any) => {
@@ -1015,6 +1314,19 @@ const FlashSniperTradingInterface: React.FC = () => {
     return interval;
   };
 
+  // Add this inside your FlashSniperTradingInterface component
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      setAuthToken(null);
+      localStorage.removeItem('authToken');
+      alert('Your session has expired. Please reconnect your wallet.');
+      window.location.reload();
+    };
+
+    window.addEventListener('auth-expired', handleAuthExpired);
+    return () => window.removeEventListener('auth-expired', handleAuthExpired);
+  }, []);
+
   // Check if bot was running before page refresh
   useEffect(() => {
     const wasBotRunning = localStorage.getItem(`bot_running_${walletAddress}`);
@@ -1025,6 +1337,89 @@ const FlashSniperTradingInterface: React.FC = () => {
   }, [walletAddress, authToken, balance]);
 
   // Fetch transaction history
+  // useEffect(() => {
+  //   const fetchTransactions = async () => {
+  //     if (!authToken) return;
+  //     try {
+  //       const response = await apiService.request('/trade/history', {
+  //         headers: { Authorization: `Bearer ${authToken}` },
+  //       });
+
+  //       // In your fetchTransactions function, update the mapping:
+  //       const formatted: TransactionItem[] = response.map((t: any, index: number) => {
+  //         // Check if amount_tokens is a string and convert it
+  //         let amountTokens = 0;
+  //         if (t.amount_tokens) {
+  //           if (typeof t.amount_tokens === 'string') {
+  //             amountTokens = parseFloat(t.amount_tokens);
+  //           } else if (typeof t.amount_tokens === 'number') {
+  //             amountTokens = t.amount_tokens;
+  //           }
+  //         }
+          
+  //         // Check if amount_sol is a string and convert it
+  //         let amountSol = 0;
+  //         if (t.amount_sol) {
+  //           if (typeof t.amount_sol === 'string') {
+  //             amountSol = parseFloat(t.amount_sol);
+  //           } else if (typeof t.amount_sol === 'number') {
+  //             amountSol = t.amount_sol;
+  //           }
+  //         }
+          
+  //         // Safely parse profit_sol
+  //         let profitSol: number | undefined = undefined;
+  //         if (t.profit_sol !== null && t.profit_sol !== undefined) {
+  //           if (typeof t.profit_sol === 'string') {
+  //             profitSol = parseFloat(t.profit_sol);
+  //           } else if (typeof t.profit_sol === 'number') {
+  //             profitSol = t.profit_sol;
+  //           }
+  //         }
+          
+  //         // Ensure timestamp is valid
+  //         let timestamp = t.timestamp;
+  //         try {
+  //           const date = new Date(timestamp);
+  //           if (isNaN(date.getTime())) {
+  //             // If invalid, use current time
+  //             timestamp = new Date().toISOString();
+  //           }
+  //         } catch (error) {
+  //           timestamp = new Date().toISOString();
+  //         }
+          
+  //         return {
+  //           id: t.id || `${timestamp}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+  //           type: t.type || 'buy',
+  //           token: t.token_symbol || t.token || t.mint_address?.substring(0, 8) || 'UNKNOWN',
+  //           token_logo: t.token_logo || `https://dd.dexscreener.com/ds-logo/solana/${t.mint_address || 'unknown'}.png`,
+  //           amount_sol: amountSol,
+  //           amount_tokens: amountTokens,
+  //           tx_hash: t.tx_hash,
+  //           timestamp: timestamp,
+  //           profit_sol: profitSol,
+  //           mint_address: t.mint_address,
+  //           explorer_urls: t.tx_hash ? {
+  //             solscan: `https://solscan.io/tx/${t.tx_hash}`,
+  //             dexScreener: `https://dexscreener.com/solana/${t.mint_address || t.tx_hash}`,
+  //             jupiter: `https://jup.ag/token/${t.mint_address}`
+  //           } : undefined
+  //         };
+  //       });
+
+  //       setTransactions(formatted);
+  //     } catch (err) {
+  //       console.error("Failed to load history", err);
+  //     }
+  //   };
+
+  //   fetchTransactions();
+  //   const interval = setInterval(fetchTransactions, 10000); // Every 10 seconds
+  //   return () => clearInterval(interval);
+  // }, [authToken]);
+
+  // Fetch transaction history
   useEffect(() => {
     const fetchTransactions = async () => {
       if (!authToken) return;
@@ -1033,27 +1428,89 @@ const FlashSniperTradingInterface: React.FC = () => {
           headers: { Authorization: `Bearer ${authToken}` },
         });
 
-        const formatted: TransactionItem[] = response.map((t: any) => ({
-          id: t.id || `${t.timestamp}-${Math.random().toString(36).substr(2, 9)}`,
-          type: t.type,
-          token: t.token || 'UNKNOWN',
-          token_logo: t.token_logo || `https://dd.dexscreener.com/ds-logo/solana/${t.mint_address || 'unknown'}.png`,
-          amount_sol: parseFloat(t.amount_sol) || 0,
-          amount_tokens: t.amount_tokens || 0,
-          tx_hash: t.tx_hash,
-          timestamp: t.timestamp,
-          profit_sol: t.profit_sol,
-          mint_address: t.mint_address,
-          explorer_urls: t.tx_hash ? {
-            solscan: `https://solscan.io/tx/${t.tx_hash}`,
-            dexScreener: `https://dexscreener.com/solana/${t.tx_hash}`,
-            jupiter: `https://jup.ag/tx/${t.tx_hash}`
-          } : undefined
-        }));
+        console.log('Transactions API response:', response); // Debug log
+
+        const formatted: TransactionItem[] = response.map((t: any, index: number) => {
+          // Ensure we have valid data
+          if (!t) return null;
+          
+          // Parse amounts with better error handling
+          let amountTokens = 0;
+          let amountSol = 0;
+          let profitSol: number | undefined = undefined;
+          
+          try {
+            amountTokens = parseFloat(t.amount_tokens || t.token_amount || 0);
+          } catch (e) {
+            console.warn('Error parsing amount_tokens:', t.amount_tokens);
+          }
+          
+          try {
+            amountSol = parseFloat(t.amount_sol || 0);
+          } catch (e) {
+            console.warn('Error parsing amount_sol:', t.amount_sol);
+          }
+          
+          try {
+            profitSol = t.profit_sol !== undefined && t.profit_sol !== null 
+              ? parseFloat(t.profit_sol) 
+              : undefined;
+          } catch (e) {
+            console.warn('Error parsing profit_sol:', t.profit_sol);
+          }
+          
+          // Ensure timestamp is valid
+          let timestamp = t.timestamp || t.buy_timestamp || t.sell_timestamp || new Date().toISOString();
+          try {
+            const date = new Date(timestamp);
+            if (isNaN(date.getTime())) {
+              timestamp = new Date().toISOString();
+            }
+          } catch (error) {
+            timestamp = new Date().toISOString();
+          }
+          
+          // Get token symbol from various possible fields
+          const tokenSymbol = t.token_symbol || t.token || t.mint_address?.substring(0, 8) || 'UNKNOWN';
+          
+          // Get token logo - check multiple possible sources
+          const tokenLogo = t.token_logo || 
+                          t.token_logo_url || 
+                          `https://dd.dexscreener.com/ds-logo/solana/${t.mint_address || 'unknown'}.png`;
+          
+          // Get transaction type
+          const type = t.type || t.trade_type || (t.sell_timestamp ? 'sell' : 'buy');
+          
+          // Create explorer URLs if we have a transaction hash
+          let explorer_urls = undefined;
+          if (t.tx_hash || t.buy_tx_hash || t.sell_tx_hash) {
+            const txHash = t.tx_hash || t.buy_tx_hash || t.sell_tx_hash;
+            explorer_urls = {
+              solscan: `https://solscan.io/tx/${txHash}`,
+              dexScreener: `https://dexscreener.com/solana/${t.mint_address || txHash}`,
+              jupiter: `https://jup.ag/token/${t.mint_address || 'unknown'}`
+            };
+          }
+          
+          return {
+            id: t.id || `${timestamp}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+            type: type,
+            token: tokenSymbol,
+            token_logo: tokenLogo,
+            amount_sol: amountSol,
+            amount_tokens: amountTokens,
+            tx_hash: t.tx_hash || t.buy_tx_hash || t.sell_tx_hash,
+            timestamp: timestamp,
+            profit_sol: profitSol,
+            mint_address: t.mint_address,
+            explorer_urls: explorer_urls
+          };
+        }).filter(Boolean); // Remove any null entries
 
         setTransactions(formatted);
+        
       } catch (err) {
-        console.error("Failed to load history", err);
+        console.error("Failed to load transaction history:", err);
       }
     };
 
@@ -1138,14 +1595,22 @@ const FlashSniperTradingInterface: React.FC = () => {
         const response = await apiService.request('/trade/sniped-count', {
           headers: { Authorization: `Bearer ${authToken}` },
         });
-        setSnipedCount(response.sniped_count);
+        console.log('Sniped count API response:', response); // Debug
+        setSnipedCount(response.sniped_count || response.count || 0);
       } catch (error) {
         console.error('Error fetching sniped token count:', error);
+        setSnipedCount(0); // Set default
       }
     };
+    
     fetchSnipedCount();
-  }, [authToken]);
+    // Refresh when new transactions occur
+    if (transactions.length > 0) {
+      fetchSnipedCount();
+    }
+  }, [authToken, transactions]);
 
+  // Fetch total profit
   useEffect(() => {
     const fetchTotalProfit = async () => {
       if (!authToken) return;
@@ -1153,13 +1618,27 @@ const FlashSniperTradingInterface: React.FC = () => {
         const response = await apiService.request('/trade/lifetime-profit', {
           headers: { Authorization: `Bearer ${authToken}` },
         });
-        setTotalProfit(response.total_profit || 0);
+        console.log('Total profit API response:', response); // Debug
+        
+        // Try multiple possible field names
+        const profit = response.total_profit || 
+                      response.profit || 
+                      response.total_profit_sol || 
+                      0;
+        
+        setTotalProfit(parseFloat(profit) || 0);
       } catch (error) {
         console.error('Error fetching total profit:', error);
+        setTotalProfit(0); // Set default
       }
     };
+    
     fetchTotalProfit();
-  }, [authToken]);
+    // Refresh when new transactions occur (especially sells)
+    if (transactions.some(tx => tx.type === 'sell')) {
+      fetchTotalProfit();
+    }
+  }, [authToken, transactions]);
 
   const fetchBalance = useCallback(
     async (publicKey: PublicKey): Promise<void> => {
@@ -1346,49 +1825,118 @@ const FlashSniperTradingInterface: React.FC = () => {
   );
 
   const ActiveTradesPanel = () => {
+    // Only show when there are active trades
     if (activeTrades.length === 0) return null;
 
     return (
       <div className="bg-dark-2 border-b border-[#ffffff1e] p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-white text-sm font-semibold">Active Trades</h3>
-          <span className="text-gray-400 text-xs">{activeTrades.length} open</span>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <h3 className="text-white text-sm font-semibold">Active Positions</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400 bg-dark-1 px-2 py-1 rounded-full">
+              {activeTrades.length} open
+            </span>
+          </div>
         </div>
-        <div className="space-y-2 max-h-40 overflow-y-auto">
-          {activeTrades.map((trade) => {
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto">
+          {activeTrades.map((trade, index) => {
             let timeAgo = 0;
+            let timeText = 'Just now';
+            
             try {
               const buyDate = new Date(trade.buyTimestamp);
               if (!isNaN(buyDate.getTime())) {
-                timeAgo = Math.floor((Date.now() - buyDate.getTime()) / 60000);
+                const diffMinutes = Math.floor((Date.now() - buyDate.getTime()) / 60000);
+                const diffHours = Math.floor(diffMinutes / 60);
+                
+                if (diffHours > 0) {
+                  timeText = `${diffHours}h ${diffMinutes % 60}m ago`;
+                } else if (diffMinutes > 0) {
+                  timeText = `${diffMinutes}m ago`;
+                }
               }
             } catch (error) {
               console.error('Error calculating time ago:', error);
             }
-            
+
             return (
-              <div key={trade.mintAddress} className="flex items-center justify-between p-3 bg-dark-1 rounded-lg hover:bg-dark-3 transition-colors">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">
-                      {trade.tokenSymbol?.substring(0, 2)}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-white text-sm font-medium truncate">{trade.tokenSymbol}</div>
-                    <div className="text-gray-400 text-xs flex items-center gap-2">
-                      <span>Entry: ${trade.entryPrice?.toFixed(6)}</span>
-                      <span>•</span>
-                      <span>{timeAgo}m ago</span>
+              <div 
+                key={`${trade.mintAddress}-${index}`}
+                className="bg-dark-1 rounded-xl p-4 border border-[#2a2d45] hover:border-[#3a3f5d] transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">
+                        {trade.tokenSymbol?.substring(0, 2) || '??'}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium text-sm">{trade.tokenSymbol || 'Unknown'}</div>
+                      <div className="text-gray-400 text-xs">{timeText}</div>
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => openTradeChart(trade)}
-                  className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors whitespace-nowrap"
-                >
-                  View Chart
-                </button>
+
+                {/* Stats */}
+                <div className="space-y-2 mb-3">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-gray-400">Entry Price</span>
+                    <span className="text-white font-medium">
+                      ${trade.entryPrice?.toFixed(6) || '0.000000'}
+                    </span>
+                  </div>
+                  
+                  {trade.takeProfit && (
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-400">Take Profit</span>
+                      <span className="text-green-400 font-medium">
+                        ${trade.takeProfit.toFixed(6)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {trade.stopLoss && (
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-400">Stop Loss</span>
+                      <span className="text-red-400 font-medium">
+                        ${trade.stopLoss.toFixed(6)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => openTradeChart(trade)}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Chart
+                  </button>
+                  
+                  <button
+                    onClick={() => handleManualSell(trade)}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    Sell
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -1500,6 +2048,7 @@ const FlashSniperTradingInterface: React.FC = () => {
             </div>
           )}
         </header>
+        
         <div className="flex flex-col items-center justify-center py-8 md:py-16 px-4 md:px-8">
           <h1 className="text-white text-lg font-black text-center mb-4 md:mb-6">Welcome to</h1>
           <div className="flex items-center gap-4 mb-6 md:mb-8">
@@ -1517,6 +2066,9 @@ const FlashSniperTradingInterface: React.FC = () => {
             <div className="w-px h-4 bg-white mx-auto"></div>
           </div>
         </div>
+
+
+
         <div className="flex flex-col lg:flex-row">
           <div className="lg:order-2 lg:flex-1 bg-overlay">
             <div className="bg-primary border-t border-b border-[#ffffff1e] h-12 flex">
@@ -2053,7 +2605,7 @@ const FlashSniperTradingInterface: React.FC = () => {
 
           <div className="lg:order-1 lg:w-[823px] bg-secondary border-r border-[#ffffff21]">
             {/* Active Trades Panel - Only show when there are active trades */}
-            {activeTrades.length > 0 && <ActiveTradesPanel />}
+            {/* {activeTrades.length > 0 && <ActiveTradesPanel />} */}
             
             {/* Tabs Header */}
             <div className="bg-primary border-t border-b border-[#ffffff1e] h-12 flex">
@@ -2113,7 +2665,7 @@ const FlashSniperTradingInterface: React.FC = () => {
             </a>
           </div>
         </footer>
-        {showChart && selectedTrade && (
+        {/* {showChart && selectedTrade && (
           <EnhancedTradingChart
             mintAddress={selectedTrade.mintAddress}
             pairAddress={selectedTrade.pairAddress}
@@ -2125,7 +2677,7 @@ const FlashSniperTradingInterface: React.FC = () => {
             onChartClose={closeChart}
             onSellClick={handleManualSell}
           />
-        )}
+        )} */}
 
       </div>
     </div>

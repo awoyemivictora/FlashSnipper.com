@@ -18,7 +18,6 @@ from solders.keypair import Keypair
 from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
 from app.config import settings
-from jupiter_python_sdk.jupiter import Jupiter
 
 logger = get_logger(__name__)
 

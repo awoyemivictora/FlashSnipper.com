@@ -1,0 +1,888 @@
+2025-11-30 19:26:04,298 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 19:26:04,298 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 19:26:04,298 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 19:26:04,318 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 19:26:11,464 - root - websocket_endpoint:1414 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 19:26:42,121 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:26:42,138 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 19:26:43,145 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:26:54,235 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:27:04,892 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:27:15,674 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:27:26,582 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:27:37,854 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:27:48,671 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:27:59,517 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:28:11,072 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:28:21,849 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:28:32,579 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:28:43,503 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:28:54,156 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:29:04,919 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:29:15,616 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:29:26,511 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:29:37,244 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:29:48,005 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:29:58,744 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:30:09,397 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:30:20,054 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:30:30,919 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:30:41,659 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:30:52,349 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:31:02,970 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:31:13,661 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:31:24,490 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:31:35,145 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:31:45,898 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:31:56,754 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:32:07,430 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:32:18,094 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:32:28,977 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:32:39,738 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:32:50,433 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:33:01,110 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:33:11,758 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:33:22,449 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:33:33,105 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:33:43,801 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:33:54,655 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:34:05,404 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:34:16,072 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:34:26,692 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:34:37,329 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:34:48,229 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:34:58,968 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:35:10,999 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:35:21,784 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:35:32,476 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:35:43,115 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:35:54,014 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:36:04,739 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:36:15,529 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:36:26,683 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:36:37,400 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:36:48,442 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:37:02,273 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:37:13,039 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:37:24,059 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:37:34,739 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:37:45,650 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:37:56,343 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:38:07,520 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:38:18,252 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:38:28,893 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:38:39,620 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:38:50,241 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:39:00,878 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:39:11,512 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:39:22,225 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:39:32,921 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:39:43,659 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:39:54,341 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:40:05,317 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:40:16,068 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:40:27,100 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:40:37,828 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:40:48,499 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:40:59,213 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:41:09,916 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:41:20,917 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:41:31,791 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:41:42,474 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:41:53,067 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:42:03,796 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:42:14,620 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:42:25,539 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:42:36,264 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:42:47,096 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:42:57,733 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:43:08,490 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:43:19,184 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:43:30,000 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:43:40,993 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:43:51,761 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:44:02,495 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:44:13,266 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:44:23,934 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:44:34,681 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:44:45,332 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:44:56,041 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:45:06,835 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:45:17,592 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:45:28,277 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:45:38,928 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:45:49,564 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:46:00,212 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:46:10,855 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:46:21,471 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:46:32,153 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:46:42,838 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:46:53,523 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:47:04,238 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:47:14,926 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:47:25,640 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:47:36,545 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:47:47,190 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:47:57,905 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:48:08,723 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:48:19,393 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:48:30,276 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:48:41,112 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:48:51,865 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:49:02,612 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:49:13,418 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:49:24,307 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:49:35,032 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:49:45,690 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:49:56,651 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:50:07,468 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:50:18,253 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:50:28,924 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:50:39,748 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:50:50,394 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:51:01,111 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:51:11,813 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:51:22,759 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:51:33,410 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:51:44,170 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:51:55,219 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:52:05,878 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:52:16,559 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:52:27,323 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:52:38,304 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:52:49,300 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:53:00,304 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:53:11,466 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:53:22,188 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:53:32,895 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:53:43,579 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:53:54,215 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:54:05,051 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 19:54:07,438 - root - websocket_endpoint:1414 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 19:54:07,440 - root - websocket_endpoint:1414 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 19:54:07,540 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 19:54:07,542 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 19:54:08,812 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 19:54:08,812 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 19:54:08,812 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 19:54:08,835 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 19:54:09,510 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 19:54:09,510 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 19:54:09,510 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 19:54:09,515 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 19:54:39,656 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 19:54:39,656 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 19:54:39,656 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 19:54:39,661 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 20:03:30,749 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 20:03:30,750 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 20:03:30,750 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 20:03:30,773 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 20:04:02,486 - root - websocket_endpoint:1417 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 20:04:03,662 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 20:04:04,481 - root - websocket_endpoint:1417 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 20:04:05,313 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 21:43:57,138 - root - find_raydium_pool_creations:592 - INFO - Found 1 pool creation instruction(s) in transaction 5f6GZhKaEiTkKzUd11uBV7KjBgGpW7U8yCSjyBVoSQBAFvMPc8YoDef5wHghpNTZFyiMNasJMwgbkBGhXESPzNyu
+2025-11-30 21:43:57,140 - root - handle_raydium_transaction:490 - INFO - Raydium pool detected → 1 pool(s) | Tx: 5f6GZhKaEiTkKzUd11uBV7KjBgGpW7U8yCSjyBVoSQBAFvMPc8YoDef5wHghpNTZFyiMNasJMwgbkBGhXESPzNyu
+2025-11-30 21:43:57,267 - root - process_pool_creations:642 - INFO - Saved 1 new pool(s) | Fast-track Pump.fun tokens in 3s
+2025-11-30 21:44:25,811 - root - process_token_logic:1018 - INFO - Processing and Analysing → DRpM4zdi for Moonbag Potential...
+2025-11-30 21:44:27,083 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/DRpM4zdiWzgH6oZeEHAg2kRu44T4AwnuHHAvfYW6hFDM "HTTP/1.1 200 OK"
+2025-11-30 21:44:27,085 - app.utils.dexscreener_api - get_dexscreener_data:46 - INFO - No Dexscreener data found for DRpM4zdiWzgH6oZeEHAg2kRu44T4AwnuHHAvfYW6hFDM
+2025-11-30 21:44:27,085 - app.utils.dexscreener_api - fetch_dexscreener_with_retry:162 - INFO - DexScreener not ready DRpM4zdi → waiting 8s (attempt 1)
+2025-11-30 21:44:36,876 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/DRpM4zdiWzgH6oZeEHAg2kRu44T4AwnuHHAvfYW6hFDM "HTTP/1.1 200 OK"
+2025-11-30 21:44:36,881 - app.utils.dexscreener_api - fetch_dexscreener_with_retry:158 - INFO - DexScreener ready → DRpM4zdi | $0.0038220000 | MC: $496,922 | Attempt 2
+2025-11-30 21:44:52,725 - root - process_token_logic:1116 - INFO - MOONBAG → PEPEMAS  | STRONG_BUY | Score: 96.6 | Conf: 100%
+2025-11-30 21:44:52,761 - root - process_token_logic:1197 - INFO - Analysis complete: DRpM4zdi in 26.9s
+2025-11-30 21:44:52,772 - root - safe_enrich_token:1000 - INFO - Successfully enriched and marked as processed: DRpM4zdi
+2025-11-30 22:51:09,424 - root - find_raydium_pool_creations:592 - INFO - Found 1 pool creation instruction(s) in transaction V3Mx5jMpM1QWSkbmx4vSFs5gUH1zNDdxNw6UdNB9nWxmc2cfo5UKrEcCTdFShzb7xnnbmU3EgpQXHXNMcRnb7L4
+2025-11-30 22:51:09,426 - root - handle_raydium_transaction:490 - INFO - Raydium pool detected → 1 pool(s) | Tx: V3Mx5jMpM1QWSkbmx4vSFs5gUH1zNDdxNw6UdNB9nWxmc2cfo5UKrEcCTdFShzb7xnnbmU3EgpQXHXNMcRnb7L4
+2025-11-30 22:51:09,452 - root - process_pool_creations:642 - INFO - Saved 1 new pool(s) | Fast-track Pump.fun tokens in 3s
+2025-11-30 22:51:39,027 - root - process_token_logic:1018 - INFO - Processing and Analysing → MAXFa7Y5 for Moonbag Potential...
+2025-11-30 22:51:40,258 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 22:51:40,261 - app.utils.dexscreener_api - get_dexscreener_data:46 - INFO - No Dexscreener data found for MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu
+2025-11-30 22:51:40,263 - app.utils.dexscreener_api - fetch_dexscreener_with_retry:162 - INFO - DexScreener not ready MAXFa7Y5 → waiting 8s (attempt 1)
+2025-11-30 22:51:49,334 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 22:51:49,343 - app.utils.dexscreener_api - fetch_dexscreener_with_retry:158 - INFO - DexScreener ready → MAXFa7Y5 | $6.8700000000 | MC: $144,313 | Attempt 2
+2025-11-30 22:52:04,008 - root - process_token_logic:1116 - INFO - MOONBAG → GRINCHMAS | STRONG_BUY | Score: 100.0 | Conf: 100%
+2025-11-30 22:52:04,149 - root - process_token_logic:1197 - INFO - Analysis complete: MAXFa7Y5 in 25.1s
+2025-11-30 22:52:04,159 - root - safe_enrich_token:1000 - INFO - Successfully enriched and marked as processed: MAXFa7Y5
+2025-11-30 22:57:06,699 - root - websocket_endpoint:1417 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 22:57:06,703 - root - websocket_endpoint:1417 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 22:57:06,704 - root - websocket_endpoint:1417 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 22:57:06,711 - root - websocket_endpoint:1417 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 22:59:53,483 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 22:59:53,483 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 22:59:53,483 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 22:59:53,505 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 22:59:54,536 - root - restore_persistent_bots:1316 - INFO - Restored persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 22:59:54,541 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 22:59:55,429 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 22:59:55,539 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 22:59:55,628 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 22:59:56,921 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 22:59:57,907 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 22:59:57,916 - app.utils.bot_components - execute_jupiter_swap:241 - ERROR - ❌ BUY FAILED TO SEND TRANSACTION: SendTransactionPreflightFailureMessage { message: "Transaction simulation failed: Blockhash not found", data: RpcSimulateTransactionResult(RpcSimulateTransactionResult { err: Some(BlockhashNotFound), logs: Some([]), accounts: None, units_consumed: Some(0), return_data: None, inner_instructions: None, replacement_blockhash: None }) }
+2025-11-30 22:59:57,918 - app.utils.bot_components - execute_user_buy:318 - ERROR - BUY FAILED: Transaction send failed: SendTransactionPreflightFailureMessage { message: "Transaction simulation failed: Blockhash not found", data: RpcSimulateTransactionResult(RpcSimulateTransactionResult { err: Some(BlockhashNotFound), logs: Some([]), accounts: None, units_consumed: Some(0), return_data: None, inner_instructions: None, replacement_blockhash: None }) }
+2025-11-30 22:59:58,953 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 22:59:58,965 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:00:00,541 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:00:00,591 - root - start_persistent_bot_for_user:192 - INFO - Bot already running for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:00:02,316 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:00:02,319 - app.utils.bot_components - execute_jupiter_swap:241 - ERROR - ❌ BUY FAILED TO SEND TRANSACTION: SendTransactionPreflightFailureMessage { message: "Transaction simulation failed: Blockhash not found", data: RpcSimulateTransactionResult(RpcSimulateTransactionResult { err: Some(BlockhashNotFound), logs: Some([]), accounts: None, units_consumed: Some(0), return_data: None, inner_instructions: None, replacement_blockhash: None }) }
+2025-11-30 23:00:02,320 - app.utils.bot_components - execute_user_buy:318 - ERROR - BUY FAILED: Transaction send failed: SendTransactionPreflightFailureMessage { message: "Transaction simulation failed: Blockhash not found", data: RpcSimulateTransactionResult(RpcSimulateTransactionResult { err: Some(BlockhashNotFound), logs: Some([]), accounts: None, units_consumed: Some(0), return_data: None, inner_instructions: None, replacement_blockhash: None }) }
+2025-11-30 23:00:14,101 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:00:14,110 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:00:14,118 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:00:15,904 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:00:15,907 - app.utils.bot_components - execute_jupiter_swap:241 - ERROR - ❌ BUY FAILED TO SEND TRANSACTION: SendTransactionPreflightFailureMessage { message: "Transaction simulation failed: Blockhash not found", data: RpcSimulateTransactionResult(RpcSimulateTransactionResult { err: Some(BlockhashNotFound), logs: Some([]), accounts: None, units_consumed: Some(0), return_data: None, inner_instructions: None, replacement_blockhash: None }) }
+2025-11-30 23:00:15,908 - app.utils.bot_components - execute_user_buy:318 - ERROR - BUY FAILED: Transaction send failed: SendTransactionPreflightFailureMessage { message: "Transaction simulation failed: Blockhash not found", data: RpcSimulateTransactionResult(RpcSimulateTransactionResult { err: Some(BlockhashNotFound), logs: Some([]), accounts: None, units_consumed: Some(0), return_data: None, inner_instructions: None, replacement_blockhash: None }) }
+2025-11-30 23:00:16,914 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:00:16,926 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:00:19,100 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:00:19,102 - app.utils.bot_components - execute_jupiter_swap:241 - ERROR - ❌ BUY FAILED TO SEND TRANSACTION: SendTransactionPreflightFailureMessage { message: "Transaction simulation failed: Blockhash not found", data: RpcSimulateTransactionResult(RpcSimulateTransactionResult { err: Some(BlockhashNotFound), logs: Some([]), accounts: None, units_consumed: Some(0), return_data: None, inner_instructions: None, replacement_blockhash: None }) }
+2025-11-30 23:00:19,102 - app.utils.bot_components - execute_user_buy:318 - ERROR - BUY FAILED: Transaction send failed: SendTransactionPreflightFailureMessage { message: "Transaction simulation failed: Blockhash not found", data: RpcSimulateTransactionResult(RpcSimulateTransactionResult { err: Some(BlockhashNotFound), logs: Some([]), accounts: None, units_consumed: Some(0), return_data: None, inner_instructions: None, replacement_blockhash: None }) }
+2025-11-30 23:00:31,033 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:00:31,044 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:00:31,048 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:00:32,251 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:00:32,253 - app.utils.bot_components - execute_jupiter_swap:241 - ERROR - ❌ BUY FAILED TO SEND TRANSACTION: SendTransactionPreflightFailureMessage { message: "Transaction simulation failed: Blockhash not found", data: RpcSimulateTransactionResult(RpcSimulateTransactionResult { err: Some(BlockhashNotFound), logs: Some([]), accounts: None, units_consumed: Some(0), return_data: None, inner_instructions: None, replacement_blockhash: None }) }
+2025-11-30 23:00:32,254 - app.utils.bot_components - execute_user_buy:318 - ERROR - BUY FAILED: Transaction send failed: SendTransactionPreflightFailureMessage { message: "Transaction simulation failed: Blockhash not found", data: RpcSimulateTransactionResult(RpcSimulateTransactionResult { err: Some(BlockhashNotFound), logs: Some([]), accounts: None, units_consumed: Some(0), return_data: None, inner_instructions: None, replacement_blockhash: None }) }
+2025-11-30 23:00:33,262 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:00:33,270 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:00:33,285 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:00:33,286 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:00:33,391 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:00:33,392 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:06:10,150 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:06:10,151 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:06:10,151 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:06:10,172 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:06:17,316 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:06:26,306 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:06:26,324 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:06:26,946 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:06:26,973 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:06:26,984 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:06:28,474 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:06:28,479 - app.utils.bot_components - execute_jupiter_swap:169 - ERROR - FAILURE BUY SEND FAILED: 'solders.message.MessageV0' object has no attribute 'compiled_instructions'
+2025-11-30 23:06:28,482 - app.utils.bot_components - execute_user_buy:248 - ERROR - BUY FAILED: Failed to send transaction: 'solders.message.MessageV0' object has no attribute 'compiled_instructions'
+2025-11-30 23:06:29,489 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:06:29,498 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:06:30,697 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:06:30,700 - app.utils.bot_components - execute_jupiter_swap:169 - ERROR - FAILURE BUY SEND FAILED: 'solders.message.MessageV0' object has no attribute 'compiled_instructions'
+2025-11-30 23:06:30,701 - app.utils.bot_components - execute_user_buy:248 - ERROR - BUY FAILED: Failed to send transaction: 'solders.message.MessageV0' object has no attribute 'compiled_instructions'
+2025-11-30 23:06:42,350 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:06:42,359 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:06:42,367 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:06:43,642 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:06:43,644 - app.utils.bot_components - execute_jupiter_swap:169 - ERROR - FAILURE BUY SEND FAILED: 'solders.message.MessageV0' object has no attribute 'compiled_instructions'
+2025-11-30 23:06:43,645 - app.utils.bot_components - execute_user_buy:248 - ERROR - BUY FAILED: Failed to send transaction: 'solders.message.MessageV0' object has no attribute 'compiled_instructions'
+2025-11-30 23:06:44,654 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:06:44,661 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:06:46,165 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:06:46,166 - app.utils.bot_components - execute_jupiter_swap:169 - ERROR - FAILURE BUY SEND FAILED: 'solders.message.MessageV0' object has no attribute 'compiled_instructions'
+2025-11-30 23:06:46,168 - app.utils.bot_components - execute_user_buy:248 - ERROR - BUY FAILED: Failed to send transaction: 'solders.message.MessageV0' object has no attribute 'compiled_instructions'
+2025-11-30 23:06:55,459 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:06:55,460 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:06:55,560 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:06:55,562 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:07:22,308 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:07:22,308 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:07:22,308 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:07:22,338 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:07:24,751 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:07:34,112 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:07:34,131 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:07:34,721 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:07:34,748 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:07:34,758 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:07:36,097 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:07:36,103 - app.utils.bot_components - execute_jupiter_swap:177 - ERROR - FAILURE BUY SEND FAILED: 'dict' object has no attribute 'preflight_commitment'
+2025-11-30 23:07:36,104 - app.utils.bot_components - execute_user_buy:256 - ERROR - BUY FAILED: Failed to send transaction: 'dict' object has no attribute 'preflight_commitment'
+2025-11-30 23:07:37,113 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:07:37,122 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:07:38,649 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:07:38,651 - app.utils.bot_components - execute_jupiter_swap:177 - ERROR - FAILURE BUY SEND FAILED: 'dict' object has no attribute 'preflight_commitment'
+2025-11-30 23:07:38,653 - app.utils.bot_components - execute_user_buy:256 - ERROR - BUY FAILED: Failed to send transaction: 'dict' object has no attribute 'preflight_commitment'
+2025-11-30 23:07:42,465 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:07:42,466 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:07:42,567 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:07:42,568 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:08:29,927 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:08:29,927 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:08:29,927 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:08:29,966 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:08:34,965 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:08:42,525 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:08:42,540 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:08:43,656 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:08:43,680 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:08:43,689 - app.utils.bot_components - execute_user_buy:247 - ERROR - BUY FAILED: execute_jupiter_swap() got an unexpected keyword argument 'priority_fee_micro_lamports'
+2025-11-30 23:08:44,696 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:08:44,705 - app.utils.bot_components - execute_user_buy:247 - ERROR - BUY FAILED: execute_jupiter_swap() got an unexpected keyword argument 'priority_fee_micro_lamports'
+2025-11-30 23:08:50,129 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:08:50,131 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:08:50,231 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:08:50,233 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:11:12,053 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:11:12,053 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:11:12,054 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:11:12,085 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:11:13,952 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:11:19,887 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:11:19,901 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:11:20,889 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:11:20,913 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:11:20,922 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:11:23,165 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:11:23,170 - app.utils.bot_components - execute_jupiter_swap:170 - ERROR - FAILURE BUY SEND FAILED: AsyncClient.send_raw_transaction() got an unexpected keyword argument 'skip_preflight'
+2025-11-30 23:11:23,171 - app.utils.bot_components - execute_user_buy:248 - ERROR - BUY FAILED: Send failed: AsyncClient.send_raw_transaction() got an unexpected keyword argument 'skip_preflight'
+2025-11-30 23:11:24,176 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:11:24,181 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:11:25,502 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:11:25,504 - app.utils.bot_components - execute_jupiter_swap:170 - ERROR - FAILURE BUY SEND FAILED: AsyncClient.send_raw_transaction() got an unexpected keyword argument 'skip_preflight'
+2025-11-30 23:11:25,507 - app.utils.bot_components - execute_user_buy:248 - ERROR - BUY FAILED: Send failed: AsyncClient.send_raw_transaction() got an unexpected keyword argument 'skip_preflight'
+2025-11-30 23:11:29,653 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:11:29,656 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:11:29,753 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:11:29,755 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:13:01,038 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:13:01,038 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:13:01,038 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:13:01,100 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:13:03,039 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:13:09,343 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:13:09,357 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:13:09,950 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:13:09,968 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:13:09,976 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:13:11,472 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:13:11,480 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'signatures': 'Keypair' object cannot be converted to 'Signature'
+2025-11-30 23:13:12,485 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:13:12,493 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:13:13,925 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:13:13,926 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'signatures': 'Keypair' object cannot be converted to 'Signature'
+2025-11-30 23:13:17,384 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:13:17,385 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:13:17,485 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:13:17,486 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:14:13,235 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:14:13,235 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:14:13,235 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:14:13,261 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:14:16,193 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:14:21,488 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:14:21,501 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:14:22,319 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:14:22,345 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:14:22,358 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:14:24,040 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:14:24,758 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:14:24,760 - app.utils.bot_components - execute_jupiter_swap:197 - INFO - SUCCESS BUY SENT → 5QfBCEM6s2FuBWRBPenjfukk3ZDmx1jJHgwP8wYR2KqRGsmncvfuoYzfzjFRMxhqyVYCRR9hxMdXfVf7rNgFn29F
+2025-11-30 23:14:24,807 - app.utils.bot_components - execute_jupiter_swap:210 - WARNING - Send attempt 1/5 failed: argument 'signatures': 'str' object cannot be converted to 'Signature'
+2025-11-30 23:14:25,956 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:14:25,958 - app.utils.bot_components - execute_jupiter_swap:197 - INFO - SUCCESS BUY SENT → 5QfBCEM6s2FuBWRBPenjfukk3ZDmx1jJHgwP8wYR2KqRGsmncvfuoYzfzjFRMxhqyVYCRR9hxMdXfVf7rNgFn29F
+2025-11-30 23:14:26,005 - app.utils.bot_components - execute_jupiter_swap:210 - WARNING - Send attempt 2/5 failed: argument 'signatures': 'str' object cannot be converted to 'Signature'
+2025-11-30 23:14:27,619 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:14:27,621 - app.utils.bot_components - execute_jupiter_swap:197 - INFO - SUCCESS BUY SENT → 5QfBCEM6s2FuBWRBPenjfukk3ZDmx1jJHgwP8wYR2KqRGsmncvfuoYzfzjFRMxhqyVYCRR9hxMdXfVf7rNgFn29F
+2025-11-30 23:14:27,665 - app.utils.bot_components - execute_jupiter_swap:210 - WARNING - Send attempt 3/5 failed: argument 'signatures': 'str' object cannot be converted to 'Signature'
+2025-11-30 23:14:29,922 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:14:29,924 - app.utils.bot_components - execute_jupiter_swap:197 - INFO - SUCCESS BUY SENT → 5QfBCEM6s2FuBWRBPenjfukk3ZDmx1jJHgwP8wYR2KqRGsmncvfuoYzfzjFRMxhqyVYCRR9hxMdXfVf7rNgFn29F
+2025-11-30 23:14:29,962 - app.utils.bot_components - execute_jupiter_swap:210 - WARNING - Send attempt 4/5 failed: argument 'signatures': 'str' object cannot be converted to 'Signature'
+2025-11-30 23:14:32,595 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:14:32,596 - app.utils.bot_components - execute_jupiter_swap:197 - INFO - SUCCESS BUY SENT → 5QfBCEM6s2FuBWRBPenjfukk3ZDmx1jJHgwP8wYR2KqRGsmncvfuoYzfzjFRMxhqyVYCRR9hxMdXfVf7rNgFn29F
+2025-11-30 23:14:32,636 - app.utils.bot_components - execute_jupiter_swap:210 - WARNING - Send attempt 5/5 failed: argument 'signatures': 'str' object cannot be converted to 'Signature'
+2025-11-30 23:14:32,636 - app.utils.bot_components - execute_user_buy:291 - ERROR - BUY FAILED: Send failed after 5 retries: argument 'signatures': 'str' object cannot be converted to 'Signature'
+2025-11-30 23:14:33,643 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:14:33,649 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:14:34,974 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:14:35,608 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:14:35,610 - app.utils.bot_components - execute_jupiter_swap:197 - INFO - SUCCESS BUY SENT → 2PxAvRdQwkQm5QdAWgB9SYBiq5S8JrHrWfVY1zo37Yx96yfvkaN78SWzBvaqrQxjcHPCNbtqCg4FdhefoGwXrAb5
+2025-11-30 23:14:35,648 - app.utils.bot_components - execute_jupiter_swap:210 - WARNING - Send attempt 1/5 failed: argument 'signatures': 'str' object cannot be converted to 'Signature'
+2025-11-30 23:14:36,804 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:14:36,806 - app.utils.bot_components - execute_jupiter_swap:197 - INFO - SUCCESS BUY SENT → 2PxAvRdQwkQm5QdAWgB9SYBiq5S8JrHrWfVY1zo37Yx96yfvkaN78SWzBvaqrQxjcHPCNbtqCg4FdhefoGwXrAb5
+2025-11-30 23:14:36,844 - app.utils.bot_components - execute_jupiter_swap:210 - WARNING - Send attempt 2/5 failed: argument 'signatures': 'str' object cannot be converted to 'Signature'
+2025-11-30 23:14:38,115 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:14:38,116 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:14:38,222 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:14:38,229 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:15:50,174 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:15:50,174 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:15:50,174 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:15:50,205 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:15:51,940 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:15:58,094 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:15:58,105 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:15:58,779 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:15:58,803 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:15:58,812 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:16:00,355 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:01,003 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:01,005 - app.utils.bot_components - execute_jupiter_swap:202 - INFO - SUCCESS BUY SENT → 3aszgdpgcTqec8MxVZucnDPTDu924K8biky5r6UTaBKmWoFx328MEjUa9AWoKaFJcossuoDp8KTAFDqb2JDikDuA
+2025-11-30 23:16:01,621 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:02,320 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:03,017 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:03,722 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:04,429 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:05,153 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:05,854 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:06,595 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:07,297 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:08,019 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:08,790 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 429 Too Many Requests"
+2025-11-30 23:16:08,792 - app.utils.bot_components - execute_jupiter_swap:225 - WARNING - Confirmation failed (non-fatal):  — Tx sent anyway: 3aszgdpgcTqec8MxVZucnDPTDu924K8biky5r6UTaBKmWoFx328MEjUa9AWoKaFJcossuoDp8KTAFDqb2JDikDuA
+2025-11-30 23:16:08,792 - app.utils.bot_components - execute_jupiter_swap:231 - INFO - SUCCESS BUY | 0.001972 tokens | Fee: 0.000020 SOL
+2025-11-30 23:16:09,861 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:16:09,870 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:16:09,969 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:16:10,958 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:11,561 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:11,562 - app.utils.bot_components - execute_jupiter_swap:202 - INFO - SUCCESS BUY SENT → 51KAi1tX5SYyMvLHAUVdQ6HSbj5kL7bVyhhiLxFSwUe6xaRVdGXmD9NJfju9TsyxPttRF9G19wPnhPUPe5KvQQmr
+2025-11-30 23:16:12,382 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 429 Too Many Requests"
+2025-11-30 23:16:12,384 - app.utils.bot_components - execute_jupiter_swap:225 - WARNING - Confirmation failed (non-fatal):  — Tx sent anyway: 51KAi1tX5SYyMvLHAUVdQ6HSbj5kL7bVyhhiLxFSwUe6xaRVdGXmD9NJfju9TsyxPttRF9G19wPnhPUPe5KvQQmr
+2025-11-30 23:16:12,385 - app.utils.bot_components - execute_jupiter_swap:231 - INFO - SUCCESS BUY | 3.158532 tokens | Fee: 0.031904 SOL
+2025-11-30 23:16:12,639 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:16:13,118 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/DRpM4zdiWzgH6oZeEHAg2kRu44T4AwnuHHAvfYW6hFDM "HTTP/1.1 200 OK"
+2025-11-30 23:16:14,712 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:16:18,111 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/DRpM4zdiWzgH6oZeEHAg2kRu44T4AwnuHHAvfYW6hFDM "HTTP/1.1 200 OK"
+2025-11-30 23:16:19,400 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:16:22,568 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/DRpM4zdiWzgH6oZeEHAg2kRu44T4AwnuHHAvfYW6hFDM "HTTP/1.1 200 OK"
+2025-11-30 23:16:22,797 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/DRpM4zdiWzgH6oZeEHAg2kRu44T4AwnuHHAvfYW6hFDM "HTTP/1.1 200 OK"
+2025-11-30 23:16:23,214 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:16:24,169 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:24,174 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:16:27,621 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/DRpM4zdiWzgH6oZeEHAg2kRu44T4AwnuHHAvfYW6hFDM "HTTP/1.1 200 OK"
+2025-11-30 23:16:28,922 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:16:32,250 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/DRpM4zdiWzgH6oZeEHAg2kRu44T4AwnuHHAvfYW6hFDM "HTTP/1.1 200 OK"
+2025-11-30 23:16:32,504 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/DRpM4zdiWzgH6oZeEHAg2kRu44T4AwnuHHAvfYW6hFDM "HTTP/1.1 200 OK"
+2025-11-30 23:16:33,116 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:16:33,509 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:16:34,800 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:16:36,863 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/DRpM4zdiWzgH6oZeEHAg2kRu44T4AwnuHHAvfYW6hFDM "HTTP/1.1 200 OK"
+2025-11-30 23:16:38,386 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:16:40,590 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:16:40,590 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:16:40,692 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:16:40,693 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:23:07,387 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:23:07,387 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:23:07,387 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:23:07,411 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:23:10,354 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:23:35,372 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:23:35,373 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:23:35,613 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:24:04,691 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:24:04,693 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:24:05,226 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:24:39,251 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:24:39,272 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:24:39,893 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:24:39,923 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:24:40,517 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:24:40,519 - app.utils.bot_components - execute_user_buy:583 - INFO - Creating ATA for user BvmBNy9M for token MAXFa7Y5
+2025-11-30 23:24:40,519 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:24:41,933 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:24:41,935 - app.utils.bot_components - execute_jupiter_swap:490 - WARNING - Send attempt 1/3 failed: RPC error: {'code': -32003, 'message': 'Transaction signature verification failure'}
+2025-11-30 23:24:43,681 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:24:43,683 - app.utils.bot_components - execute_jupiter_swap:490 - WARNING - Send attempt 2/3 failed: RPC error: {'code': -32003, 'message': 'Transaction signature verification failure'}
+2025-11-30 23:24:46,377 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:24:46,379 - app.utils.bot_components - execute_jupiter_swap:490 - WARNING - Send attempt 3/3 failed: RPC error: {'code': -32003, 'message': 'Transaction signature verification failure'}
+2025-11-30 23:24:46,380 - app.utils.bot_components - execute_user_buy:642 - ERROR - BUY FAILED: Send failed after 3 retries: RPC error: {'code': -32003, 'message': 'Transaction signature verification failure'}
+2025-11-30 23:24:47,390 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:24:48,095 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:24:48,097 - app.utils.bot_components - execute_user_buy:583 - INFO - Creating ATA for user BvmBNy9M for token DRpM4zdi
+2025-11-30 23:24:48,098 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:24:49,326 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:24:49,327 - app.utils.bot_components - execute_jupiter_swap:490 - WARNING - Send attempt 1/3 failed: RPC error: {'code': -32003, 'message': 'Transaction signature verification failure'}
+2025-11-30 23:24:50,977 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:24:50,979 - app.utils.bot_components - execute_jupiter_swap:490 - WARNING - Send attempt 2/3 failed: RPC error: {'code': -32003, 'message': 'Transaction signature verification failure'}
+2025-11-30 23:24:53,847 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:24:53,849 - app.utils.bot_components - execute_jupiter_swap:490 - WARNING - Send attempt 3/3 failed: RPC error: {'code': -32003, 'message': 'Transaction signature verification failure'}
+2025-11-30 23:24:53,850 - app.utils.bot_components - execute_user_buy:642 - ERROR - BUY FAILED: Send failed after 3 retries: RPC error: {'code': -32003, 'message': 'Transaction signature verification failure'}
+2025-11-30 23:24:57,915 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:24:57,916 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:24:58,015 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:24:58,016 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:28:11,127 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:28:11,128 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:28:11,128 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:28:11,154 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:28:13,546 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:28:19,905 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:28:19,920 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:28:20,736 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:28:20,761 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:28:20,773 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:28:20,940 - app.utils.bot_components - execute_user_buy:697 - WARNING - Simple swap failed, trying alternative: Cannot connect to host quote-api.jup.ag:443 ssl:default [nodename nor servname provided, or not known]
+2025-11-30 23:28:20,941 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:28:21,650 - app.utils.bot_components - execute_user_buy:754 - ERROR - BUY FAILED: Quote failed: Route not found
+2025-11-30 23:28:22,659 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:28:22,668 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:28:22,672 - app.utils.bot_components - execute_user_buy:697 - WARNING - Simple swap failed, trying alternative: Cannot connect to host quote-api.jup.ag:443 ssl:default [nodename nor servname provided, or not known]
+2025-11-30 23:28:22,673 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:28:23,040 - app.utils.bot_components - execute_user_buy:754 - ERROR - BUY FAILED: Quote failed: Route not found
+2025-11-30 23:28:34,871 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:28:34,884 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:28:34,890 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:28:34,893 - app.utils.bot_components - execute_user_buy:697 - WARNING - Simple swap failed, trying alternative: Cannot connect to host quote-api.jup.ag:443 ssl:default [nodename nor servname provided, or not known]
+2025-11-30 23:28:34,894 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:28:35,168 - app.utils.bot_components - execute_user_buy:754 - ERROR - BUY FAILED: Quote failed: Route not found
+2025-11-30 23:28:36,174 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:28:36,179 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:28:36,183 - app.utils.bot_components - execute_user_buy:697 - WARNING - Simple swap failed, trying alternative: Cannot connect to host quote-api.jup.ag:443 ssl:default [nodename nor servname provided, or not known]
+2025-11-30 23:28:36,184 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:28:36,378 - app.utils.bot_components - execute_user_buy:754 - ERROR - BUY FAILED: Quote failed: Route not found
+2025-11-30 23:28:48,093 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:28:48,101 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:28:48,107 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:28:48,110 - app.utils.bot_components - execute_user_buy:697 - WARNING - Simple swap failed, trying alternative: Cannot connect to host quote-api.jup.ag:443 ssl:default [nodename nor servname provided, or not known]
+2025-11-30 23:28:48,111 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:28:48,301 - app.utils.bot_components - execute_user_buy:754 - ERROR - BUY FAILED: Quote failed: Route not found
+2025-11-30 23:28:49,308 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:28:49,317 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:28:49,322 - app.utils.bot_components - execute_user_buy:697 - WARNING - Simple swap failed, trying alternative: Cannot connect to host quote-api.jup.ag:443 ssl:default [nodename nor servname provided, or not known]
+2025-11-30 23:28:49,322 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:28:49,520 - app.utils.bot_components - execute_user_buy:754 - ERROR - BUY FAILED: Quote failed: Route not found
+2025-11-30 23:28:56,252 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:28:56,252 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:28:56,354 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:28:56,356 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:29:39,529 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:29:39,530 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:29:39,530 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:29:39,552 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:29:41,356 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:29:46,534 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:29:46,548 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:29:47,450 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:29:47,480 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:29:47,503 - app.utils.bot_components - execute_user_buy:227 - ERROR - BUY FAILED: execute_jupiter_swap() got an unexpected keyword argument 'priority_fee_micro_lamports'
+2025-11-30 23:29:48,510 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:29:48,522 - app.utils.bot_components - execute_user_buy:227 - ERROR - BUY FAILED: execute_jupiter_swap() got an unexpected keyword argument 'priority_fee_micro_lamports'
+2025-11-30 23:29:56,244 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:29:56,245 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:29:56,346 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:29:56,349 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:33:08,051 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:33:08,051 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:33:08,051 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:33:08,076 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:33:11,040 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:33:16,606 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:33:16,622 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:33:17,207 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:33:17,234 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:33:17,246 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:33:18,574 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:33:18,581 - app.utils.bot_components - execute_user_buy:280 - ERROR - BUY FAILED: attribute 'recent_blockhash' of 'solders.message.MessageV0' objects is not writable
+2025-11-30 23:33:19,592 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:33:19,604 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:33:20,828 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:33:20,831 - app.utils.bot_components - execute_user_buy:280 - ERROR - BUY FAILED: attribute 'recent_blockhash' of 'solders.message.MessageV0' objects is not writable
+2025-11-30 23:33:25,596 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:33:25,597 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:33:25,696 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:33:25,699 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:34:59,326 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:34:59,327 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:34:59,327 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:34:59,362 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:35:00,753 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:35:05,387 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:05,401 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:35:05,978 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:05,997 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:35:06,005 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:35:07,416 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:07,423 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:35:08,432 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:35:08,441 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:35:10,056 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:10,060 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:35:21,678 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:21,689 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:35:21,694 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:35:22,929 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:22,932 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:35:23,937 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:35:23,943 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:35:25,165 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:25,167 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:35:36,781 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:36,786 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:35:36,789 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:35:38,046 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:38,051 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:35:39,059 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:35:39,082 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:35:40,725 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:40,728 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:35:52,525 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:52,538 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:35:52,543 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:35:53,689 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:53,693 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:35:54,700 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:35:54,707 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:35:55,808 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:35:55,811 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:36:07,413 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:36:07,424 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:36:07,428 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:36:08,656 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:36:08,659 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:36:09,684 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:36:09,692 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:36:11,021 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:36:11,022 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:36:23,157 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:36:23,166 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:36:23,172 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:36:24,893 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:36:24,895 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:36:25,901 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:36:25,906 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:36:26,957 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:36:26,961 - app.utils.bot_components - execute_user_buy:287 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:36:28,906 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:36:28,909 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:36:28,998 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:36:28,999 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:39:35,667 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:39:35,667 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:39:35,667 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:39:35,703 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:39:38,380 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:39:44,581 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:39:44,598 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:39:45,322 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:39:45,347 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:39:45,359 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:39:46,845 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:39:46,850 - app.utils.bot_components - execute_user_buy:299 - ERROR - BUY FAILED: argument 'program_id': 'builtin_function_or_method' object cannot be converted to 'Pubkey'
+2025-11-30 23:39:47,859 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:39:47,872 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:39:48,926 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:39:48,929 - app.utils.bot_components - execute_user_buy:299 - ERROR - BUY FAILED: argument 'program_id': 'builtin_function_or_method' object cannot be converted to 'Pubkey'
+2025-11-30 23:39:57,258 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:39:57,264 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:39:57,357 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:39:57,359 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:42:46,644 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:42:46,644 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:42:46,644 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:42:46,670 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:42:50,222 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:42:56,421 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:42:56,438 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:42:57,132 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:42:57,156 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:42:57,166 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:42:58,521 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:42:58,526 - app.utils.bot_components - execute_user_buy:269 - ERROR - BUY FAILED: 'solders.transaction.VersionedTransaction' object has no attribute 'sign'
+2025-11-30 23:42:59,535 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:42:59,546 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:43:00,798 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:43:00,800 - app.utils.bot_components - execute_user_buy:269 - ERROR - BUY FAILED: 'solders.transaction.VersionedTransaction' object has no attribute 'sign'
+2025-11-30 23:43:09,919 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:43:09,920 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:43:10,018 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:43:10,020 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:44:50,129 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:44:50,129 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:44:50,129 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:44:50,155 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:44:56,808 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:45:03,810 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:45:03,826 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:45:04,703 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:45:04,728 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:45:04,739 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:45:06,167 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:45:06,174 - app.utils.bot_components - execute_user_buy:277 - ERROR - BUY FAILED: argument 'keypairs': failed to extract enum Signer ('KeypairWrapper | PresignerWrapper | NullSignerWrapper')
+- variant KeypairWrapper (KeypairWrapper): TypeError: failed to extract field Signer::KeypairWrapper.0, caused by TypeError: 'Signature' object cannot be converted to 'Keypair'
+- variant PresignerWrapper (PresignerWrapper): TypeError: failed to extract field Signer::PresignerWrapper.0, caused by TypeError: 'Signature' object cannot be converted to 'Presigner'
+- variant NullSignerWrapper (NullSignerWrapper): TypeError: failed to extract field Signer::NullSignerWrapper.0, caused by TypeError: 'Signature' object cannot be converted to 'NullSigner'
+2025-11-30 23:45:15,769 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:45:15,770 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:45:15,871 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:45:15,872 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:46:31,503 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:46:31,503 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:46:31,503 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:46:31,528 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:46:34,895 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:46:46,760 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:46:46,775 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:46:47,439 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:46:47,466 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:46:47,479 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:46:48,980 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:46:48,987 - app.utils.bot_components - execute_user_buy:282 - ERROR - BUY FAILED: not enough signers
+2025-11-30 23:47:00,666 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:47:00,677 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:47:00,681 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:47:01,815 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:47:01,816 - app.utils.bot_components - execute_user_buy:282 - ERROR - BUY FAILED: not enough signers
+2025-11-30 23:47:06,654 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:47:06,654 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:47:06,755 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:47:06,756 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:48:43,376 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:48:43,377 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:48:43,377 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:48:43,404 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:48:53,303 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:49:01,569 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:49:01,584 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:49:02,174 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:49:02,198 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:49:02,208 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:49:03,686 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:49:03,697 - app.utils.bot_components - execute_user_buy:299 - ERROR - BUY FAILED: argument 'keypairs': failed to extract enum Signer ('KeypairWrapper | PresignerWrapper | NullSignerWrapper')
+- variant KeypairWrapper (KeypairWrapper): TypeError: failed to extract field Signer::KeypairWrapper.0, caused by TypeError: 'Signature' object cannot be converted to 'Keypair'
+- variant PresignerWrapper (PresignerWrapper): TypeError: failed to extract field Signer::PresignerWrapper.0, caused by TypeError: 'Signature' object cannot be converted to 'Presigner'
+- variant NullSignerWrapper (NullSignerWrapper): TypeError: failed to extract field Signer::NullSignerWrapper.0, caused by TypeError: 'Signature' object cannot be converted to 'NullSigner'
+2025-11-30 23:49:08,652 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:49:08,654 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:49:08,752 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:49:08,754 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:50:49,225 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:50:49,225 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:50:49,225 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:50:49,249 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:50:58,474 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:51:05,441 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:51:05,457 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:51:06,293 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:51:06,321 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:51:06,335 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:51:08,200 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:51:08,205 - app.utils.bot_components - execute_user_buy:283 - ERROR - BUY FAILED: 'solders.transaction.Transaction' object has no attribute 'recent_blockhash' and no __dict__ for setting new attributes
+2025-11-30 23:51:12,561 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:51:12,562 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:51:12,662 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:51:12,664 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:52:48,355 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:52:48,356 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:52:48,356 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:52:48,383 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:52:51,691 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:52:58,563 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:52:58,579 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:52:59,255 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:52:59,280 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:52:59,292 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:53:01,006 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:53:01,012 - app.utils.bot_components - execute_user_buy:298 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:53:12,740 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:53:12,750 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:53:12,756 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:53:14,112 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:53:14,115 - app.utils.bot_components - execute_user_buy:298 - ERROR - BUY FAILED: argument 'instructions': 'CompiledInstruction' object cannot be converted to 'Instruction'
+2025-11-30 23:53:17,588 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:53:17,589 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:53:17,688 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:53:17,689 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:54:49,392 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:54:49,393 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:54:49,393 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:54:49,412 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:55:01,552 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:55:08,817 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:55:08,834 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:55:09,492 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:55:09,519 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:55:09,529 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:55:10,828 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:55:10,836 - app.utils.bot_components - execute_user_buy:319 - ERROR - BUY FAILED: argument 'accounts': 'Pubkey' object cannot be converted to 'AccountMeta'
+2025-11-30 23:55:22,492 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:55:22,511 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:55:22,521 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:55:23,754 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:55:23,763 - app.utils.bot_components - execute_user_buy:319 - ERROR - BUY FAILED: argument 'accounts': 'Pubkey' object cannot be converted to 'AccountMeta'
+2025-11-30 23:55:35,487 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:55:35,493 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:55:35,509 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:55:37,077 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:55:37,082 - app.utils.bot_components - execute_user_buy:319 - ERROR - BUY FAILED: argument 'accounts': 'Pubkey' object cannot be converted to 'AccountMeta'
+2025-11-30 23:55:48,760 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:55:48,779 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:55:48,785 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:55:50,072 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:55:50,075 - app.utils.bot_components - execute_user_buy:319 - ERROR - BUY FAILED: argument 'accounts': 'Pubkey' object cannot be converted to 'AccountMeta'
+2025-11-30 23:56:01,712 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:56:01,722 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:56:01,729 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:56:02,918 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:56:02,921 - app.utils.bot_components - execute_user_buy:319 - ERROR - BUY FAILED: argument 'accounts': 'Pubkey' object cannot be converted to 'AccountMeta'
+2025-11-30 23:56:14,583 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:56:14,592 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:56:14,597 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:56:16,184 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:56:16,185 - app.utils.bot_components - execute_user_buy:319 - ERROR - BUY FAILED: argument 'accounts': 'Pubkey' object cannot be converted to 'AccountMeta'
+2025-11-30 23:56:27,863 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:56:27,886 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:56:27,894 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:56:29,453 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:56:29,456 - app.utils.bot_components - execute_user_buy:319 - ERROR - BUY FAILED: argument 'accounts': 'Pubkey' object cannot be converted to 'AccountMeta'
+2025-11-30 23:56:41,226 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:56:41,238 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:56:41,244 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:56:42,537 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:56:42,539 - app.utils.bot_components - execute_user_buy:319 - ERROR - BUY FAILED: argument 'accounts': 'Pubkey' object cannot be converted to 'AccountMeta'
+2025-11-30 23:56:54,195 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:56:54,206 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:56:54,227 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:56:55,440 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:56:55,441 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:56:55,479 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:56:55,480 - app.utils.bot_components - execute_user_buy:319 - ERROR - BUY FAILED: argument 'accounts': 'Pubkey' object cannot be converted to 'AccountMeta'
+2025-11-30 23:56:55,536 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:56:55,538 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:57:25,604 - root - lifespan:304 - INFO - 🚀 FlashSniper STARTED | Detecting Pump.fun + Raydium tokens in <2s
+2025-11-30 23:57:25,604 - root - hybrid_grpc_subscription_loop:363 - INFO - Starting HYBRID gRPC (Pump.fun + Raydium) → grpc.ams.shyft.to:443
+2025-11-30 23:57:25,604 - root - create_grpc_channel:325 - INFO - Creating gRPC channel to grpc.ams.shyft.to:443 with token: 30c7ef87...
+2025-11-30 23:57:25,629 - root - create_grpc_channel:339 - INFO - gRPC channel created: grpc.ams.shyft.to:443
+2025-11-30 23:57:30,408 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:58:54,896 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:58:54,911 - root - persistent_bot_loop:196 - INFO - Starting persistent bot for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:58:55,468 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:58:55,495 - root - apply_user_filters:929 - INFO - FREE USER BvmBNy9M → Skipping all advanced filters. Buying with basic settings only.
+2025-11-30 23:58:55,506 - app.security - decrypt_private_key_backend:48 - INFO - Decrypting private key with backend master key
+2025-11-30 23:58:56,865 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:58:56,866 - app.utils.bot_components - execute_jupiter_swap:171 - INFO - SUCCESS BUY SENT → https://solscan.io/tx/1111111111111111111111111111111111111111111111111111111111111111
+2025-11-30 23:58:56,867 - app.utils.bot_components - execute_jupiter_swap:192 - INFO - SUCCESS BUY | 0.019620 tokens | Fee: 0.000198 SOL
+2025-11-30 23:58:57,465 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:58:57,863 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:58:58,161 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:58:58,863 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:58:59,553 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:59:00,255 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:59:00,928 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:59:00,993 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:59:01,645 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:59:02,336 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:59:02,596 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:59:03,968 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:59:04,661 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:59:05,361 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 429 Too Many Requests"
+2025-11-30 23:59:05,364 - app.utils.bot_components - _confirm_tx_async:218 - WARNING - Confirm failed for 1111111111111111111111111111111111111111111111111111111111111111: 
+2025-11-30 23:59:07,198 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:59:08,634 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:59:11,999 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:59:12,062 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:59:16,783 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:59:19,236 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:59:21,039 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:59:21,440 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:59:26,037 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:59:29,874 - httpx - _send_single_request:1740 - INFO - HTTP Request: POST https://api.mainnet-beta.solana.com "HTTP/1.1 200 OK"
+2025-11-30 23:59:30,777 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:59:31,006 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:59:35,330 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:59:35,331 - root - websocket_endpoint:1407 - INFO - WebSocket disconnected for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:59:35,417 - httpx - _send_single_request:1740 - INFO - HTTP Request: GET https://api.dexscreener.com/token-pairs/v1/solana/MAXFa7Y5w69gEqwbpMNhSvkuFzqEhP7NYqSYsecZvbu "HTTP/1.1 200 OK"
+2025-11-30 23:59:35,431 - root - persistent_bot_loop:255 - INFO - Persistent bot cancelled for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC
+2025-11-30 23:59:35,433 - root - persistent_bot_loop:265 - INFO - Persistent bot stopped for BvmBNy9Mz4Tw4PRZQjFFGX4NstbMu3PDuNjaBqxQ4ocC

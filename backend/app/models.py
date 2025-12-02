@@ -101,6 +101,7 @@ class TokenMetadata(Base):
     telegram: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     token_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     token_symbol: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    token_logo: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     token_decimals: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, server_default="9", default=9)
     dex_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     liquidity_usd: Mapped[Optional[float]] = mapped_column(Float, nullable=True, comment="Total liquidity in USD across all pairs")
@@ -236,6 +237,10 @@ class Trade(Base):
     entry_price: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     stop_loss: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     take_profit: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    # I'LL BE ADDING THIS LATER
+    # liquidity_at_buy: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    # slippage_bps: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    
     token_amounts_purchased: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     token_decimals: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     sell_reason: Mapped[Optional[str]] = mapped_column(String, nullable=True)

@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     JUPITER_PLATFORM_FEE_BPS: str = os.getenv("JUPITER_PLATFORM_FEE_BPS")
     JUPITER_REFERRAL_ACCOUNT: str = os.getenv("JUPITER_FEE_ACCOUNT")
     JUPITER_PLATFORM_FEE_BPS: str = os.getenv("JUPITER_PLATFORM_FEE_BPS")
+    JUPITER_API_KEY: str = os.getenv("JUPITER_API_KEY", "")
+    
+    MIN_BUY_SOL: str = os.getenv("SOL_MINT")
     
     SOL_MINT: str = os.getenv("SOL_MINT")
     

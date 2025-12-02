@@ -608,10 +608,10 @@
         
 #         total_profit = 0.0
 #         for trade in trades:
-#             # Assume Trade model has amount_sol_in (buy) and amount_sol_out (sell)
-#             # Profit = amount_sol_out - amount_sol_in for completed trades
-#             if trade.trade_type == "completed" and trade.amount_sol_in and trade.amount_sol_out:
-#                 profit = trade.amount_sol_out - trade.amount_sol_in
+#             # Assume Trade model has amount_sol (buy) and amount_sol_out (sell)
+#             # Profit = amount_sol_out - amount_sol for completed trades
+#             if trade.trade_type == "completed" and trade.amount_sol and trade.amount_sol_out:
+#                 profit = trade.amount_sol_out - trade.amount_sol
 #                 total_profit += profit
         
 #         logger.info(f"Retrieved total profit for {current_user.wallet_address}: {total_profit} SOL")
@@ -710,7 +710,7 @@ from typing import Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import desc, select
 import redis.asyncio as redis
 from solana.rpc.async_api import AsyncClient
 from solders.pubkey import Pubkey
@@ -966,14 +966,13 @@ async def execute_user_buy(
             mint_address=mint,
             token_symbol=token.token_symbol or mint[:8],
             trade_type="buy",
-            amount_sol_in=amount_sol,
+            amount_sol=amount_sol,
             amount_tokens=token_amount,
             price_usd_at_trade=token.price_usd,
             buy_timestamp=datetime.utcnow(),
-            take_profit_target=user.sell_take_profit_pct,
-            stop_loss_target=user.sell_stop_loss_pct,
+            take_profit=user.sell_take_profit_pct,
+            stop_loss=user.sell_stop_loss_pct,
             timeout_seconds=user.sell_timeout_seconds,
-            trailing_stop_loss_pct=user.trailing_stop_loss_pct,
         )
         db.add(trade)
         await db.commit()
@@ -1102,10 +1101,10 @@ async def get_total_profit(
         
         total_profit = 0.0
         for trade in trades:
-            # Assume Trade model has amount_sol_in (buy) and amount_sol_out (sell)
-            # Profit = amount_sol_out - amount_sol_in for completed trades
-            if trade.trade_type == "completed" and trade.amount_sol_in and trade.amount_sol_out:
-                profit = trade.amount_sol_out - trade.amount_sol_in
+            # Assume Trade model has amount_sol (buy) and amount_sol_out (sell)
+            # Profit = amount_sol_out - amount_sol for completed trades
+            if trade.trade_type == "completed" and trade.amount_sol and trade.amount_sol_out:
+                profit = trade.amount_sol_out - trade.amount_sol
                 total_profit += profit
         
         logger.info(f"Retrieved total profit for {current_user.wallet_address}: {total_profit} SOL")
@@ -1132,7 +1131,60 @@ async def get_total_profit(
     }
 
 
-
+@router.get("/active-positions")
+async def get_active_positions(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all active (open) positions for the user"""
+    try:
+        # Get all buy trades that don't have corresponding sell trades
+        result = await db.execute(
+            select(Trade).where(
+                Trade.user_wallet_address == current_user.wallet_address,
+                Trade.trade_type == "buy",
+                Trade.sell_timestamp.is_(None)
+            ).order_by(desc(Trade.buy_timestamp))
+        )
+        active_trades = result.scalars().all()
+        
+        positions = []
+        for trade in active_trades:
+            # Get current price from DexScreener
+            current_price_data = await get_dexscreener_data(trade.mint_address)
+            current_price = None
+            # if current_price_data and 'pairs' in current_price_data and current_price_data['pairs']:
+            #     current_price = float(current_price_data['pairs'][0].get('priceUsd', 0))
+            
+            position_data = {
+                "mint_address": trade.mint_address,
+                "token_symbol": trade.token_symbol,
+                "entry_price": float(trade.price_usd_at_trade) if trade.price_usd_at_trade else 0,
+                "current_price": current_price,
+                "amount_tokens": float(trade.amount_tokens) if trade.amount_tokens else 0,
+                "amount_sol": float(trade.amount_sol) if trade.amount_sol else 0,
+                "buy_timestamp": trade.buy_timestamp.isoformat() if trade.buy_timestamp else None,
+                "take_profit": float(trade.take_profit) if trade.take_profit else None,
+                "stop_loss": float(trade.stop_loss) if trade.stop_loss else None,
+                # "pair_address": current_price_data['pairs'][0]['url'] if current_price_data and current_price_data['pairs'] else None
+            }
+            
+            # Calculate P&L
+            if current_price and trade.price_usd_at_trade:
+                pnl_percent = ((current_price - float(trade.price_usd_at_trade)) / float(trade.price_usd_at_trade)) * 100
+                position_data["pnl_percent"] = round(pnl_percent, 2)
+                position_data["pnl_usd"] = (current_price - float(trade.price_usd_at_trade)) * float(trade.amount_tokens or 0)
+            else:
+                position_data["pnl_percent"] = 0
+                position_data["pnl_usd"] = 0
+                
+            positions.append(position_data)
+        
+        return positions
+        
+    except Exception as e:
+        logger.error(f"Error fetching active positions: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch active positions")
 
 
 

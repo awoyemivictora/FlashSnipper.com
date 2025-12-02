@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import httpx
 
@@ -135,4 +136,34 @@ async def get_dexscreener_data(mint_address: str) -> dict:
     except Exception as e:
         logger.error(f"Error fetching Dexscreener data for {mint_address}: {e}")
         return {}
+
+
+
+
+
+# ===================================================================
+# 2b. NEW: Smart DexScreener Fetch with Retry + Delay
+# ===================================================================
+async def fetch_dexscreener_with_retry(mint: str, max_attempts: int = 9) -> dict:
+    for attempt in range(max_attempts):
+        data = await get_dexscreener_data(mint)
+        price_usd = 0.0
+        if data and data.get("price_usd"):
+            try:
+                price_usd = float(data["price_usd"])
+            except (ValueError, TypeError):
+                price_usd = 0.0
+
+        if price_usd > 0:
+            logger.info(f"DexScreener ready → {mint[:8]} | ${price_usd:.10f} | MC: ${data.get('market_cap', 0):,.0f} | Attempt {attempt + 1}")
+            return data
+
+        delay = min(8 + (attempt ** 2) * 7, 160)
+        logger.info(f"DexScreener not ready {mint[:8]} → waiting {delay}s (attempt {attempt+1})")
+        await asyncio.sleep(delay)
+
+    logger.warning(f"DexScreener failed permanently for {mint[:8]}")
+    return {}
+
+
 
