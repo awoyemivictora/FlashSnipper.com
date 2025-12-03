@@ -37,39 +37,22 @@ interface LogEntry {
   };
 }
 
-// interface TransactionItem {
-//   id: string;
-//   type: 'buy' | 'sell';
-//   token: string;
-//   token_logo: string;
-//   amount_sol: number;
-//   amount_tokens?: number;
-//   tx_hash?: string;
-//   timestamp: string;
-//   profit_sol?: number;
-//   mint_address?: string;
-//   explorer_urls?: {
-//     solscan: string;
-//     dexScreener: string;
-//     jupiter: string;
-//   };
-// }
 
 interface TransactionItem {
   id: string;
   type: 'buy' | 'sell';
   token: string;
   token_logo: string;
-  amount_sol: number | null; // Allow null
-  amount_tokens?: number | null; // Allow null
+  amount_sol: number | null;
+  amount_tokens?: number | null;
   tx_hash?: string;
   timestamp: string;
-  profit_sol?: number | null; // Allow null
+  profit_sol?: number | null;
   mint_address?: string;
   explorer_urls?: {
-    solscan: string;
-    dexScreener: string;
-    jupiter: string;
+    solscan: string | null;  // Can be null
+    dexScreener: string | null;
+    jupiter: string | null;
   };
 }
 
@@ -194,6 +177,7 @@ const TransactionItemComponent: React.FC<{
   transaction: TransactionItem;
   onOpenChart?: (mintAddress: string) => void;
 }> = ({ transaction, onOpenChart }) => {
+
   const formatTimestamp = (timestamp: string) => {
     try {
       const date = new Date(timestamp);
@@ -313,6 +297,22 @@ const TransactionItemComponent: React.FC<{
     e.currentTarget.onerror = null; // Prevent infinite loop
   };
 
+  // Function to handle logo clicks
+  const handleLogoClick = (url: string | null | undefined, platform: string) => {
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      // Fallback URLs if specific URL is not available
+      if (platform === "solscan" && transaction.tx_hash) {
+        window.open(`https://solscan.io/tx/${transaction.tx_hash}`, '_blank', 'noopener,noreferrer');
+      } else if (platform === "dexScreener" && transaction.mint_address) {
+        window.open(`https://dexscreener.com/solana/${transaction.mint_address}`, '_blank', 'noopener,noreferrer');
+      } else if (platform === "jupiter" && transaction.mint_address) {
+        window.open(`https://jup.ag/token/${transaction.mint_address}`, '_blank', 'noopener,noreferrer');
+      }
+    }
+  };
+
 
   return (
     <div className="flex items-center justify-between p-4 border-b border-[#333] hover:bg-dark-2 transition-colors">
@@ -320,8 +320,10 @@ const TransactionItemComponent: React.FC<{
         <img 
           src={transaction.token_logo} 
           alt={transaction.token}
-          className="w-10 h-10 rounded-full"
+          className="w-10 h-10 rounded-full cursor-pointer"
+          onClick={() => transaction.type === "buy" && onOpenChart?.(transaction.mint_address || '')}
           onError={handleImageError}
+          title={transaction.type === "buy" ? "Open Chart" : "View Transaction"}
         />
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
@@ -344,7 +346,60 @@ const TransactionItemComponent: React.FC<{
       </div>
 
       <div className="flex items-center gap-3">
-        {transaction.type === "buy" && onOpenChart && transaction.mint_address && (
+        {/* Explorer Logos */}
+        <div className="flex gap-2 mr-3">
+          {/* Solscan Logo */}
+          <button
+            onClick={() => handleLogoClick(
+              transaction.explorer_urls?.solscan, 
+              "solscan"
+            )}
+            className={`opacity-70 hover:opacity-100 transition-opacity p-1 hover:bg-[#222] rounded ${
+              (!transaction.explorer_urls?.solscan && !transaction.tx_hash) ? "opacity-30 cursor-not-allowed" : ""
+            }`}
+            title={transaction.explorer_urls?.solscan ? "View on Solscan" : "No transaction link available"}
+            disabled={!transaction.explorer_urls?.solscan && !transaction.tx_hash}
+          >
+            <img src="/images/solscan.png" alt="Solscan" className="w-5 h-5" />
+          </button>
+          
+          {/* DexScreener Logo */}
+          <button
+            onClick={() => handleLogoClick(
+              transaction.explorer_urls?.dexScreener, 
+              "dexscreener"
+            )}
+            className={`opacity-70 hover:opacity-100 transition-opacity p-1 hover:bg-[#222] rounded ${
+              (!transaction.explorer_urls?.dexScreener && !transaction.mint_address) ? "opacity-30 cursor-not-allowed" : ""
+            }`}
+            title={transaction.explorer_urls?.dexScreener ? "View on DexScreener" : "View token on DexScreener"}
+            disabled={!transaction.explorer_urls?.dexScreener && !transaction.mint_address}
+          >
+            <img src="/images/dexscreener.png" alt="DexScreener" className="w-5 h-5" />
+          </button>
+          
+          {/* Jupiter Logo */}
+          <button
+            onClick={() => handleLogoClick(
+              transaction.explorer_urls?.jupiter, 
+              "jupiter"
+            )}
+            className={`opacity-70 hover:opacity-100 transition-opacity p-1 hover:bg-[#222] rounded ${
+              (!transaction.explorer_urls?.jupiter && !transaction.mint_address) ? "opacity-30 cursor-not-allowed" : ""
+            }`}
+            title={transaction.explorer_urls?.jupiter ? "View on Jupiter" : "View token on Jupiter"}
+            disabled={!transaction.explorer_urls?.jupiter && !transaction.mint_address}
+          >
+            <img src="/images/jupiter.png" alt="Jupiter" className="w-5 h-5" />
+          </button>
+        </div>
+
+        <span className="text-xs text-gray-500 min-w-[140px] text-right">
+          {formatTimestamp(transaction.timestamp)}
+        </span>
+        
+        {/* Chart button for buy transactions */}
+        {/* {transaction.type === "buy" && onOpenChart && transaction.mint_address && (
           <button
             onClick={() => onOpenChart(transaction.mint_address!)}
             className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
@@ -354,33 +409,7 @@ const TransactionItemComponent: React.FC<{
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </button>
-        )}
-
-        <span className="text-xs text-gray-500 min-w-[140px] text-right">
-          {formatTimestamp(transaction.timestamp)}
-        </span>
-        {transaction.explorer_urls && (
-          <div className="flex gap-2">
-            <a 
-              href={transaction.explorer_urls.dexScreener}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="opacity-70 hover:opacity-100 transition-opacity"
-              title="View on DexScreener"
-            >
-              <img src="/dexscreener.png" alt="DexScreener" className="w-5 h-5" />
-            </a>
-            <a 
-              href={transaction.explorer_urls.solscan}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="opacity-70 hover:opacity-100 transition-opacity"
-              title="View on Solscan"
-            >
-              <img src="/solscan.png" alt="Solscan" className="w-5 h-5" />
-            </a>
-          </div>
-        )}
+        )} */}
       </div>
     </div>
   );
@@ -895,8 +924,15 @@ const FlashSniperTradingInterface: React.FC = () => {
       case 'trade_update':
         // Handle the trade update from the new format
         const tradeData = data.trade;
+  
+        // Get explorer URLs from the data or generate them
+        const explorer_urls = tradeData.explorer_urls || {
+          solscan: tradeData.tx_hash ? `https://solscan.io/tx/${tradeData.tx_hash}` : null,
+          dexScreener: tradeData.mint_address ? `https://dexscreener.com/solana/${tradeData.mint_address}` : null,
+          jupiter: tradeData.mint_address ? `https://jup.ag/token/${tradeData.mint_address}` : null,
+        };
         
-        // Create a transaction item from the trade update
+        // Create transaction item
         const transactionFromTrade: TransactionItem = {
           id: tradeData.id || `trade-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           type: tradeData.type || 'buy',
@@ -907,12 +943,26 @@ const FlashSniperTradingInterface: React.FC = () => {
           tx_hash: tradeData.tx_hash,
           timestamp: tradeData.timestamp || new Date().toISOString(),
           mint_address: tradeData.mint_address,
-          explorer_urls: tradeData.explorer_urls || (tradeData.tx_hash ? {
-            solscan: `https://solscan.io/tx/${tradeData.tx_hash}`,
-            dexScreener: `https://dexscreener.com/solana/${tradeData.mint_address}`,
-            jupiter: `https://jup.ag/token/${tradeData.mint_address}`
-          } : undefined)
+          explorer_urls: explorer_urls
         };
+        
+        // Create a transaction item from the trade update
+        // const transactionFromTrade: TransactionItem = {
+        //   id: tradeData.id || `trade-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        //   type: tradeData.type || 'buy',
+        //   token: tradeData.token_symbol || 'UNKNOWN',
+        //   token_logo: tradeData.token_logo || `https://dd.dexscreener.com/ds-logo/solana/${tradeData.mint_address}.png`,
+        //   amount_sol: tradeData.amount_sol || 0,
+        //   amount_tokens: tradeData.amount_tokens || 0,
+        //   tx_hash: tradeData.tx_hash,
+        //   timestamp: tradeData.timestamp || new Date().toISOString(),
+        //   mint_address: tradeData.mint_address,
+        //   explorer_urls: tradeData.explorer_urls || (tradeData.tx_hash ? {
+        //     solscan: `https://solscan.io/tx/${tradeData.tx_hash}`,
+        //     dexScreener: `https://dexscreener.com/solana/${tradeData.mint_address}`,
+        //     jupiter: `https://jup.ag/token/${tradeData.mint_address}`
+        //   } : undefined)
+        // };
         
         // Add to transactions
         setTransactions(prev => {
@@ -1106,7 +1156,7 @@ const FlashSniperTradingInterface: React.FC = () => {
 
   const handleTradeInstruction = async (instruction: any) => {
     try {
-      const connection = new Connection(customRpc.https || 'https://api.mainnet-beta.solana.com', 'confirmed');
+      const connection = new Connection(customRpc.https || 'https://rpc.shyft.to?api_key=0C53vJyghxriRpQX', 'confirmed');
       const rawTx = Buffer.from(instruction.raw_tx_base64, 'base64');
       const transaction = Transaction.from(rawTx);
       const keypair = walletKeypair!;

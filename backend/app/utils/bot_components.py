@@ -88,6 +88,82 @@ async def _confirm_tx_async(rpc_url: str, signature: str, label: str, wallet_add
         logger.warning(f"Confirmation failed for {signature}: {e}")
 
 
+
+
+async def get_fee_statistics():
+    """Get statistics about collected fees"""
+    try:
+        # Get all fee records
+        fee_records = await redis_client.lrange("fee_tracking", 0, -1)
+        
+        total_fees = 0
+        total_transactions = len(fee_records)
+        
+        for record in fee_records:
+            try:
+                data = json.loads(record)
+                fee_amount = data.get("fee_amount", 0)
+                total_fees += fee_amount
+            except:
+                pass
+        
+        return {
+            "total_transactions": total_transactions,
+            "total_fees_collected": total_fees,
+            "average_fee_per_tx": total_fees / total_transactions if total_transactions > 0 else 0
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get fee statistics: {e}")
+        return {"error": str(e)}
+
+       
+async def get_fee_analytics(db: AsyncSession):
+    """Get analytics about fee collection"""
+    from sqlalchemy import select, func
+    from app.models import Trade  # Add this import
+    
+    # Get total fees collected
+    stmt = select(
+        func.count(Trade.id).label("total_trades"),
+        func.count(Trade.id).filter(Trade.fee_applied == True).label("trades_with_fees"),
+        func.coalesce(func.sum(Trade.fee_amount), 0).label("total_fees_collected"),
+        func.avg(Trade.fee_percentage).label("avg_fee_percentage")
+    )
+    
+    result = await db.execute(stmt)
+    stats = result.first()
+    
+    # Get fee distribution by mint
+    stmt_mint = select(
+        Trade.fee_mint,
+        func.count(Trade.id).label("count"),
+        func.sum(Trade.fee_amount).label("total_amount")
+    ).where(
+        Trade.fee_applied == True
+    ).group_by(
+        Trade.fee_mint
+    )
+    
+    result_mint = await db.execute(stmt_mint)
+    mint_distribution = result_mint.all()
+    
+    return {
+        "total_trades": stats.total_trades or 0,
+        "trades_with_fees": stats.trades_with_fees or 0,
+        "total_fees_collected": float(stats.total_fees_collected or 0),
+        "avg_fee_percentage": float(stats.avg_fee_percentage or 0),
+        "fee_rate": (stats.trades_with_fees or 0) / (stats.total_trades or 1) * 100,
+        "mint_distribution": [
+            {
+                "mint": mint,
+                "count": count,
+                "total_amount": float(total_amount or 0)
+            }
+            for mint, count, total_amount in mint_distribution
+        ]
+    } 
+        
 # ===================================================================
 # JUPITER ULTRA API IMPLEMENTATION (CORRECT 2025)
 # ===================================================================
@@ -124,22 +200,24 @@ async def execute_jupiter_swap(
     private_key_bytes = decrypt_private_key_backend(user.encrypted_private_key)
     keypair = Keypair.from_bytes(private_key_bytes)
 
-    # Referral fee account (OPTIONAL - skip if not initialized)
+    # 🔥 CRITICAL FIX: Ultra API fee implementation
     use_referral = True
-    fee_account = None
-    referral_fee = "0"  # Default no referral
+    referral_fee = "100"  # 1% fee in basis points
     
-    try:
-        if hasattr(settings, "JUPITER_REFERRAL_ACCOUNT") and settings.JUPITER_REFERRAL_ACCOUNT:
-            fee_mint = output_mint if label == "BUY" else input_mint
-            fee_account = get_jupiter_referral_ata(settings.JUPITER_REFERRAL_ACCOUNT, fee_mint)
-            referral_fee = "100"  # 1% referral fee in bps
-        else:
-            use_referral = False
-            logger.info(f"No referral account configured, skipping referral fees")
-    except Exception as e:
-        logger.warning(f"Failed to setup referral account: {e}. Skipping referral...")
+    # Get the Ultra referral account
+    referral_account = getattr(settings, 'JUPITER_REFERRAL_ACCOUNT', None)
+    
+    if referral_account:
+        logger.info(f"💰 Using Ultra referral account: {referral_account[:8]}...")
+        logger.info(f"   Applying 1% fee on {label} transaction")
+        
+        # For Ultra API, we just pass the referral account directly
+        # DON'T try to calculate token accounts - Jupiter handles it
+        fee_account = referral_account  # Use the referral account directly
+    else:
+        logger.warning("⚠️ No Ultra referral account configured - missing out on 1% fees!")
         use_referral = False
+        fee_account = None
 
     # REQUIRED: Jupiter API Key for Ultra API
     if not getattr(settings, "JUPITER_API_KEY", None):
@@ -156,7 +234,7 @@ async def execute_jupiter_swap(
                 base = "https://api.jup.ag/ultra/v1"
                 
                 # =============================================================
-                # 1. GET ORDER (Quote + Transaction)
+                # 1. GET ORDER WITH 1% FEE
                 # =============================================================
                 order_params = {
                     "inputMint": input_mint,
@@ -166,13 +244,13 @@ async def execute_jupiter_swap(
                     "taker": user_pubkey,
                 }
                 
-                # Only add referral if we're using it
+                # 🔥 Add referral parameters for Ultra API
                 if use_referral and fee_account:
                     order_params["referralAccount"] = fee_account
                     order_params["referralFee"] = referral_fee
-                    logger.info(f"Using referral account: {fee_account[:8]}...")
+                    logger.info(f"💰 Adding 1% fee via Ultra API")
                 else:
-                    logger.info(f"No referral account, proceeding without referral fees")
+                    logger.warning("⚠️ Proceeding without 1% fee - you're losing revenue!")
                 
                 logger.info(f"Getting order for {label}: {input_mint[:8]}... → {output_mint[:8]}...")
                 
@@ -182,7 +260,7 @@ async def execute_jupiter_swap(
                     
                     # Check if it's a referral initialization error
                     if "referralAccount is initialized" in txt:
-                        logger.warning(f"Referral account not initialized for token {output_mint[:8]}...")
+                        logger.warning(f"Referral token account not initialized for this swap")
                         
                         # Try again without referral on the first attempt
                         if attempt == 0 and use_referral:
@@ -207,6 +285,34 @@ async def execute_jupiter_swap(
                 
                 order_data = await order_resp.json()
                 
+                # 🔥 CHECK IF 1% FEE IS APPLIED
+                fee_applied = False
+                fee_amount = 0
+                fee_percentage = 0.0
+                
+                if "feeBps" in order_data:
+                    fee_bps = int(order_data.get("feeBps", 0))
+                    if fee_bps >= 100:  # At least 1% fee
+                        fee_applied = True
+                        fee_percentage = fee_bps / 100  # Convert to percentage
+                        in_amount = int(order_data["inAmount"])
+                        fee_amount = (in_amount * fee_bps) // 10000
+                        
+                        logger.info(f"💰 1% FEE CONFIRMED: {fee_bps}bps fee applied")
+                        
+                        # Log fee details
+                        fee_mint = order_data.get("feeMint", "Unknown")
+                        if "So111" in fee_mint:
+                            fee_sol = fee_amount / 1e9
+                            logger.info(f"   Estimated fee: {fee_sol:.6f} SOL")
+                        elif "EPjFW" in fee_mint:
+                            fee_usdc = fee_amount / 1e6
+                            logger.info(f"   Estimated fee: {fee_usdc:.6f} USDC")
+                        else:
+                            logger.info(f"   Estimated fee: {fee_amount} tokens")
+                    else:
+                        logger.warning(f"⚠️ Fee mismatch: {fee_bps}bps (expected 100bps)")
+                
                 # Validate order response
                 if "transaction" not in order_data:
                     logger.error(f"No transaction in order response: {order_data}")
@@ -220,17 +326,7 @@ async def execute_jupiter_swap(
                     logger.error(f"Invalid output amount: {order_data.get('outAmount', 'missing')}")
                     raise Exception("Order returned 0 output - insufficient liquidity")
                 
-                # Parse platform fee from Ultra API response
-                platform_fee_amount = 0
-                if "feeBps" in order_data and "feeMint" in order_data:
-                    # Ultra API has different fee structure
-                    fee_bps = int(order_data.get("feeBps", 0))
-                    if fee_bps > 0 and order_data.get("feeMint"):
-                        # Estimate fee amount
-                        in_amount = int(order_data["inAmount"])
-                        platform_fee_amount = (in_amount * fee_bps) // 10000
-                
-                logger.info(f"{label} order: {int(order_data['inAmount'])/1e9:.4f} SOL → {int(order_data['outAmount'])} tokens | Slippage: {order_data.get('slippageBps', '?')}bps | Referral: {'Yes' if use_referral else 'No'}")
+                logger.info(f"{label} order: {int(order_data['inAmount'])/1e9:.4f} SOL → {int(order_data['outAmount'])} tokens | Slippage: {order_data.get('slippageBps', '?')}bps | 1% Fee: {'✅' if fee_applied else '❌'}")
                 
                 # =============================================================
                 # 2. SIGN TRANSACTION
@@ -273,7 +369,20 @@ async def execute_jupiter_swap(
                     input_amount_result = execute_data.get("inputAmountResult", order_data["inAmount"])
                     output_amount_result = execute_data.get("outputAmountResult", order_data["outAmount"])
                     
-                    logger.info(f"{label} executed: {int(input_amount_result)/1e9:.4f} SOL → {int(output_amount_result)} tokens")
+                    # 🔥 TRACK FEE IF APPLIED
+                    if fee_applied:
+                        # Store fee info for analytics
+                        await store_fee_info(
+                            wallet_address=user.wallet_address,
+                            tx_signature=signature,
+                            fee_amount=fee_amount,
+                            fee_mint=order_data.get("feeMint", "Unknown"),  # This is correct
+                            trade_type=label,
+                            input_amount=int(input_amount_result),
+                            output_amount=int(output_amount_result)
+                        )
+                    
+                    logger.info(f"{label} executed: {int(input_amount_result)/1e9:.4f} SOL → {int(output_amount_result)} tokens | 1% Fee: {'✅' if fee_applied else '❌'}")
                     
                     # Fire-and-forget confirmation
                     rpc_url = user.custom_rpc_https or settings.SOLANA_RPC_URL
@@ -284,12 +393,15 @@ async def execute_jupiter_swap(
                         "signature": signature,
                         "out_amount": int(output_amount_result),
                         "in_amount": int(input_amount_result),
-                        "estimated_referral_fee": platform_fee_amount,
-                        "fee_applied": platform_fee_amount > 0 and use_referral,
+                        "estimated_referral_fee": fee_amount,
+                        "fee_applied": fee_applied,
+                        "fee_percentage": fee_percentage,
+                        "fee_bps": fee_bps if fee_applied else 0,
+                        "fee_mint": order_data.get("feeMint", "") if fee_applied else "",  # Add this line
                         "method": "jup_ultra_referral",
                         "status": "success",
                         "request_id": order_data["requestId"],
-                        "referral_used": use_referral
+                        "referral_used": fee_applied
                     }
                 
                 else:
@@ -351,7 +463,7 @@ async def execute_jupiter_swap(
                     logger.warning(f"{label} FAILED → Transaction simulation failed")
             
             elif "referralAccount is initialized" in error_str:
-                logger.warning(f"{label} FAILED → Referral account not initialized. Will retry without referral.")
+                logger.warning(f"{label} FAILED → Referral token account not initialized. Will retry without referral.")
                 # Don't raise exception, let it retry without referral
             
             else:
@@ -371,6 +483,48 @@ async def execute_jupiter_swap(
     raise Exception(f"All {max_retries} retries failed for {label}")
 
 
+async def store_fee_info(wallet_address: str, tx_signature: str, fee_amount: int, 
+                        fee_mint: str, trade_type: str, input_amount: int, output_amount: int):
+    """Store fee information in Redis for tracking"""
+    try:
+        fee_data = {
+            "user": wallet_address,
+            "tx": tx_signature,
+            "fee_amount": fee_amount,
+            "fee_mint": fee_mint,
+            "trade_type": trade_type,
+            "input_amount": input_amount,
+            "output_amount": output_amount,
+            "timestamp": datetime.utcnow().isoformat(),
+            "referral_account": getattr(settings, 'JUPITER_REFERRAL_ACCOUNT', '')
+        }
+        
+        # Store in Redis with 30-day expiry
+        await redis_client.setex(
+            f"fee:{tx_signature}", 
+            2592000,  # 30 days
+            json.dumps(fee_data)
+        )
+        
+        # Also add to fee tracking list
+        await redis_client.lpush("fee_tracking", json.dumps(fee_data))
+        await redis_client.ltrim("fee_tracking", 0, 1000)  # Keep last 1000 fees
+        
+        # Convert fee to readable amount
+        if "So111" in fee_mint:
+            fee_readable = fee_amount / 1e9
+            fee_unit = "SOL"
+        elif "EPjFW" in fee_mint:
+            fee_readable = fee_amount / 1e6
+            fee_unit = "USDC"
+        else:
+            fee_readable = fee_amount
+            fee_unit = "tokens"
+        
+        logger.info(f"💰 Fee recorded: {fee_readable:.6f} {fee_unit} from {wallet_address[:8]}...")
+        
+    except Exception as e:
+        logger.error(f"Failed to store fee info: {e}")
 
 # ===================================================================
 # BUY LOGIC (Updated for Ultra API)
@@ -466,6 +620,9 @@ async def execute_user_buy(user: User, token: TokenMetadata, db: AsyncSession, w
         
         logger.info(f"Attempting buy: {user.buy_amount_sol} SOL → {mint[:8]}... (liquidity: ${liquidity_usd:.0f}, slippage: {slippage_bps}bps)")
         
+        # Prepare explorer URLs BEFORE creating trade record
+        explorer_urls = {}
+        
         try:
             swap = await execute_jupiter_swap(
                 user=user,
@@ -475,6 +632,14 @@ async def execute_user_buy(user: User, token: TokenMetadata, db: AsyncSession, w
                 slippage_bps=slippage_bps,
                 label="BUY",
             )
+            
+            if swap.get("fee_applied"):
+                await websocket_manager.send_personal_message(json.dumps({
+                    "type": "log",
+                    "message": f"💰 1% fee applied to this transaction",
+                    "status": "info"
+                }), user.wallet_address)
+                
         except Exception as swap_error:
             # Handle Jupiter API errors specifically
             error_msg = str(swap_error)
@@ -491,6 +656,13 @@ async def execute_user_buy(user: User, token: TokenMetadata, db: AsyncSession, w
             raise Exception("Swap returned 0 tokens")
 
         logger.info(f"Buy successful: {token_amount:.2f} tokens received")
+        
+        # NOW, We define explorer_urls after we have the swap signature
+        explorer_urls = {
+            "solscan": f"https://solscan.io/tx/{swap['signature']}",
+            "dexScreener": f"https://dexscreener.com/solana/{mint}",
+            "jupiter": f"https://jup.ag/token/{mint}"
+        }
         
         # Use current price from dex_data if available
         current_price = token.price_usd
@@ -516,35 +688,27 @@ async def execute_user_buy(user: User, token: TokenMetadata, db: AsyncSession, w
             stop_loss=user.sell_stop_loss_pct,
             token_amounts_purchased=token_amount,
             token_decimals=decimals,
-            # I WILL BE ADDING THIS TO MY SCHEMA LATER
-            # liquidity_at_buy=liquidity_usd,
-            # slippage_bps=slippage_bps
+            liquidity_at_buy=liquidity_usd,
+            # Store buy URLs
+            slippage_bps=slippage_bps,
+            solscan_buy_url=explorer_urls["solscan"],
+            dexscreener_url=explorer_urls["dexScreener"],
+            jupiter_url=explorer_urls["jupiter"],
+            # Set buy transaction hash
+            buy_tx_hash=swap.get('signature'),
+            # 🔥 FEE TRACKING - Fixed
+            fee_applied=swap.get("fee_applied", False),
+            fee_amount=float(swap.get("estimated_referral_fee", 0)) if swap.get("estimated_referral_fee") else None,
+            fee_percentage=float(swap.get("fee_percentage", 0.0)) if swap.get("fee_percentage") else None,
+            fee_bps=swap.get("fee_bps", None),
+            fee_mint=swap.get("fee_mint", None),  # Fixed: Get from swap response
+            fee_collected_at=datetime.utcnow() if swap.get("fee_applied") else None
         )
         db.add(trade)
         await db.commit()
-        
-        # Prepare explorer URLs
-        explorer_urls = {
-            "solscan": f"https://solscan.io/tx/{swap['signature']}",
-            "dexScreener": f"https://dexscreener.com/solana/{mint}",
-            "jupiter": f"https://jup.ag/token/{mint}"
-        }
 
-        # Send success message
-        # await websocket_manager.send_personal_message(json.dumps({
-        #     "type": "trade_instruction",
-        #     "action": "buy",
-        #     "mint": mint,
-        #     "amount_sol": user.buy_amount_sol,
-        #     "raw_tx_base64": swap["raw_tx_base64"],
-        #     "token_amount": round(token_amount, 6),
-        #     "price_usd": current_price,
-        #     "fee_applied": swap["fee_applied"],
-        #     "fee_percentage": 1.0 if swap["fee_applied"] else 0.0,
-        #     "signature": swap["signature"],
-        #     "solscan_url": f"https://solscan.io/tx/{swap['signature']}",
-        #     "liquidity": liquidity_usd
-        # }), user.wallet_address)
+        # Log successful save
+        logger.info(f"Trade saved to database with ID: {trade.id}")
         
         # Send success message with token logo from database
         await websocket_manager.send_personal_message(json.dumps({
@@ -563,6 +727,14 @@ async def execute_user_buy(user: User, token: TokenMetadata, db: AsyncSession, w
             }
         }), user.wallet_address)
         
+        # 🔥 Add fee notification
+        if swap.get("fee_applied"):
+            await websocket_manager.send_personal_message(json.dumps({
+                "type": "log",
+                "message": f"💰 1% fee applied to this buy transaction",
+                "status": "info"
+            }), user.wallet_address)
+
         # Also send a simple success message
         await websocket_manager.send_personal_message(json.dumps({
             "type": "log",
@@ -607,6 +779,9 @@ async def execute_user_buy(user: User, token: TokenMetadata, db: AsyncSession, w
         }), user.wallet_address)
         
         logger.error(f"Detailed buy error for {mint}: {error_msg}")
+        
+        # IMPORTANT: Re-raise the exception so the calling function knows it failed
+        raise
     finally:
         await redis_client.delete(lock_key)
 
@@ -734,6 +909,157 @@ async def execute_user_buy(user: User, token: TokenMetadata, db: AsyncSession, w
             
             
             
+# async def monitor_position(
+#     user: User,
+#     trade: Trade,
+#     entry_price_usd: float,
+#     token_decimals: int,
+#     token_amount: float,
+#     db: AsyncSession,
+#     websocket_manager: ConnectionManager
+# ):
+#     if token_amount <= 0:
+#         logger.warning(f"Invalid token_amount {token_amount} for {trade.mint_address} – skipping monitor")
+#         return
+
+#     start = datetime.utcnow()
+#     amount_lamports = int(token_amount * (10 ** token_decimals))
+#     mint = trade.mint_address
+    
+#     # Log that monitoring has started
+#     logger.info(f"🚀 Starting to monitor {mint[:8]}... for user {user.wallet_address[:8]}...")
+#     logger.info(f"  Entry price: ${entry_price_usd:.6f}")
+#     logger.info(f"  Token amount: {token_amount:.2f}")
+#     logger.info(f"  Take profit: {user.sell_take_profit_pct}%")
+#     logger.info(f"  Stop loss: {user.sell_stop_loss_pct}%")
+#     logger.info(f"  Timeout: {user.sell_timeout_seconds}s")
+
+#     while True:
+#         try:
+#             # Check if trade already sold (edge case)
+#             db_trade = await db.get(Trade, trade.id)
+#             if db_trade and db_trade.sell_timestamp:
+#                 logger.info(f"Trade {mint[:8]}... already sold, stopping monitor")
+#                 break
+
+#             dex = await get_dexscreener_data(mint)
+#             if not dex or not dex.get("priceUsd"):
+#                 logger.debug(f"No price data for {mint[:8]}... - waiting")
+#                 await asyncio.sleep(5)
+#                 continue
+
+#             price = float(dex["priceUsd"])
+#             if entry_price_usd <= 0 or price <= 0:
+#                 logger.debug(f"Invalid price for {mint[:8]}... - entry: ${entry_price_usd}, current: ${price}")
+#                 await asyncio.sleep(5)
+#                 continue
+            
+#             pnl = (price / entry_price_usd - 1) * 100
+            
+#             # Log PnL every 30 seconds for debugging
+#             if int(datetime.utcnow().timestamp()) % 30 == 0:  # Every 30 seconds
+#                 logger.info(f"Monitor {mint[:8]}...: ${price:.6f} | PnL: {pnl:.2f}% | TP: {user.sell_take_profit_pct}% | SL: {user.sell_stop_loss_pct}%")
+#             else:
+#                 logger.debug(f"Monitor {mint[:8]}...: ${price:.6f} | PnL: {pnl:.2f}%")
+
+#             sell_reason = None
+#             if user.sell_take_profit_pct and pnl >= user.sell_take_profit_pct:
+#                 sell_reason = "TP"
+#                 logger.info(f"TAKE PROFIT HIT for {mint[:8]}...: PnL {pnl:.2f}% >= {user.sell_take_profit_pct}%")
+#             elif user.sell_stop_loss_pct and pnl <= -user.sell_stop_loss_pct:
+#                 sell_reason = "SL"
+#                 logger.info(f"STOP LOSS HIT for {mint[:8]}...: PnL {pnl:.2f}% <= -{user.sell_stop_loss_pct}%")
+#             elif user.sell_timeout_seconds and (datetime.utcnow() - start).total_seconds() > user.sell_timeout_seconds:
+#                 sell_reason = "Timeout"
+#                 logger.info(f"TIMEOUT for {mint[:8]}...: {(datetime.utcnow() - start).total_seconds():.0f}s > {user.sell_timeout_seconds}s")
+
+#             if sell_reason:
+#                 logger.info(f"🚨 SELLING {mint[:8]}... - Reason: {sell_reason}, PnL: {pnl:.2f}%")
+                
+#                 # Send sell notification
+#                 await websocket_manager.send_personal_message(json.dumps({
+#                     "type": "log",
+#                     "message": f"🚨 Selling {trade.token_symbol or mint[:8]} - {sell_reason} triggered (PnL: {pnl:.2f}%)",
+#                     "status": "warning"
+#                 }), user.wallet_address)
+                
+#                 # Update slippage based on current liquidity
+#                 slippage_bps = int(user.sell_slippage_bps) if user.sell_slippage_bps else 500  # Default 5%
+#                 liquidity_usd = 0.0
+#                 if dex and "liquidity" in dex and isinstance(dex["liquidity"], dict):
+#                     liquidity_value = dex["liquidity"].get("usd", 0)
+#                     try:
+#                         liquidity_usd = float(liquidity_value)
+#                     except (ValueError, TypeError):
+#                         liquidity_usd = 0.0
+                
+#                 if liquidity_usd < 50000.0:  # Low liquidity
+#                     slippage_bps = min(1500, slippage_bps * 3)  # Triple slippage but max 15%
+                    
+#                 swap = await execute_jupiter_swap(
+#                     user=user,
+#                     input_mint=mint,
+#                     output_mint=settings.SOL_MINT,
+#                     amount=amount_lamports,
+#                     slippage_bps=slippage_bps,
+#                     label="SELL",
+#                 )
+                
+#                 # Prepare sell explorer URL
+#                 sell_explorer_url = f"https://solscan.io/tx/{swap.get('signature')}"
+                
+#                 # Update trade record with sell URLs
+#                 trade.sell_timestamp = datetime.utcnow()
+
+#                 profit_usd = (price - entry_price_usd) * token_amount
+#                 trade.sell_timestamp = datetime.utcnow()
+#                 trade.profit_usd = round(profit_usd, 4)
+#                 trade.sell_reason = sell_reason
+#                 trade.price_usd_at_trade = price
+#                 trade.sell_tx_hash = swap.get("signature") 
+#                 trade.solscan_sell_url = sell_explorer_url
+                
+#                 await db.commit()
+
+#                 await websocket_manager.send_personal_message(json.dumps({
+#                     "type": "trade_instruction",
+#                     "action": "sell",
+#                     "mint": mint,
+#                     "reason": sell_reason,
+#                     "pnl_pct": round(pnl, 2),
+#                     "profit_usd": round(profit_usd, 4),
+#                     "raw_tx_base64": swap["raw_tx_base64"],
+#                     "fee_applied": swap["fee_applied"],
+#                     "fee_percentage": 1.0 if swap["fee_applied"] else 0.0,
+#                     "signature": swap["signature"],
+#                     "solscan_url": f"https://solscan.io/tx/{swap['signature']}"
+#                 }), user.wallet_address)
+                
+#                 # Send final sell confirmation
+#                 await websocket_manager.send_personal_message(json.dumps({
+#                     "type": "log",
+#                     "message": f"✅ Sold {trade.token_symbol or mint[:8]}! Profit: ${profit_usd:.4f} ({pnl:.2f}%)",
+#                     "status": "success"
+#                 }), user.wallet_address)
+#                 break
+
+#             await asyncio.sleep(4)
+#         except Exception as e:
+#             logger.error(f"Monitor error for {mint}: {e}")
+#             await asyncio.sleep(10)
+            
+#             # If monitor fails repeatedly, check if trade still exists
+#             try:
+#                 db_trade = await db.get(Trade, trade.id)
+#                 if not db_trade:
+#                     logger.warning(f"Trade {mint[:8]}... no longer in DB, stopping monitor")
+#                     break
+#             except:
+#                 pass
+            
+
+
+
 async def monitor_position(
     user: User,
     trade: Trade,
@@ -821,24 +1147,51 @@ async def monitor_position(
                 if liquidity_usd < 50000.0:  # Low liquidity
                     slippage_bps = min(1500, slippage_bps * 3)  # Triple slippage but max 15%
                     
-                swap = await execute_jupiter_swap(
-                    user=user,
-                    input_mint=mint,
-                    output_mint=settings.SOL_MINT,
-                    amount=amount_lamports,
-                    slippage_bps=slippage_bps,
-                    label="SELL",
-                )
-
-                profit_usd = (price - entry_price_usd) * token_amount
+                try:
+                    swap = await execute_jupiter_swap(
+                        user=user,
+                        input_mint=mint,
+                        output_mint=settings.SOL_MINT,
+                        amount=amount_lamports,
+                        slippage_bps=slippage_bps,
+                        label="SELL",
+                    )
+                except Exception as swap_error:
+                    logger.error(f"SELL failed for {mint}: {swap_error}")
+                    
+                    # Send error message to user
+                    await websocket_manager.send_personal_message(json.dumps({
+                        "type": "log",
+                        "message": f"❌ Sell failed: {str(swap_error)[:100]}",
+                        "status": "error"
+                    }), user.wallet_address)
+                    break
+                
+                # Prepare sell explorer URL
+                sell_explorer_url = f"https://solscan.io/tx/{swap.get('signature')}"
+                
+                # Update trade record with sell URLs
                 trade.sell_timestamp = datetime.utcnow()
+                profit_usd = (price - entry_price_usd) * token_amount
                 trade.profit_usd = round(profit_usd, 4)
                 trade.sell_reason = sell_reason
                 trade.price_usd_at_trade = price
                 trade.sell_tx_hash = swap.get("signature") 
+                trade.solscan_sell_url = sell_explorer_url
+                
+                # 🔥 Store fee information if applied
+                if swap.get("fee_applied"):
+                    trade.fee_applied = True
+                    trade.fee_amount = swap.get("estimated_referral_fee", 0)
+                    trade.fee_percentage = swap.get("fee_percentage", 0.0)
+                    
+                    # Log fee collection
+                    logger.info(f"💰 1% fee collected on SELL: {swap.get('estimated_referral_fee', 0)}")
+                
                 await db.commit()
 
-                await websocket_manager.send_personal_message(json.dumps({
+                # 🔥 Enhanced trade instruction with fee info
+                trade_instruction = {
                     "type": "trade_instruction",
                     "action": "sell",
                     "mint": mint,
@@ -846,16 +1199,43 @@ async def monitor_position(
                     "pnl_pct": round(pnl, 2),
                     "profit_usd": round(profit_usd, 4),
                     "raw_tx_base64": swap["raw_tx_base64"],
-                    "fee_applied": swap["fee_applied"],
-                    "fee_percentage": 1.0 if swap["fee_applied"] else 0.0,
                     "signature": swap["signature"],
                     "solscan_url": f"https://solscan.io/tx/{swap['signature']}"
-                }), user.wallet_address)
+                }
+                
+                # 🔥 Store fee information if applied
+                if swap.get("fee_applied"):
+                    trade.fee_applied = True
+                    trade.fee_amount = swap.get("estimated_referral_fee", 0)
+                    trade.fee_percentage = swap.get("fee_percentage", 0.0)
+                    trade.fee_bps = swap.get("fee_bps", None)
+                    trade.fee_mint = swap.get("fee_mint", None)  # Add this line
+                    trade.fee_collected_at = datetime.utcnow()  # Add this line
+                    
+                    # Log fee collection
+                    logger.info(f"💰 1% fee collected on SELL: {swap.get('estimated_referral_fee', 0)}")
+
+                    
+                    # Send fee notification
+                    await websocket_manager.send_personal_message(json.dumps({
+                        "type": "log",
+                        "message": f"💰 1% fee applied to this sell transaction",
+                        "status": "info"
+                    }), user.wallet_address)
+                else:
+                    trade_instruction["fee_applied"] = False
+                
+                await websocket_manager.send_personal_message(json.dumps(trade_instruction), user.wallet_address)
                 
                 # Send final sell confirmation
+                sell_message = f"✅ Sold {trade.token_symbol or mint[:8]}! Profit: ${profit_usd:.4f} ({pnl:.2f}%)"
+                
+                if swap.get("fee_applied"):
+                    sell_message += f" (1% fee applied)"
+                
                 await websocket_manager.send_personal_message(json.dumps({
                     "type": "log",
-                    "message": f"✅ Sold {trade.token_symbol or mint[:8]}! Profit: ${profit_usd:.4f} ({pnl:.2f}%)",
+                    "message": sell_message,
                     "status": "success"
                 }), user.wallet_address)
                 break
@@ -872,9 +1252,7 @@ async def monitor_position(
                     logger.warning(f"Trade {mint[:8]}... no longer in DB, stopping monitor")
                     break
             except:
-                pass
-            
-            
+                pass            
             
                     
             

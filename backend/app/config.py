@@ -53,8 +53,12 @@ class Settings(BaseSettings):
     PUMPFUN_PROGRAM: str = os.getenv("PUMPFUN_PROGRAM")
     RAYDIUM_PROGRAM: str = os.getenv("RAYDIUM_PROGRAM")
     RAYDIUM_FEE_ACCOUNT: str = os.getenv("RAYDIUM_FEE_ACCOUNT")
-        
     
+    BOT_OWNER_WALLET: str = os.getenv("BOT_OWNER_WALLET")
+    BOT_OWNER_PRIVATE_KEY: str = os.getenv("BOT_OWNER_PRIVATE_KEY")
+    
+    
+    JUPITER_REFERRAL_PROJECT: str = os.getenv("JUPITER_REFERRAL_PROJECT")
 
 
     

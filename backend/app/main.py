@@ -407,6 +407,7 @@ async def hybrid_grpc_subscription_loop():
             if channel:
                 await channel.close()
             await asyncio.sleep(5)
+     
             
 async def handle_pumpfun_completion(update):
     try:
@@ -1580,6 +1581,48 @@ async def log_trade(
     )
     return {"status": "Trade logged successfully."}
 
+# @app.get("/trade/history")
+# async def get_trade_history(
+#     current_user: User = Depends(get_current_user_by_wallet),
+#     db: AsyncSession = Depends(get_db)
+# ):
+#     trades = await db.execute(
+#         select(Trade)
+#         .filter(Trade.user_wallet_address == current_user.wallet_address)
+#         .order_by(Trade.buy_timestamp.desc())
+#     )
+#     trades = trades.scalars().all()
+
+#     result = []
+#     for trade in trades:
+#         data = trade.__dict__.copy()
+        
+#         # If token still in hot table → use live data
+#         meta = await db.get(TokenMetadata, trade.mint_address)
+#         if not meta:
+#             # Fallback to archive
+#             arch = await db.execute(
+#                 select(TokenMetadataArchive.data)
+#                 .where(TokenMetadataArchive.mint_address == trade.mint_address)
+#                 .order_by(TokenMetadataArchive.archived_at.desc())
+#             )
+#             arch_data = arch.scalar()
+#             if arch_data:
+#                 archived = json.loads(arch_data)
+#                 data["token_symbol"] = archived.get("token_symbol", "Unknown")
+#                 data["token_name"] = archived.get("token_name", "Unknown Token")
+#                 data["token_logo_uri"] = archived.get("token_logo_uri")
+#             else:
+#                 data["token_symbol"] = trade.token_symbol or trade.mint_address[:8]
+#         else:
+#             data["token_symbol"] = meta.token_symbol or trade.token_symbol
+#             data["token_name"] = meta.token_name
+        
+#         result.append(data)
+
+#     return result
+
+
 @app.get("/trade/history")
 async def get_trade_history(
     current_user: User = Depends(get_current_user_by_wallet),
@@ -1594,32 +1637,59 @@ async def get_trade_history(
 
     result = []
     for trade in trades:
-        data = trade.__dict__.copy()
-        
-        # If token still in hot table → use live data
-        meta = await db.get(TokenMetadata, trade.mint_address)
-        if not meta:
-            # Fallback to archive
-            arch = await db.execute(
-                select(TokenMetadataArchive.data)
-                .where(TokenMetadataArchive.mint_address == trade.mint_address)
-                .order_by(TokenMetadataArchive.archived_at.desc())
-            )
-            arch_data = arch.scalar()
-            if arch_data:
-                archived = json.loads(arch_data)
-                data["token_symbol"] = archived.get("token_symbol", "Unknown")
-                data["token_name"] = archived.get("token_name", "Unknown Token")
-                data["token_logo_uri"] = archived.get("token_logo_uri")
-            else:
-                data["token_symbol"] = trade.token_symbol or trade.mint_address[:8]
+        # Determine which URLs to show based on trade type
+        if trade.trade_type == "buy":
+            solscan_url = trade.solscan_buy_url or (f"https://solscan.io/tx/{trade.buy_tx_hash}" if trade.buy_tx_hash else None)
         else:
-            data["token_symbol"] = meta.token_symbol or trade.token_symbol
-            data["token_name"] = meta.token_name
+            solscan_url = trade.solscan_sell_url or (f"https://solscan.io/tx/{trade.sell_tx_hash}" if trade.sell_tx_hash else None)
         
-        result.append(data)
+        # Prepare explorer URLs object
+        explorer_urls = None
+        if solscan_url or trade.dexscreener_url or trade.jupiter_url:
+            explorer_urls = {
+                "solscan": solscan_url,
+                "dexScreener": trade.dexscreener_url,
+                "jupiter": trade.jupiter_url
+            }
+        
+        # Get token info
+        token_symbol = trade.token_symbol
+        token_logo = None
+        
+        if trade.mint_address:
+            meta = await db.get(TokenMetadata, trade.mint_address)
+            if meta:
+                token_symbol = meta.token_symbol or token_symbol
+                token_logo = meta.token_logo
+        
+        # Default logo if none found
+        if not token_logo and trade.mint_address:
+            token_logo = f"https://dd.dexscreener.com/ds-logo/solana/{trade.mint_address}.png"
+        
+        trade_data = {
+            "id": trade.id,
+            "type": trade.trade_type,
+            "trade_type": trade.trade_type,
+            "amount_sol": trade.amount_sol,
+            "amount_tokens": trade.amount_tokens,
+            "token_symbol": token_symbol,
+            "token": token_symbol,  # For compatibility
+            "token_logo": token_logo,
+            "timestamp": trade.buy_timestamp.isoformat() if trade.buy_timestamp else trade.sell_timestamp.isoformat(),
+            "buy_timestamp": trade.buy_timestamp.isoformat() if trade.buy_timestamp else None,
+            "sell_timestamp": trade.sell_timestamp.isoformat() if trade.sell_timestamp else None,
+            "profit_sol": trade.profit_sol,
+            "mint_address": trade.mint_address,
+            "tx_hash": trade.buy_tx_hash if trade.trade_type == "buy" else trade.sell_tx_hash,
+            "buy_tx_hash": trade.buy_tx_hash,
+            "sell_tx_hash": trade.sell_tx_hash,
+            "explorer_urls": explorer_urls
+        }
+        
+        result.append(trade_data)
 
     return result
+
 
 @app.post("/subscribe/premium")
 async def subscribe_premium(

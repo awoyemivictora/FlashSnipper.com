@@ -7509,3 +7509,46 @@ DETAIL:  Key (wallet_address)=(EEiznb2BLQpjLrZqGTb6F9nKwJ8s1CPe2cDcTyGSsMwQ) alr
 2025-12-02 05:15:11,468 - app.security - INFO - Decrypting private key with backend master key
 2025-12-02 05:53:49,688 - app.security - INFO - Decrypting private key with backend master key
 2025-12-02 06:41:08,190 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 10:27:28,958 - app.routers.auth - INFO - Generated nonce: qqiY8EOdyqN-tVMqfZUGbA==
+2025-12-02 10:27:29,112 - app.routers.auth - INFO - Wallet verified successfully: 3Pc3J2LdgZox2YvoT1VBCfNziucrKFb6iHx4Gt7Q5Z1j
+2025-12-02 10:27:29,138 - app.routers.auth - INFO - Generated frontend encryption key: y6bimo7U8SnpvVNgglDtrQ==
+2025-12-02 10:27:29,145 - app.routers.auth - INFO - Generated frontend encryption key: Ea8HcOPJLi3EcUCRUHxiNw==
+2025-12-02 10:27:29,160 - app.security - INFO - Encrypting private key with backend master key
+2025-12-02 10:27:29,161 - app.routers.auth - INFO - Private key encrypted with backend master key for 3Pc3J2LdgZox2YvoT1VBCfNziucrKFb6iHx4Gt7Q5Z1j
+2025-12-02 10:27:29,172 - app.security - INFO - Encrypting private key with backend master key
+2025-12-02 10:27:29,172 - app.routers.auth - INFO - Private key encrypted with backend master key for 3Pc3J2LdgZox2YvoT1VBCfNziucrKFb6iHx4Gt7Q5Z1j
+2025-12-02 10:27:29,209 - app.routers.auth - INFO - New user registered: 3Pc3J2LdgZox2YvoT1VBCfNziucrKFb6iHx4Gt7Q5Z1j
+2025-12-02 10:27:29,275 - app.routers.auth - INFO - Existing user updated: 3Pc3J2LdgZox2YvoT1VBCfNziucrKFb6iHx4Gt7Q5Z1j
+2025-12-02 14:59:16,892 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 14:59:32,627 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 14:59:47,384 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 15:00:02,046 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 15:00:19,116 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 15:00:33,661 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 15:00:48,111 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 15:01:02,597 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 15:01:17,122 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 15:01:31,607 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 15:01:46,338 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 15:02:01,363 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 15:02:16,989 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 15:02:33,865 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 15:02:48,697 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 16:45:50,772 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 16:45:58,055 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 17:30:47,449 - app.security - INFO - Decrypting private key with backend master key
+2025-12-02 17:31:19,634 - app.security - INFO - Decrypting private key with backend master key
+2025-12-03 18:35:28,194 - app.routers.auth - INFO - Generated nonce: xYL2LFzaBpHtIEB7Xs2E6Q==
+2025-12-03 18:35:28,260 - app.routers.auth - INFO - Wallet verified successfully: B2h2uoF6MFuGvQ7dCHubFi6gU7AqGBLh7tf2HDpL8xns
+2025-12-03 18:35:28,265 - app.routers.auth - INFO - Generated frontend encryption key: A9mKjqub8HiA-LUmDaHxcQ==
+2025-12-03 18:35:28,285 - app.routers.auth - INFO - Generated frontend encryption key: _Q36APF340u01_faRZLelA==
+2025-12-03 18:35:28,316 - app.security - INFO - Encrypting private key with backend master key
+2025-12-03 18:35:28,316 - app.routers.auth - INFO - Private key encrypted with backend master key for B2h2uoF6MFuGvQ7dCHubFi6gU7AqGBLh7tf2HDpL8xns
+2025-12-03 18:35:28,323 - app.security - INFO - Encrypting private key with backend master key
+2025-12-03 18:35:28,323 - app.routers.auth - INFO - Private key encrypted with backend master key for B2h2uoF6MFuGvQ7dCHubFi6gU7AqGBLh7tf2HDpL8xns
+2025-12-03 18:35:28,339 - app.routers.auth - INFO - New user registered: B2h2uoF6MFuGvQ7dCHubFi6gU7AqGBLh7tf2HDpL8xns
+2025-12-03 18:35:28,373 - app.routers.auth - INFO - Existing user updated: B2h2uoF6MFuGvQ7dCHubFi6gU7AqGBLh7tf2HDpL8xns
+2025-12-03 18:53:08,580 - app.security - INFO - Decrypting private key with backend master key
+2025-12-03 18:55:27,388 - app.security - INFO - Decrypting private key with backend master key
+2025-12-03 19:02:38,089 - app.security - INFO - Decrypting private key with backend master key
+2025-12-03 19:04:13,966 - app.security - INFO - Decrypting private key with backend master key

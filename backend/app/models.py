@@ -1,6 +1,6 @@
 # app/models.py
 from sqlalchemy import (
-    BigInteger, Column, Index, Integer, String, Float, Boolean, DateTime, ForeignKey, Text, func
+    BigInteger, Column, Index, Integer, Numeric, String, Float, Boolean, DateTime, ForeignKey, Text, func
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from datetime import datetime
@@ -237,9 +237,9 @@ class Trade(Base):
     entry_price: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     stop_loss: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     take_profit: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    # I'LL BE ADDING THIS LATER
-    # liquidity_at_buy: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    # slippage_bps: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    liquidity_at_buy: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    slippage_bps: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     
     token_amounts_purchased: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     token_decimals: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
@@ -247,6 +247,19 @@ class Trade(Base):
     swap_provider: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     buy_timestamp: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     sell_timestamp: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    
+    solscan_buy_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    solscan_sell_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    dexscreener_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    jupiter_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    
+    # 🔥 FEE TRACKING FIELDS - Using Float instead of Numeric
+    fee_applied: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    fee_amount: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # Amount of fee collected
+    fee_percentage: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # Percentage (e.g., 1.0 for 1%)
+    fee_bps: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Basis points (e.g., 100 for 1%)
+    fee_mint: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # Which token the fee was collected in
+    fee_collected_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)  # When fee was collected
 
     user: Mapped["User"] = relationship("User", back_populates="trades")
     
@@ -255,6 +268,7 @@ class Trade(Base):
         Index('ix_trades_user_timestamp', "user_wallet_address", "buy_timestamp"),
         Index('ix_trades_mint_user', "mint_address", "user_wallet_address"),
         Index('ix_trades_profit', "user_wallet_address", "profit_usd"),
+        Index('ix_trades_fee_applied', "fee_applied", "buy_timestamp"),  # New index for fee queries
     )
 
 
