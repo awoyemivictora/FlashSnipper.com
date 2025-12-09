@@ -1,5 +1,4 @@
 venv
-app/generated/*.py
 generate_sol_wallet.txt
 .env
 
