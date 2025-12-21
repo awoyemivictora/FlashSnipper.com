@@ -146,6 +146,8 @@
 from dataclasses import dataclass
 from typing import Dict, List
 
+from app.utils.bot_components import get_on_chain_data_for_strategy
+
 @dataclass
 class TokenAnalysis:
     mint: str
@@ -181,6 +183,40 @@ class ProfitabilityEngine:
             'MIN_FINAL_SCORE_MOONBAG': 90,
             'MIN_CONFIDENCE': 82,
         }
+    
+    # I JUST ADDED THIS. WILL SEE IF I CAN IMPLEMENT THIS LATER IN THE BOT
+    async def calculate_profitability_score(mint: str) -> float:
+        """Calculate a profitability score (0-100) for a token"""
+        try:
+            jupiter_data, dexscreener_data = await get_on_chain_data_for_strategy(mint, timeout_seconds=2)
+            
+            if not jupiter_data or not dexscreener_data:
+                return 50.0  # Neutral
+            
+            score = 50.0  # Start at neutral
+            
+            # Positive factors
+            if dexscreener_data.get("price_change_m5", 0) > 10:
+                score += 15  # Pumping
+            if dexscreener_data.get("volume_m5", 0) > 100:
+                score += 10  # Volume
+            if jupiter_data.get("organic_score", 0) > 50:
+                score += 10  # Organic
+            if jupiter_data.get("holder_change_1h", 0) > 5:
+                score += 5   # Holder growth
+            
+            # Negative factors
+            if jupiter_data.get("is_suspicious", False):
+                score -= 25  # Suspicious
+            if jupiter_data.get("top_holders_percentage", 0) > 70:
+                score -= 15  # Concentrated
+            if dexscreener_data.get("price_change_m5", 0) < -10:
+                score -= 15  # Dumping
+            
+            return max(0, min(100, score))
+            
+        except:
+            return 50.0
 
     async def analyze_token(self, mint: str, token_data: Dict, webacy_data: Dict) -> TokenAnalysis:
         # Extract from Webacy

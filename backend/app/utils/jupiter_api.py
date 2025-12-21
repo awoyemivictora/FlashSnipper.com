@@ -3,6 +3,7 @@ import asyncio
 import logging
 from typing import Optional, Dict, Any
 import httpx
+from app.config import settings
 
 # --------------------------------------------------------------
 # Logging setup
@@ -182,7 +183,7 @@ async def fetch_jupiter_with_retry(mint: str, max_attempts: int = 10) -> dict:
 # TEST BLOCK — just run: python jupiter_api.py
 # ===================================================================
 if __name__ == "__main__":
-    TEST_MINT = "CzHc1ugMNhim5JCJC8ebbp4k14jfrbZx1HNcMyEppump"  # ← your token
+    TEST_MINT = settings.SOL_MINT  # ← your token
 
     async def test():
         logger.info(f"Testing Jupiter API with mint: {TEST_MINT}")

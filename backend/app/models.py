@@ -14,48 +14,14 @@ class Base(DeclarativeBase):
 # ──────────────────────────────────────────────────────────────
 # 1. New Tokens & Metadata (shared across all users)
 # ──────────────────────────────────────────────────────────────
-# class NewTokens(Base):
-#     __tablename__ = "new_tokens"
-
-#     pool_id: Mapped[Optional[str]] = mapped_column(String, nullable=False, primary_key=True)
-#     mint_address: Mapped[str] = mapped_column(String, index=True)
-#     timestamp: Mapped[datetime] = mapped_column(DateTime, default=func.now())
-#     signature: Mapped[str] = mapped_column(String)
-#     tx_type: Mapped[str] = mapped_column(String)
-    
-#     # Enhanced status tracking
-#     metadata_status: Mapped[str] = mapped_column(String, default="pending")  # pending → processing → completed → needs_update → failed
-#     metadata_retry_count: Mapped[int] = mapped_column(Integer, default=0)
-#     last_metadata_update: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-#     next_reprocess_time: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    
-#     # Processing stages tracking (for debugging and partial completion)
-#     dexscreener_processed: Mapped[bool] = mapped_column(Boolean, default=False)
-#     raydium_processed: Mapped[bool] = mapped_column(Boolean, default=False)
-#     webacy_processed: Mapped[bool] = mapped_column(Boolean, default=False)
-#     tavily_processed: Mapped[bool] = mapped_column(Boolean, default=False)
-#     profitability_processed: Mapped[bool] = mapped_column(Boolean, default=False)
-    
-#     # Error tracking
-#     last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    
-#     # Performance metrics
-#     total_processing_time_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    
-#     # Indexes for better query performance
-#     __table_args__ = (
-#         Index('ix_new_tokens_status_timestamp', "metadata_status", "timestamp"),
-#         Index('ix_new_tokens_reprocess_time', "next_reprocess_time"),
-#         Index('ix_new_tokens_mint_status', "mint_address", "metadata_status"),
-#     )
-
 
 class NewTokens(Base):
     __tablename__ = "new_tokens"
 
     mint_address: Mapped[str] = mapped_column(String, primary_key=True, unique=True, index=True)
-    pool_id: Mapped[Optional[str]] = mapped_column(String, nullable=False)
-    timestamp: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    pool_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
+    bonding_curve: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.utcnow)  
     signature: Mapped[str] = mapped_column(String)
     tx_type: Mapped[str] = mapped_column(String)
     
@@ -102,7 +68,7 @@ class TokenMetadata(Base):
     token_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     token_symbol: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     token_logo: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    token_decimals: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, server_default="9", default=9)
+    token_decimals: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, server_default="6", default=6)
     dex_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     liquidity_usd: Mapped[Optional[float]] = mapped_column(Float, nullable=True, comment="Total liquidity in USD across all pairs")
     fdv: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -211,6 +177,25 @@ class User(Base):
     partial_sell_pct: Mapped[float] = mapped_column(Float, default=70.0)  # Sell 70% on early profit
     trailing_sl_pct: Mapped[float] = mapped_column(Float, default=15.0)   # Trailing SL drop from peak
     rug_liquidity_drop_pct: Mapped[float] = mapped_column(Float, default=20.0)  # Rug if liquidity drops >20%
+    
+    # 🔥 ADD THESE FOR PROFITABILITY TRACKING
+    total_volume_sol: Mapped[float] = mapped_column(Float, default=0.0)
+    total_fees_paid_sol: Mapped[float] = mapped_column(Float, default=0.0)
+    total_trades: Mapped[int] = mapped_column(Integer, default=0)
+    fee_tier: Mapped[str] = mapped_column(String, default="standard")  # standard, volume, vip
+    last_fee_adjustment: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    
+    # Token account optimization
+    prefer_ata_reuse: Mapped[bool] = mapped_column(Boolean, default=True)
+    ata_rent_paid_sol: Mapped[float] = mapped_column(Float, default=0.0)
+    
+     # 🔥 JITO TIP MANAGEMENT FIELDS
+    jito_tip_account: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)
+    jito_reserved_tip_amount: Mapped[float] = mapped_column(Float, default=0.0)  # Total amount to reserve for tips
+    jito_current_tip_balance: Mapped[float] = mapped_column(Float, default=0.0)  # Current balance in tip account
+    jito_tip_per_tx: Mapped[int] = mapped_column(Integer, default=100_000)  # Lamports per transaction (default 0.0001 SOL)
+    jito_tip_last_updated: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    jito_tip_account_initialized: Mapped[bool] = mapped_column(Boolean, default=False)
 
     trades: Mapped[List["Trade"]] = relationship("Trade", back_populates="user", cascade="all, delete-orphan")
 
@@ -233,6 +218,7 @@ class Trade(Base):
     amount_tokens: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     price_sol_per_token: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     price_usd_at_trade: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    price_sol_at_trade: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     buy_tx_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     sell_tx_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     profit_usd: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -265,6 +251,9 @@ class Trade(Base):
     fee_bps: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Basis points (e.g., 100 for 1%)
     fee_mint: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # Which token the fee was collected in
     fee_collected_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)  # When fee was collected
+
+    # 🔥 ADD THIS FIELD to store strategy JSON
+    strategy_data: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     user: Mapped["User"] = relationship("User", back_populates="trades")
     

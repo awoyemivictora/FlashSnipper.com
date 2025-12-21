@@ -339,4 +339,35 @@ class BotStatusResponse(BaseModel):
 
     model_config = {"from_attributes": True}
     
+
+
+class BulkTradeLog(BaseModel):
+    trades: List[dict]
+
+# class JitoTipSettings(BaseModel):
+#     reserved_amount: float
+#     tip_per_tx: int
     
+# class FundJitoTipRequest(BaseModel):
+#     amount_sol: float = 0.01
+
+
+class ImmediateSnipeTrade(BaseModel):
+    user_wallet_address: str 
+    mint_address: str 
+    token_symbol: str 
+    token_name: str 
+    trade_type: str 
+    amount_sol: float 
+    bundle_id: str 
+    timestamp: str 
+    
+
+class ImmediateSnipeRequest(BaseModel):
+    trades: List[ImmediateSnipeTrade]
+    token_data: Dict[str, Any]
+    bundle_id: str 
+    
+
+
+

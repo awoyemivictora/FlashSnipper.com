@@ -59,7 +59,14 @@ class Settings(BaseSettings):
     
     
     JUPITER_REFERRAL_PROJECT: str = os.getenv("JUPITER_REFERRAL_PROJECT")
+    
+    # Jito Configuration
+    JITO_BLOCK_ENGINE_URL: str = os.getenv("JITO_BLOCK_ENGINE_URL")
+    JITO_MIN_TIP_LAMPORTS: int = os.getenv("JITO_MIN_TIP_LAMPORTS")
+    JITO_MAX_TIP_LAMPORTS: int = os.getenv("JITO_MAX_TIP_LAMPORTS")
+    JITO_USE_FOR_CRITICAL_TRADES: bool = os.getenv("JITO_USE_FOR_CRITICAL_TRADES")
 
+    ONCHAIN_API_KEY: str = os.getenv("ONCHAIN_API_KEY")
 
     
     

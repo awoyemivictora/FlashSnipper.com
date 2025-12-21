@@ -92,6 +92,14 @@ interface ProfessionalInputProps {
   label: string;
 }
 
+interface JitoTipSettings {
+  reservedAmount: string,
+  tipPerTx: string;
+  currentBalance: number;
+  tipAccount: string;
+  isInitialized: boolean;
+}
+
 // Enhanced log display component with safe date handling
 const LogEntryComponent: React.FC<{ log: LogEntry }> = ({ log }) => {
   const formatTimestamp = (timestamp: string) => {
@@ -415,6 +423,184 @@ const TransactionItemComponent: React.FC<{
   );
 };
 
+// Add these format functions near your other format functions
+const formatNumberOnFocus = (value: string): string => {
+  return value.replace(/,/g, '').trim();
+};
+
+const formatNumberOnBlur = (value: string): string => {
+  if (!value.trim()) return '0';
+  const cleanValue = value.replace(/,/g, '').trim();
+  // Format with commas for thousands
+  return cleanValue ? parseInt(cleanValue, 10).toLocaleString('en-US') : '0';
+};
+
+const formatSolOnFocus = (value: string): string => {
+  return value.replace(' SOL', '').trim();
+};
+
+const formatSolOnBlur = (value: string): string => {
+  if (!value.trim()) return '0.01 SOL';
+  const cleanValue = value.replace(' SOL', '').trim();
+  const numValue = parseFloat(cleanValue) || 0.01;
+  return `${numValue.toFixed(4)} SOL`;
+};
+
+// const ProfessionalInput: React.FC<ProfessionalInputProps> = ({
+//   value,
+//   onChange,
+//   placeholder,
+//   suffix,
+//   type = 'text',
+//   formatOnBlur,
+//   formatOnFocus,
+//   label,
+// }) => {
+//   const [isFocused, setIsFocused] = useState(false);
+//   const [displayValue, setDisplayValue] = useState(value);
+//   const [showTooltip, setShowTooltip] = useState(false);
+//   const inputRef = useRef<HTMLInputElement>(null);
+//   const tooltipRef = useRef<HTMLDivElement>(null);
+
+//   // Default values for each field type
+//   const getDefaultValue = () => {
+//     if (suffix === 'SOL') return '0.0000 SOL';
+//     if (suffix === '%') return '0%';
+//     if (suffix === ' seconds') return '0 seconds';
+//     return '';
+//   };
+
+//   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+//     setIsFocused(true);
+//     let rawValue = value;
+    
+//     // If value is default, show empty for editing
+//     if (value === getDefaultValue()) {
+//       rawValue = '';
+//     } else if (formatOnFocus) {
+//       rawValue = formatOnFocus(value);
+//     } else if (suffix && value.endsWith(suffix)) {
+//       rawValue = value.replace(suffix, '').trim();
+//     }
+    
+//     setDisplayValue(rawValue);
+//     setTimeout(() => e.target.select(), 100);
+//   };
+
+//   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+//     setIsFocused(false);
+//     let formattedValue = displayValue.trim();
+    
+//     // If empty, use default value
+//     if (!formattedValue) {
+//       formattedValue = getDefaultValue();
+//     } else if (formatOnBlur) {
+//       formattedValue = formatOnBlur(formattedValue);
+//     } else if (suffix && formattedValue && !formattedValue.endsWith(suffix)) {
+//       formattedValue = `${formattedValue}${suffix}`;
+//     }
+    
+//     setDisplayValue(formattedValue);
+//     onChange(formattedValue);
+//   };
+
+//   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const newValue = e.target.value;
+//     setDisplayValue(newValue);
+    
+//     // Only update parent if no suffix or formatting (real-time updates)
+//     if (!suffix && !formatOnBlur) {
+//       onChange(newValue);
+//     }
+//   };
+
+//   useEffect(() => {
+//     if (!isFocused) {
+//       setDisplayValue(value);
+//     }
+//   }, [value, isFocused]);
+
+//   const handleTooltipClick = () => {
+//     setShowTooltip(!showTooltip);
+//   };
+
+//   useEffect(() => {
+//     const handleClickOutside = (event: MouseEvent) => {
+//       if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
+//         setShowTooltip(false);
+//       }
+//     };
+//     document.addEventListener('mousedown', handleClickOutside);
+//     return () => {
+//       document.removeEventListener('mousedown', handleClickOutside);
+//     };
+//   }, []);
+
+//   const showSuffix = suffix && !isFocused && displayValue && !displayValue.endsWith(suffix);
+
+//   const getTooltipText = () => {
+//     switch (label) {
+//       case 'Amount':
+//         return 'The amount of SOL to use for the buy transaction.';
+//       case 'Take profit':
+//         return 'Set the percentage at which to take profits.';
+//       case 'Stop loss':
+//         return 'Set the percentage at which to cut losses.';
+//       case 'Timeout':
+//         return 'Duration before the trade is canceled if not executed.';
+//       case 'Top 10 Holders Max':
+//         return 'Maximum percentage of tokens held by top 10 holders.';
+//       case 'Bundled Max':
+//         return 'Limit on bundled transactions to avoid scams.';
+//       case 'Max Same Block Buys':
+//         return 'Maximum buys in the same block to prevent manipulation.';
+//       case 'Safety Check Period':
+//         return 'Time period for safety checks before trading.';
+//       default:
+//         return 'This is a helper text for the input field.';
+//     }
+//   };
+
+//   return (
+//     <div className="relative">
+//       <div className="flex items-center gap-2 mb-2">
+//         <label className="block text-muted text-sm font-medium">{label}</label>
+//         <div className="relative">
+//           <span
+//             className="flex items-center justify-center w-4 h-4 bg-teal-400 rounded-full text-white text-xs cursor-pointer"
+//             onClick={handleTooltipClick}
+//             aria-label="Help tooltip"
+//           >
+//             ?
+//           </span>
+//           {showTooltip && (
+//             <div
+//               ref={tooltipRef}
+//               className="absolute z-10 bg-dark-2 text-white text-xs p-2 rounded-lg shadow-lg w-48 -top-10 left-6"
+//             >
+//               {getTooltipText()}
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//       <input
+//         ref={inputRef}
+//         type={type}
+//         value={isFocused ? displayValue : value}
+//         onChange={handleChange}
+//         onFocus={handleFocus}
+//         onBlur={handleBlur}
+//         placeholder={isFocused ? placeholder : ''}
+//         className="w-full bg-accent border-t border-[#22253e] rounded-lg p-3 text-white text-sm font-medium outline-none transition-all duration-200 focus:border-emerald-400 focus:bg-white/5 pr-10"
+//       />
+//       {showSuffix && (
+//         <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted text-sm pointer-events-none">
+//           {suffix}
+//         </span>
+//       )}
+//     </div>
+//   );
+// };
 
 const ProfessionalInput: React.FC<ProfessionalInputProps> = ({
   value,
@@ -434,7 +620,7 @@ const ProfessionalInput: React.FC<ProfessionalInputProps> = ({
 
   // Default values for each field type
   const getDefaultValue = () => {
-    if (suffix === 'SOL') return '0.0000 SOL';
+    if (suffix === 'SOL') return '0.0100 SOL';
     if (suffix === '%') return '0%';
     if (suffix === ' seconds') return '0 seconds';
     return '';
@@ -510,28 +696,85 @@ const ProfessionalInput: React.FC<ProfessionalInputProps> = ({
 
   const getTooltipText = () => {
     switch (label) {
+      case 'Reserved Tip Amount':
+        return 'Total SOL reserved for Jito tips. Bot auto-funds this amount when tip account is low. Recommended: 0.01-0.05 SOL';
+      case 'Tip/Transaction':
+        return 'Tip amount per buy/sell transaction in lamports. Recommended: 100,000 (0.0001 SOL)';
       case 'Amount':
-        return 'The amount of SOL to use for the buy transaction.';
+        return 'The amount of SOL to use for each buy transaction.';
       case 'Take profit':
-        return 'Set the percentage at which to take profits.';
+        return 'Percentage gain at which to sell for profit. Example: 40% means sell when price increases by 40%';
       case 'Stop loss':
-        return 'Set the percentage at which to cut losses.';
+        return 'Percentage loss at which to cut losses. Example: 20% means sell when price drops by 20%';
       case 'Timeout':
-        return 'Duration before the trade is canceled if not executed.';
+        return 'Duration before trade is cancelled if not executed. Prevents hanging transactions.';
       case 'Top 10 Holders Max':
-        return 'Maximum percentage of tokens held by top 10 holders.';
+        return 'Maximum percentage of tokens held by top 10 holders. Lower values indicate better distribution.';
       case 'Bundled Max':
-        return 'Limit on bundled transactions to avoid scams.';
+        return 'Maximum allowed bundled transactions in same block. Helps detect wash trading.';
       case 'Max Same Block Buys':
-        return 'Maximum buys in the same block to prevent manipulation.';
+        return 'Maximum number of buy transactions allowed in the same block. Prevents manipulation.';
       case 'Safety Check Period':
-        return 'Time period for safety checks before trading.';
+        return 'Time period for safety checks before trading. Allows token to establish legitimacy.';
       default:
-        return 'This is a helper text for the input field.';
+        return 'Configure this setting for optimal trading performance.';
     }
   };
 
-  return (
+  // Get tooltip position that won't cause horizontal scroll
+  const getTooltipPosition = () => {
+    if (!inputRef.current) return {};
+    
+    const rect = inputRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    
+    // On mobile, show tooltip above the input
+    if (viewportWidth < 768) {
+      // Check if there's enough space above
+      if (rect.top > 120) {
+        return {
+          bottom: '100%',
+          top: 'auto',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          marginBottom: '8px',
+          maxWidth: 'min(280px, 90vw)',
+        };
+      } else {
+        // Not enough space above, show below
+        return {
+          top: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          marginTop: '8px',
+          maxWidth: 'min(280px, 90vw)',
+        };
+      }
+    } else {
+      // On desktop, show to the right if there's space
+      if (rect.right + 300 < viewportWidth) {
+        return {
+          top: '50%',
+          left: '100%',
+          transform: 'translateY(-50%)',
+          marginLeft: '8px',
+          maxWidth: '280px',
+        };
+      } else {
+        // Not enough space to the right, show to the left
+        return {
+          top: '50%',
+          right: '100%',
+          left: 'auto',
+          transform: 'translateY(-50%)',
+          marginRight: '8px',
+          maxWidth: '280px',
+        };
+      }
+    }
+  };
+
+    return (
     <div className="relative">
       <div className="flex items-center gap-2 mb-2">
         <label className="block text-muted text-sm font-medium">{label}</label>
@@ -572,7 +815,6 @@ const ProfessionalInput: React.FC<ProfessionalInputProps> = ({
   );
 };
 
-
 const FlashSniperTradingInterface: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'logs' | 'transactions'>('transactions');
   const [activeWalletTab, setActiveWalletTab] = useState<'wallet' | 'buySell'>('buySell');
@@ -581,12 +823,12 @@ const FlashSniperTradingInterface: React.FC = () => {
   const [buyForm, setBuyForm] = useState<BuyFormData>({
     amount: '0.01 SOL',
     priorityFee: '0.12000 SOL',
-    slippage: '30%',
+    slippage: '1%',
   });
   const [sellForm, setSellForm] = useState<SellFormData>({
     takeProfit: '40%',
     stopLoss: '20%',
-    slippage: '40%',
+    slippage: '1%',
     timeout: '60 seconds',
     priorityFee: '0.1000 SOL',
     useOwnRPC: false,
@@ -634,6 +876,411 @@ const FlashSniperTradingInterface: React.FC = () => {
     safety: { ...safetyForm }
   });
   const [settingsChanged, setSettingsChanged] = useState(false);
+  const [JitoTipSettings, setJitoTipSettings] = useState<JitoTipSettings>({
+    reservedAmount: '0.01 SOL',
+    tipPerTx: '100,000',
+    currentBalance: 0,
+    tipAccount: '',
+    isInitialized: false,
+  });
+  // const [isLoadingJitoInfo, setIsLoadingJitoInfo] = useState(false);
+
+  // Function to fetch Jito tip info
+  // const fetchJitoTipInfo = async () => {
+  //   if (!authToken) {
+  //     console.log('No auth token available');
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await apiService.request('/user/jito-tip/info', {
+  //       headers: { Authorization: `Bearer ${authToken}` }, 
+  //     });
+
+  //     // Check if response exists and has status
+  //     if (response && response.status === 'success') {
+  //       setJitoTipSettings({
+  //         reservedAmount: `${response.reserved_amount} SOL`,
+  //         tipPerTx: response.tip_per_tx?.toLocaleString() || '100,000',
+  //         currentBalance: response.current_balance || 0,
+  //         tipAccount: response.tip_account || '',
+  //         isInitialized: response.initialized || false,
+  //       });
+
+  //       setIsLoadingJitoInfo(true);
+  //     } else {
+  //       console.warn('Invalid response from Jito tip info:', response);
+  //       // Set default values if response is invalid
+  //       setJitoTipSettings(prev => ({
+  //         ...prev,
+  //         currentBalance: 0,
+  //         isInitialized: false,
+  //       }));
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to fetch Jito tip info:', error);
+  //     // Set default values on error
+  //     setJitoTipSettings(prev => ({
+  //       ...prev,
+  //       currentBalance: 0,
+  //       isInitialized: false,
+  //     }));
+  //   } finally {
+  //     setIsLoadingJitoInfo(false);
+  //   }
+  // }
+
+
+  // const fundJitoTipAccount = async () => {
+  //   // Extract number from string (e.g., "0.01 SOL" -> 0.01)
+  //   const amountStr = JitoTipSettings.reservedAmount.replace(' SOL', '');
+  //   const amount = parseFloat(amountStr);
+
+  //   if (isNaN(amount) || amount <= 0) {
+  //       alert('Please enter a valid amount');
+  //       return;
+  //   }
+
+  //   try {
+  //       const response = await apiService.request('/user/jito-tip/fund', {
+  //           method: 'POST',
+  //           headers: {
+  //               'Content-Type': 'application/json',
+  //               'Authorization': `Bearer ${authToken}`
+  //           },
+  //           body: JSON.stringify({ amount_sol: amount })
+  //       });
+
+  //       if (response.status === 'success') {
+  //           alert(`✅ Successfully funded ${amount} SOL to your tip account!\nTransaction: ${response.signature}`);
+  //           fetchJitoTipInfo();
+  //       }
+  //   } catch (error: any) {
+  //       console.error('Failed to fund Jito tip account:', error);
+  //       alert(`Failed to fund: ${error.message || 'Please try again.'}`);
+  //   }
+  // };
+
+  // // Function to update tip settings
+  // const updateJitoTipSettings = async () => {
+  //   const reservedAmount = parseFloat(JitoTipSettings.reservedAmount.replace(' SOL', ''));
+  //   const tipPerTx = parseFloat(JitoTipSettings.tipPerTx.replace(/,/g, ''));
+
+  //   try {
+  //     const response = await apiService.request('/user/jito-tip/settings', {
+  //       method: 'PUT',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Authorization': `Bearer ${authToken}`
+  //       },
+  //       body: JSON.stringify({
+  //         reserved_amount: reservedAmount,
+  //         tip_per_tx: tipPerTx  
+  //       })
+  //     });
+
+  //     if (response.status === 'success') {
+  //       // COMING BACK HERE AS WELL. NEED TO DISPLAY A NICE POPUP NOT ALERT
+  //       alert('Jito tip settins updated successfully');
+  //       fetchJitoTipInfo();
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to update Jito tip settings:', error);
+  //   }
+  // };
+
+
+  // // Add Jito Tip section to your UI in the settings area
+  // const JitoTipSection = () => (
+  //   <div className="bg-dark-2 rounded-lg shadow-lg overflow-hidden border border-[#22253e]">
+  //     <div className="flex items-center justify-between p-4 border-b border-[#000010] bg-gradient-to-r from-dark-2 to-dark-1">
+  //       <div className="flex items-center gap-3">
+  //         <div className="relative">
+  //           <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
+  //             <img src="/images/img_flash.svg" alt="Jito Tip" className="w-4 h-4" />
+  //           </div>
+  //           <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border border-dark-2"></div>
+  //         </div>
+  //         <div>
+  //           <h3 className="text-white text-base font-semibold">Jito Tip Management</h3>
+  //           <p className="text-xs text-gray-400">Faster transaction inclusion</p>
+  //         </div>
+  //       </div>
+  //       <div className="flex items-center gap-2">
+  //         {JitoTipSettings.isInitialized ? (
+  //           <span className="px-2 py-1 bg-emerald-900/30 text-emerald-400 text-xs font-medium rounded-full flex items-center gap-1">
+  //             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+  //               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+  //             </svg>
+  //             Ready
+  //           </span>
+  //         ) : (
+  //           <span className="px-2 py-1 bg-amber-900/30 text-amber-400 text-xs font-medium rounded-full flex items-center gap-1">
+  //             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+  //               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+  //             </svg>
+  //             Not Ready
+  //           </span>
+  //         )}
+  //       </div>
+  //     </div>
+      
+  //     <div className="p-4 space-y-5">
+  //       <div className="text-sm text-gray-300 leading-relaxed bg-dark-1/50 p-3 rounded-lg border border-[#22253e]">
+  //         <div className="flex items-start gap-2">
+  //           <svg className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+  //             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+  //           </svg>
+  //           <p>Jito tips ensure faster transaction inclusion. The bot will automatically initialize and fund this account when you click "Run Bot".</p>
+  //         </div>
+  //       </div>
+        
+  //       {/* Balance Status Card */}
+  //       <div className="bg-gradient-to-r from-dark-1 to-dark-2 rounded-xl p-4 border border-[#2a2d45] shadow-lg">
+  //         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+  //           <div className="flex items-center gap-3">
+  //             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+  //               JitoTipSettings.currentBalance > 0.01 
+  //                 ? 'bg-gradient-to-br from-emerald-500 to-teal-600' 
+  //                 : JitoTipSettings.currentBalance > 0.001 
+  //                   ? 'bg-gradient-to-br from-amber-500 to-orange-600'
+  //                   : 'bg-gradient-to-br from-red-500 to-pink-600'
+  //             }`}>
+  //               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  //               </svg>
+  //             </div>
+  //             <div>
+  //               <p className="text-sm text-gray-400">Tip Account Balance</p>
+  //               <p className={`text-lg font-bold ${
+  //                 JitoTipSettings.currentBalance > 0.01 
+  //                   ? 'text-emerald-400' 
+  //                   : JitoTipSettings.currentBalance > 0.001 
+  //                     ? 'text-amber-400'
+  //                     : 'text-red-400'
+  //               }`}>
+  //                 {JitoTipSettings.currentBalance.toFixed(6)} SOL
+  //               </p>
+  //             </div>
+  //           </div>
+            
+  //           <div className="flex flex-col sm:items-end gap-2">
+  //             <div className="flex items-center gap-2">
+  //               {JitoTipSettings.currentBalance > 0.01 && (
+  //                 <span className="px-2 py-1 bg-emerald-900/30 text-emerald-400 text-xs font-medium rounded-full flex items-center gap-1">
+  //                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+  //                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+  //                   </svg>
+  //                   Optimal
+  //                 </span>
+  //               )}
+  //               {JitoTipSettings.currentBalance <= 0.01 && JitoTipSettings.currentBalance > 0.001 && (
+  //                 <span className="px-2 py-1 bg-amber-900/30 text-amber-400 text-xs font-medium rounded-full flex items-center gap-1">
+  //                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+  //                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+  //                   </svg>
+  //                   Low
+  //                 </span>
+  //               )}
+  //               {JitoTipSettings.currentBalance <= 0.001 && (
+  //                 <span className="px-2 py-1 bg-red-900/30 text-red-400 text-xs font-medium rounded-full flex items-center gap-1">
+  //                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+  //                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+  //                   </svg>
+  //                   Critical
+  //                 </span>
+  //               )}
+  //             </div>
+              
+  //             {JitoTipSettings.currentBalance <= 0.01 && JitoTipSettings.isInitialized && (
+  //               <button
+  //                 onClick={() => {
+  //                   const amount = JitoTipSettings.currentBalance <= 0.001 ? 0.01 : 0.005;
+  //                   if (confirm(`Low tip balance detected. Add ${amount} SOL to maintain optimal performance?`)) {
+  //                     setJitoTipSettings(prev => ({
+  //                       ...prev,
+  //                       reservedAmount: `${amount} SOL`
+  //                     }));
+  //                     setTimeout(() => fundJitoTipAccount(), 100);
+  //                   }
+  //                 }}
+  //                 className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
+  //                   JitoTipSettings.currentBalance <= 0.001 
+  //                     ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white'
+  //                     : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white'
+  //                 }`}
+  //               >
+  //                 {JitoTipSettings.currentBalance <= 0.001 ? '⚠️ Add 0.01 SOL' : '🔋 Add 0.005 SOL'}
+  //               </button>
+  //             )}
+  //           </div>
+  //         </div>
+          
+  //         {/* Balance Meter */}
+  //         <div className="mt-4">
+  //           <div className="flex justify-between text-xs text-gray-500 mb-1">
+  //             <span>0 SOL</span>
+  //             <span>Optimal: 0.01+ SOL</span>
+  //           </div>
+  //           <div className="h-2 bg-dark-1 rounded-full overflow-hidden">
+  //             <div 
+  //               className={`h-full rounded-full transition-all duration-500 ${
+  //                 JitoTipSettings.currentBalance > 0.01 
+  //                   ? 'bg-gradient-to-r from-emerald-500 to-teal-500 w-full' 
+  //                   : JitoTipSettings.currentBalance > 0.001 
+  //                     ? 'bg-gradient-to-r from-amber-500 to-orange-500'
+  //                     : 'bg-gradient-to-r from-red-500 to-pink-500'
+  //               }`}
+  //               style={{ 
+  //                 width: `${Math.min(JitoTipSettings.currentBalance * 100, 100)}%` 
+  //               }}
+  //             ></div>
+  //           </div>
+  //         </div>
+  //       </div>
+        
+  //       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+  //         <div className="space-y-3">
+  //           <ProfessionalInput
+  //             value={JitoTipSettings.reservedAmount}
+  //             onChange={(value) => setJitoTipSettings(prev => ({ ...prev, reservedAmount: value }))}
+  //             placeholder="0.01"
+  //             suffix="SOL"
+  //             formatOnFocus={formatSolOnFocus}
+  //             formatOnBlur={formatSolOnBlur}
+  //             label="Reserved Tip Amount"
+  //           />
+  //           <div className="flex items-start gap-2 text-xs text-gray-500 bg-dark-1/30 p-2 rounded-lg">
+  //             <svg className="w-3 h-3 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+  //               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+  //             </svg>
+  //             <span>Auto-fund amount when starting bot (0.01-0.05 SOL recommended)</span>
+  //           </div>
+  //         </div>
+          
+  //         <div className="space-y-3">
+  //           <ProfessionalInput
+  //             value={JitoTipSettings.tipPerTx}
+  //             onChange={(value) => setJitoTipSettings(prev => ({ ...prev, tipPerTx: value }))}
+  //             placeholder="100000"
+  //             formatOnFocus={formatNumberOnFocus}
+  //             formatOnBlur={formatNumberOnBlur}
+  //             label="Tip/Transaction"
+  //           />
+  //           <div className="flex items-start gap-2 text-xs text-gray-500 bg-dark-1/30 p-2 rounded-lg">
+  //             <svg className="w-3 h-3 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+  //               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+  //             </svg>
+  //             <span>Tip per transaction in lamports (100,000 = 0.0001 SOL)</span>
+  //           </div>
+  //         </div>
+  //       </div>
+        
+  //       {JitoTipSettings.tipAccount && (
+  //         <div className="bg-dark-1 rounded-xl p-4 border border-[#2a2d45]">
+  //           <div className="flex items-center justify-between mb-3">
+  //             <div className="flex items-center gap-2">
+  //               <div className="w-6 h-6 bg-blue-500/20 rounded flex items-center justify-center">
+  //                 <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+  //                 </svg>
+  //               </div>
+  //               <span className="text-sm text-gray-400 font-medium">Tip Account Details</span>
+  //             </div>
+  //             <button
+  //               onClick={() => {
+  //                 navigator.clipboard.writeText(JitoTipSettings.tipAccount);
+  //                 alert('Tip account address copied to clipboard!');
+  //               }}
+  //               className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+  //             >
+  //               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" />
+  //               </svg>
+  //               Copy
+  //             </button>
+  //           </div>
+            
+  //           <div className="text-white text-sm font-mono break-all bg-dark-2 p-3 rounded-lg border border-[#22253e] overflow-x-auto">
+  //             {JitoTipSettings.tipAccount}
+  //           </div>
+            
+  //           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+  //             <div className="bg-dark-2 p-3 rounded-lg border border-[#22253e]">
+  //               <p className="text-xs text-gray-400 mb-1">Status</p>
+  //               <div className="flex items-center gap-2">
+  //                 {JitoTipSettings.isInitialized ? (
+  //                   <>
+  //                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+  //                     <span className="text-emerald-400 text-sm font-medium">Initialized & Ready</span>
+  //                   </>
+  //                 ) : (
+  //                   <>
+  //                     <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+  //                     <span className="text-amber-400 text-sm font-medium">Not Initialized</span>
+  //                   </>
+  //                 )}
+  //               </div>
+  //             </div>
+              
+  //             <div className="bg-dark-2 p-3 rounded-lg border border-[#22253e]">
+  //               <p className="text-xs text-gray-400 mb-1">Estimated Transactions</p>
+  //               <p className="text-white text-sm font-medium">
+  //                 {JitoTipSettings.currentBalance > 0 
+  //                   ? `${Math.floor(JitoTipSettings.currentBalance * 10000)} left` 
+  //                   : '0 left'}
+  //               </p>
+  //             </div>
+  //           </div>
+  //         </div>
+  //       )}
+        
+  //       <div className="flex flex-col sm:flex-row gap-3">
+  //         <button
+  //           onClick={updateJitoTipSettings}
+  //           className="flex-1 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-sm font-medium py-3 px-4 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
+  //           disabled={!JitoTipSettings.tipAccount}
+  //         >
+  //           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+  //           </svg>
+  //           Update Settings
+  //         </button>
+          
+  //         {JitoTipSettings.isInitialized && (
+  //           <button
+  //             onClick={fundJitoTipAccount}
+  //             className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium py-3 px-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
+  //           >
+  //             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  //             </svg>
+  //             Add Funds
+  //           </button>
+  //         )}
+  //       </div>
+        
+  //       <div className="text-center">
+  //         <div className="flex items-center justify-center gap-2 text-xs text-gray-500 mb-2">
+  //           <svg className="w-3 h-3 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+  //             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+  //           </svg>
+  //           <span>Jito tip account will be created automatically when you start the bot.</span>
+  //         </div>
+          
+  //         {JitoTipSettings.currentBalance < 0.001 && JitoTipSettings.isInitialized && (
+  //           <div className="flex items-center justify-center gap-2 text-xs text-amber-400 bg-amber-900/20 p-2 rounded-lg border border-amber-800/30">
+  //             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+  //               <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+  //             </svg>
+  //             ⚠️ Low tip balance may cause slower transactions. Add funds for optimal performance.
+  //           </div>
+  //         )}
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
+
 
 
   // Function to clear logs
@@ -1292,6 +1939,7 @@ const FlashSniperTradingInterface: React.FC = () => {
       alert(`Failed to start bot: ${error.message || 'Please check console for details'}`);
     }
   };
+
 
   const handleStopBot = async () => {
     console.log('Stop Bot clicked');
@@ -2375,6 +3023,8 @@ const FlashSniperTradingInterface: React.FC = () => {
                       )}
                     </div>
                   </div>
+
+                  {/* <JitoTipSection /> */}
 
                   {/* Safety Section */}
                   {/* <div className="bg-dark-2 rounded-lg shadow-lg relative">
