@@ -82,7 +82,7 @@ const TokenCreator: React.FC = () => {
   const [preFundResult, setPreFundResult] = useState<any>(null);
   const [showPreFundingPanel, setShowPreFundingPanel] = useState(false);
   const [metadataGenerated, setMetadataGenerated] = useState<boolean>(false);
-
+  const currentYear = new Date().getFullYear();
 
   // Refs
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
@@ -3738,7 +3738,7 @@ const TokenCreator: React.FC = () => {
         <footer className="bg-gray-900/80 backdrop-blur-lg border-t border-gray-800 py-4 px-4 md:px-8">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <span className="text-gray-400 text-sm">
-              © 2025 Flash Orchestrator | High Risk Tool | For Educational Purposes Only
+              © {currentYear} Flash Orchestrator | High Risk Tool | For Educational Purposes Only
             </span>
             <div className="flex items-center gap-6">
               <button

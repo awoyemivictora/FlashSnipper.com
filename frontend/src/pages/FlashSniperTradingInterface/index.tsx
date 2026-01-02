@@ -883,6 +883,7 @@ const FlashSniperTradingInterface: React.FC = () => {
     tipAccount: '',
     isInitialized: false,
   });
+  const currentYear = new Date().getFullYear();
   // const [isLoadingJitoInfo, setIsLoadingJitoInfo] = useState(false);
 
   // Function to fetch Jito tip info
@@ -3317,7 +3318,7 @@ const FlashSniperTradingInterface: React.FC = () => {
 
         </div>
         <footer className="bg-secondary border-t border-[#ffffff21] h-12 flex items-center justify-between px-4 md:px-8">
-          <span className="text-white text-sm font-medium">© 2025 | FlashSniper.com | Disclaimer</span>
+          <span className="text-white text-sm font-medium">© {currentYear} | FlashSniper.com | Disclaimer</span>
           <div className="flex items-center gap-6 md:gap-10">
             <a href="https://twitter.com/flashsniper" target="_blank" rel="noopener noreferrer">
               <img src="/images/img_newtwitter.svg" alt="Twitter" className="w-4 h-4" />

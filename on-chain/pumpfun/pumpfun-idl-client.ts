@@ -117,44 +117,52 @@ export class PumpFunPda {
     }
 
     // NOTE: THIS WAS WORKING EARLIER WHEN TESTING FOR SNIPPING (MIGHT COME BACK TO USE THIS LATER IF SNIPPING FAILS, AHAHA)
-    // static getAssociatedBondingCurve(
-    //     bondingCurve: PublicKey,
-    //     mint: PublicKey
-    //     ): PublicKey {
-    //     return getAssociatedTokenAddressSync(
-    //         mint,
-    //         bondingCurve,
-    //         true, // allowOwnerOffCurve (PDA)
-    //         TOKEN_2022_PROGRAM_ID
-    //     );
-    // }
-
     static getAssociatedBondingCurve(
         bondingCurve: PublicKey,
         mint: PublicKey
     ): PublicKey {
-        // CRITICAL: Use the EXACT PDA calculation from IDL, same as CREATE
-        const ASSOCIATED_BONDING_CURVE_PROGRAM_ID = new PublicKey([
-            140,151,37,143,78,36,137,241,187,61,16,41,20,142,13,131,
-            11,90,19,153,218,255,16,132,4,142,123,216,219,233,248,89
+        const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey([
+            140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142, 13, 131,
+            11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216, 219, 233, 248, 89
         ]);
         
-        const ASSOCIATED_BONDING_CURVE_SEED = new Uint8Array([
-            6,221,246,225,215,101,161,147,217,203,225,70,206,235,121,
-            172,28,180,133,237,95,91,55,145,58,140,245,133,126,255,0,169
-        ]);
-        
-        const [associatedBondingCurve] = PublicKey.findProgramAddressSync(
+        const [pda] = PublicKey.findProgramAddressSync(
             [
                 bondingCurve.toBuffer(),
-                Buffer.from(ASSOCIATED_BONDING_CURVE_SEED),
+                TOKEN_2022_PROGRAM_ID.toBuffer(),
                 mint.toBuffer()
             ],
-            ASSOCIATED_BONDING_CURVE_PROGRAM_ID
+            ASSOCIATED_TOKEN_PROGRAM_ID
         );
-        
-        return associatedBondingCurve;
+        return pda;
     }
+
+    // static getAssociatedBondingCurve(
+    //     bondingCurve: PublicKey,
+    //     mint: PublicKey
+    // ): PublicKey {
+    //     // CRITICAL: Use the EXACT PDA calculation from IDL, same as CREATE
+    //     const ASSOCIATED_BONDING_CURVE_PROGRAM_ID = new PublicKey([
+    //         140,151,37,143,78,36,137,241,187,61,16,41,20,142,13,131,
+    //         11,90,19,153,218,255,16,132,4,142,123,216,219,233,248,89
+    //     ]);
+        
+    //     const ASSOCIATED_BONDING_CURVE_SEED = new Uint8Array([
+    //         6,221,246,225,215,101,161,147,217,203,225,70,206,235,121,
+    //         172,28,180,133,237,95,91,55,145,58,140,245,133,126,255,0,169
+    //     ]);
+        
+    //     const [associatedBondingCurve] = PublicKey.findProgramAddressSync(
+    //         [
+    //             bondingCurve.toBuffer(),
+    //             Buffer.from(ASSOCIATED_BONDING_CURVE_SEED),
+    //             mint.toBuffer()
+    //         ],
+    //         ASSOCIATED_BONDING_CURVE_PROGRAM_ID
+    //     );
+        
+    //     return associatedBondingCurve;
+    // }
 
     static getCreatorVault(creator: PublicKey): PublicKey {
         const [pda] = PublicKey.findProgramAddressSync(
@@ -242,6 +250,67 @@ export class PumpFunPda {
         return this.getAssociatedBondingCurve(bondingCurve, mint);
     }
 
+    static getGlobalParams(): PublicKey {
+        const GLOBAL_PARAMS_PROGRAM_ID = new PublicKey([
+            5, 42, 229, 215, 167, 218, 167, 36, 166, 234, 176, 167, 41, 84, 145, 133,
+            90, 212, 160, 103, 22, 96, 103, 76, 78, 3, 69, 89, 128, 61, 101, 163
+        ]);
+        
+        const [pda] = PublicKey.findProgramAddressSync(
+            [Buffer.from("global-params")],
+            GLOBAL_PARAMS_PROGRAM_ID
+        );
+        return pda;
+    }
+    
+    static getSolVault(): PublicKey {
+        const GLOBAL_PARAMS_PROGRAM_ID = new PublicKey([
+            5, 42, 229, 215, 167, 218, 167, 36, 166, 234, 176, 167, 41, 84, 145, 133,
+            90, 212, 160, 103, 22, 96, 103, 76, 78, 3, 69, 89, 128, 61, 101, 163
+        ]);
+        
+        const [pda] = PublicKey.findProgramAddressSync(
+            [Buffer.from("sol-vault")],
+            GLOBAL_PARAMS_PROGRAM_ID
+        );
+        return pda;
+    }
+    
+    static getMayhemState(mint: PublicKey): PublicKey {
+        const GLOBAL_PARAMS_PROGRAM_ID = new PublicKey([
+            5, 42, 229, 215, 167, 218, 167, 36, 166, 234, 176, 167, 41, 84, 145, 133,
+            90, 212, 160, 103, 22, 96, 103, 76, 78, 3, 69, 89, 128, 61, 101, 163
+        ]);
+        
+        const [pda] = PublicKey.findProgramAddressSync(
+            [
+                Buffer.from("mayhem-state"),
+                mint.toBuffer()
+            ],
+            GLOBAL_PARAMS_PROGRAM_ID
+        );
+        return pda;
+    }
+    
+    static getMayhemTokenVault(mint: PublicKey): PublicKey {
+        const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey([
+            140, 151, 37, 143, 78, 36, 137, 241, 187, 61, 16, 41, 20, 142, 13, 131,
+            11, 90, 19, 153, 218, 255, 16, 132, 4, 142, 123, 216, 219, 233, 248, 89
+        ]);
+        
+        const solVault = this.getSolVault();
+        
+        const [pda] = PublicKey.findProgramAddressSync(
+            [
+                solVault.toBuffer(),
+                TOKEN_2022_PROGRAM_ID.toBuffer(),
+                mint.toBuffer()
+            ],
+            ASSOCIATED_TOKEN_PROGRAM_ID
+        );
+        return pda;
+    }
+
 
 
 }
@@ -257,7 +326,14 @@ export class PumpFunInstructionBuilder {
     private static readonly BUY_EXACT_SOL_IN_DISCRIMINATOR = Buffer.from([56, 252, 116, 8, 158, 223, 205, 95]);
     private static readonly SELL_DISCRIMINATOR = Buffer.from([51, 230, 133, 164, 1, 127, 131, 173]);
     private static readonly CREATE_DISCRIMINATOR = Buffer.from([24, 30, 200, 40, 5, 28, 7, 119]);
-    public static readonly CREATE_V2_DISCRIMINATOR = Buffer.from([85, 144, 136, 251, 109, 215, 64, 155]); // Confirmed from recent successful launches & SDKs
+
+
+    // public static readonly CREATE_V2_DISCRIMINATOR = Buffer.from([85, 144, 136, 251, 109, 215, 64, 155]); // Confirmed from recent successful launches & SDKs
+
+    public static readonly CREATE_V2_DISCRIMINATOR = Buffer.from([214, 144, 76, 236, 95, 139, 49, 180]); // From IDL
+
+    private static readonly EXTEND_ACCOUNT_DISCRIMINATOR = Buffer.from([234, 102, 194, 203, 150, 72, 62, 229]);
+
 
     static debugInstruction(instruction: TransactionInstruction): void {
         console.log('🔍 INSTRUCTION DEBUG:');
@@ -659,96 +735,202 @@ export class PumpFunInstructionBuilder {
         return transaction;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // Add this to your pumpfun-idl-client.ts in the PumpFunInstructionBuilder class:
     static buildCreateV2(
         user: Keypair,
         mint: Keypair,
         name: string,
         symbol: string,
         uri: string,
+        isMayhemMode: boolean = false,
         creatorPubkey: PublicKey = user.publicKey
     ): TransactionInstruction {
-        console.log(`🔧 Building CREATE_V2 instruction for ${symbol} (${name})...`);
-
+        console.log(`🔧 Building CREATE_V2 instruction from IDL...`);
+        
         const mintPub = mint.publicKey;
-
-        // PDAs
+        
+        // Get all PDAs using helper methods
+        const mintAuthority = PumpFunPda.getMintAuthority();
         const bondingCurve = PumpFunPda.getBondingCurve(mintPub);
-        const associatedBondingCurve = getAssociatedTokenAddressSync(
-            mintPub,
-            bondingCurve,
-            true,
-            TOKEN_2022_PROGRAM_ID
-        );
+        const associatedBondingCurve = PumpFunPda.getAssociatedBondingCurve(bondingCurve, mintPub);
         const global = PumpFunPda.getGlobal();
+        const globalParams = PumpFunPda.getGlobalParams();
+        const solVault = PumpFunPda.getSolVault();
+        const mayhemState = PumpFunPda.getMayhemState(mintPub);
+        const mayhemTokenVault = PumpFunPda.getMayhemTokenVault(mintPub);
         const eventAuthority = PumpFunPda.getEventAuthority();
+        const mayhemProgramId = new PublicKey('MAyhSmzXzV1pTf7LsNkrNwkWKTo4ougAJ1PPg47MD4e');
+            
+        console.log(`📊 Account Debug:`);
+        console.log(`   Mint: ${mintPub.toBase58()}`);
+        console.log(`   Mint Authority: ${mintAuthority.toBase58()}`);
+        console.log(`   Bonding Curve: ${bondingCurve.toBase58()}`);
+        console.log(`   Associated Bonding Curve: ${associatedBondingCurve.toBase58()}`);
+        console.log(`   Global Params: ${globalParams.toBase58()}`);
+        console.log(`   Sol Vault: ${solVault.toBase58()}`);
+        console.log(`   Mayhem State: ${mayhemState.toBase58()}`);
+        console.log(`   Mayhem Token Vault: ${mayhemTokenVault.toBase58()}`);
+        
+        // 3. String limits from IDL
+        // MINIMAL strings to save space
+        name = name.slice(0, 8);    // Shorter name
+        symbol = symbol.slice(0, 4); // Shorter symbol
+        uri = uri.slice(0, 50);     // Shorter URI
+        
+        if (!uri) uri = "a"; // Minimal URI
 
-        // Trim strings (v2 has stricter limits)
-        name = name.slice(0, 32);
-        symbol = symbol.slice(0, 10);
-        uri = uri.slice(0, 200);
-
-        // Encode args (same as legacy but with v2 discriminator)
+        
+        // 4. Encode instruction data exactly as in IDL
         const nameBuf = Buffer.from(name, 'utf8');
         const symBuf = Buffer.from(symbol, 'utf8');
         const uriBuf = Buffer.from(uri, 'utf8');
-
-        const nameLen = Buffer.alloc(4); nameLen.writeUInt32LE(nameBuf.length);
-        const symLen = Buffer.alloc(4); symLen.writeUInt32LE(symBuf.length);
-        const uriLen = Buffer.alloc(4); uriLen.writeUInt32LE(uriBuf.length);
-
+        
+        const nameLen = Buffer.alloc(4);
+        nameLen.writeUInt32LE(nameBuf.length);
+        
+        const symLen = Buffer.alloc(4);
+        symLen.writeUInt32LE(symBuf.length);
+        
+        const uriLen = Buffer.alloc(4);
+        uriLen.writeUInt32LE(uriBuf.length);
+        
+        // Note: IDL shows creator is pubkey (32 bytes) then is_mayhem_mode is bool (1 byte)
         const args = Buffer.concat([
             nameLen, nameBuf,
             symLen, symBuf,
             uriLen, uriBuf,
-            creatorPubkey.toBuffer()
+            creatorPubkey.toBuffer(), // 32 bytes
+            Buffer.from([isMayhemMode ? 1 : 0]) // 1 byte boolean
         ]);
-
+        
         const data = Buffer.concat([this.CREATE_V2_DISCRIMINATOR, args]);
-
-        // EXACT account order for create_v2 (11 accounts – no metadata accounts!)
+        
+        console.log(`📊 CREATE_V2 Data:`);
+        console.log(`   Total size: ${data.length} bytes`);
+        console.log(`   Discriminator: ${this.CREATE_V2_DISCRIMINATOR.toString('hex')}`);
+        console.log(`   Args: name(${name.length}), symbol(${symbol.length}), uri(${uri.length})`);
+        console.log(`   Creator: ${creatorPubkey.toBase58()}`);
+        console.log(`   is_mayhem_mode: ${isMayhemMode}`);
+        
+        // 5. Create instruction with EXACT account order from IDL
+        // Note: The IDL shows 16 accounts total (0-15)
+        // program account is at the end, unlike what I said earlier
         return new TransactionInstruction({
             programId: PUMP_FUN_PROGRAM_ID,
             keys: [
-                { pubkey: global,                isSigner: false, isWritable: true  },
-                { pubkey: user.publicKey,        isSigner: true,  isWritable: true  },
-                { pubkey: mintPub,               isSigner: true,  isWritable: true  },
-                { pubkey: bondingCurve,          isSigner: false, isWritable: true  },
-                { pubkey: associatedBondingCurve,isSigner: false, isWritable: true  },
+                // 0: mint (writable, signer) - Index 0 in IDL
+                { pubkey: mintPub, isSigner: true, isWritable: true },
+                
+                // 1: mint_authority (readonly) - Index 1 in IDL
+                { pubkey: mintAuthority, isSigner: false, isWritable: false },
+                
+                // 2: bonding_curve (writable) - Index 2 in IDL
+                { pubkey: bondingCurve, isSigner: false, isWritable: true },
+                
+                // 3: associated_bonding_curve (writable) - Index 3 in IDL
+                { pubkey: associatedBondingCurve, isSigner: false, isWritable: true },
+                
+                // 4: global (readonly) - Index 4 in IDL
+                { pubkey: global, isSigner: false, isWritable: false },
+                
+                // 5: user (writable, signer) - Index 5 in IDL
+                { pubkey: user.publicKey, isSigner: true, isWritable: true },
+                
+                // 6: system_program (readonly) - Index 6 in IDL
                 { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+                
+                // 7: token_program (readonly) - Index 7 in IDL
                 { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+                
+                // 8: associated_token_program (readonly) - Index 8 in IDL
                 { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-                { pubkey: SYSVAR_RENT_PUBKEY,    isSigner: false, isWritable: false },
-                { pubkey: eventAuthority,        isSigner: false, isWritable: false },
-                { pubkey: PUMP_FUN_PROGRAM_ID,   isSigner: false, isWritable: false },
+                
+                // 9: mayhem_program_id (writable) - Index 9 in IDL
+                { pubkey: mayhemProgramId, isSigner: false, isWritable: true },
+                
+                // 10: global_params (readonly) - Index 10 in IDL
+                { pubkey: globalParams, isSigner: false, isWritable: false },
+                
+                // 11: sol_vault (writable) - Index 11 in IDL
+                { pubkey: solVault, isSigner: false, isWritable: true },
+                
+                // 12: mayhem_state (writable) - Index 12 in IDL
+                { pubkey: mayhemState, isSigner: false, isWritable: true },
+                
+                // 13: mayhem_token_vault (writable) - Index 13 in IDL
+                { pubkey: mayhemTokenVault, isSigner: false, isWritable: true },
+                
+                // 14: event_authority (readonly) - Index 14 in IDL
+                { pubkey: eventAuthority, isSigner: false, isWritable: false },
+                
+                // 15: program (readonly) - Index 15 in IDL - SELF-REFERENCE REQUIRED!
+                { pubkey: PUMP_FUN_PROGRAM_ID, isSigner: false, isWritable: false }
             ],
             data,
         });
     }
+
+    // static async createCompleteCreateV2Transaction(
+    //     connection: Connection,
+    //     user: Keypair,
+    //     mint: Keypair,
+    //     name: string,
+    //     symbol: string,
+    //     uri: string,
+    //     creatorPubkey: PublicKey = user.publicKey,
+    //     blockhashInfo?: { blockhash: string; lastValidBlockHeight: number }
+    // ): Promise<VersionedTransaction> {
+        
+    //     console.log(`🏗️ Building complete CREATE_V2 transaction...`);
+        
+    //     const instructions: TransactionInstruction[] = [];
+        
+    //     // 1. Initialize mint account first (since mint is a signer)
+    //     // In the transaction, we see the mint is created via SystemProgram.createAccount
+    //     // Then initialized with Token-2022 instructions
+    //     // For simplicity, let's assume mint is pre-initialized or we add instructions
+        
+    //     // Add create_v2 instruction
+    //     const createV2Instruction = this.buildCreateV2(
+    //         user,
+    //         mint,
+    //         name,
+    //         symbol,
+    //         uri,
+    //         creatorPubkey
+    //     );
+        
+    //     instructions.push(createV2Instruction);
+        
+    //     // Get blockhash
+    //     let blockhash: string;
+    //     if (blockhashInfo) {
+    //         blockhash = blockhashInfo.blockhash;
+    //         console.log(`📊 Using provided blockhash: ${blockhash.slice(0, 16)}...`);
+    //     } else {
+    //         const latestBlockhash = await connection.getLatestBlockhash('finalized');
+    //         blockhash = latestBlockhash.blockhash;
+    //         console.log(`📊 Fetched new blockhash: ${blockhash.slice(0, 16)}...`);
+    //     }
+        
+    //     // Build transaction
+    //     const messageV0 = new TransactionMessage({
+    //         payerKey: user.publicKey,
+    //         recentBlockhash: blockhash,
+    //         instructions
+    //     }).compileToV0Message();
+        
+    //     const transaction = new VersionedTransaction(messageV0);
+    //     transaction.sign([user, mint]);
+        
+    //     console.log(`✅ CREATE_V2 transaction built:`);
+    //     console.log(`   Size: ${transaction.serialize().length} bytes`);
+    //     console.log(`   Instructions: ${instructions.length}`);
+    //     console.log(`   Mint: ${mint.publicKey.toBase58()}`);
+    //     console.log(`   Creator: ${user.publicKey.toBase58()}`);
+        
+    //     return transaction;
+    // }
+
 
     private static encodeCreateV2(
         name: string,
@@ -787,6 +969,54 @@ export class PumpFunInstructionBuilder {
             args 
         ]);
     }
+
+
+    static buildExtendAccount(
+        bondingCurve: PublicKey,
+        user: PublicKey
+    ): TransactionInstruction {
+        console.log(`🔧 Building EXTEND_ACCOUNT instruction...`);
+        
+        // From IDL: accounts in exact order:
+        // 1. "account" (bonding curve) - writable
+        // 2. "user" - signer, writable
+        // 3. "system_program"
+        // 4. "event_authority" (PDA)
+        // 5. "program" (self-reference)
+        
+        const eventAuthority = PumpFunPda.getEventAuthority();
+        
+        console.log(`📊 EXTEND_ACCOUNT accounts:`);
+        console.log(`   1. Account (bonding curve): ${bondingCurve.toBase58().slice(0, 8)}... (writable)`);
+        console.log(`   2. User: ${user.toBase58().slice(0, 8)}... (signer, writable)`);
+        console.log(`   3. System Program: ${SystemProgram.programId.toBase58()}`);
+        console.log(`   4. Event Authority: ${eventAuthority.toBase58().slice(0, 8)}...`);
+        console.log(`   5. Program: ${PUMP_FUN_PROGRAM_ID.toBase58()}`);
+        console.log(`   Discriminator (hex): ${this.EXTEND_ACCOUNT_DISCRIMINATOR.toString('hex')}`);
+
+        return new TransactionInstruction({
+            programId: PUMP_FUN_PROGRAM_ID,
+            keys: [
+                // 0: account (bonding curve) - writable
+                { pubkey: bondingCurve, isSigner: false, isWritable: true },
+                
+                // 1: user - signer, writable
+                { pubkey: user, isSigner: true, isWritable: true },
+                
+                // 2: system_program
+                { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+                
+                // 3: event_authority (PDA)
+                { pubkey: eventAuthority, isSigner: false, isWritable: false },
+                
+                // 4: program (self-reference)
+                { pubkey: PUMP_FUN_PROGRAM_ID, isSigner: false, isWritable: false }
+            ],
+            // From IDL: args: [] (no arguments)
+            data: this.EXTEND_ACCOUNT_DISCRIMINATOR
+        });
+    }
+
 
 
 
