@@ -137,22 +137,79 @@ export interface FundBotsResponse {
 }
 
 
+// export interface ExecuteBotBuysResponse {
+//   success: boolean;
+//   bundle_id?: string;
+//   signatures?: string[];
+//   mint_address?: string;
+//   error?: string;
+//   estimated_cost?: number;
+//   transaction?: VersionedTransaction;
+//   endpointUsed?: string;
+//   stats?: {
+//     total_bots: number;
+//     bots_with_balance: number;
+//     bots_without_balance: number;
+//     total_sol_spent: number;
+//   };
+// }
+
 export interface ExecuteBotBuysResponse {
   success: boolean;
-  bundle_id?: string;
   signatures?: string[];
   mint_address?: string;
-  error?: string;
   estimated_cost?: number;
+  bundle_id?: string;
   transaction?: VersionedTransaction;
-  endpointUsed?: string;
-  stats?: {
-    total_bots: number;
-    bots_with_balance: number;
-    bots_without_balance: number;
-    total_sol_spent: number;
-  };
+  error?: string;
+  stats?: ExecuteBotBuysStats | any; // Make stats more flexible
+  total_sol_received?: number; // Add for sell operations
+  sell_stats?: any; // Add for sell operations
 }
 
+// Base stats interface
+export interface ExecuteBotBuysStats {
+  total_bots: number;
+  bots_with_balance: number;
+  bots_without_balance: number;
+  total_sol_spent: number;
+}
+
+// ============================================
+// ADVANCED SELL BOT MANAGER
+// ============================================
+
+export interface SellStrategyConfig {
+    minProfitPercentage: number;  // Minimum profit % to trigger sell (e.g., 50 = 50%)
+    maxHoldTimeSeconds: number;   // Maximum time to hold before selling
+    stopLossPercentage: number;   // Stop loss % (e.g., 20 = sell if down 20%)
+    staggeredSellDelayMs: number; // Delay between bot sells (ms)
+    partialSellPercentages: number[]; // [25, 25, 50] = sell 25%, then 25%, then 50%
+}
+
+export interface BotSellRequest {
+    mint_address: string;
+    user_wallet: string;
+    bot_wallets: Array<{
+        public_key: string;
+        token_amount?: bigint; // Optional: specific amount to sell
+    }>;
+    creator_wallet: string; // Creator's wallet that also holds tokens
+    sell_strategy: SellStrategyConfig;
+    use_jito?: boolean;
+}
+
+export interface SellExecutionResult {
+    success: boolean;
+    signatures?: string[];
+    total_sol_received?: number;
+    error?: string;
+    stats?: {
+        total_bots: number;
+        bots_sold: number;
+        creator_sold: boolean;
+        profit_percentage?: number;
+    };
+}
 
 

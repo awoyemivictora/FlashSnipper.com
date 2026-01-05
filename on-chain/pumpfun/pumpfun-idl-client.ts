@@ -445,24 +445,101 @@ export class PumpFunInstructionBuilder {
         });
     }
 
+    // static buildSell(
+    //     user: PublicKey,
+    //     mint: PublicKey,
+    //     userAta: PublicKey,
+    //     creator: PublicKey,
+    //     amount: bigint,           // tokens to sell (in base units)
+    //     minSolOutput: bigint      // minimum SOL to receive (slippage protection)
+    // ): TransactionInstruction {
+
+    //     console.log(`🔧 Building SELL instruction for ${mint.toBase58().slice(0, 8)}...`);
+
+    //     // PDAs
+    //     const global = PumpFunPda.getGlobal();
+    //     const bondingCurve = PumpFunPda.getBondingCurve(mint);
+    //     const associatedBondingCurve = PumpFunPda.getAssociatedBondingCurve(bondingCurve, mint);
+    //     const creatorVault = PumpFunPda.getCreatorVault(creator);
+    //     const eventAuthority = PumpFunPda.getEventAuthority();
+    //     const feeConfig = PumpFunPda.getFeeConfig();
+
+    //     // Encode instruction data: discriminator + amount (u64) + min_sol_output (u64)
+    //     const args = Buffer.alloc(16);
+    //     args.writeBigUInt64LE(amount, 0);
+    //     args.writeBigUInt64LE(minSolOutput, 8);
+
+    //     const data = Buffer.concat([
+    //         this.SELL_DISCRIMINATOR,  // [51, 230, 133, 164, 1, 127, 131, 173]
+    //         args
+    //     ]);
+
+    //     // EXACT 14 accounts in order from current IDL
+    //     return new TransactionInstruction({
+    //         programId: PUMP_FUN_PROGRAM_ID,
+    //         keys: [
+    //             // 0: global
+    //             { pubkey: global, isSigner: false, isWritable: false },
+    //             // 1: fee_recipient (hardcoded protocol wallet)
+    //             { pubkey: PROTOCOL_FEE_RECIPIENT, isSigner: false, isWritable: true },
+    //             // 2: mint
+    //             { pubkey: mint, isSigner: false, isWritable: false },
+    //             // 3: bonding_curve
+    //             { pubkey: bondingCurve, isSigner: false, isWritable: true },
+    //             // 4: associated_bonding_curve
+    //             { pubkey: associatedBondingCurve, isSigner: false, isWritable: true },
+    //             // 5: associated_user (user's ATA for the token)
+    //             { pubkey: userAta, isSigner: false, isWritable: true },
+    //             // 6: user (signer)
+    //             { pubkey: user, isSigner: true, isWritable: true },
+    //             // 7: system_program
+    //             { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    //             // 8: creator_vault
+    //             { pubkey: creatorVault, isSigner: false, isWritable: true },
+    //             // 9: token_program → Regular Token Program (NOT Token-2022!)
+    //             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+    //             // 10: event_authority
+    //             { pubkey: eventAuthority, isSigner: false, isWritable: false },
+    //             // 11: program (self-reference)
+    //             { pubkey: PUMP_FUN_PROGRAM_ID, isSigner: false, isWritable: false },
+    //             // 12: fee_config
+    //             { pubkey: feeConfig, isSigner: false, isWritable: false },
+    //             // 13: fee_program
+    //             { pubkey: FEE_PROGRAM_ID, isSigner: false, isWritable: false },
+    //         ],
+    //         data,
+    //     });
+    // }
+
+    // First, let's fix the buildSell method in pumpfun-idl-client.ts based on the IDL:
+
+// In PumpFunInstructionBuilder class, update buildSell method:
+    
     static buildSell(
         user: PublicKey,
         mint: PublicKey,
         userAta: PublicKey,
         creator: PublicKey,
-        amount: bigint,           // tokens to sell (in base units)
-        minSolOutput: bigint      // minimum SOL to receive (slippage protection)
+        amount: bigint,
+        minSolOutput: bigint
     ): TransactionInstruction {
-
         console.log(`🔧 Building SELL instruction for ${mint.toBase58().slice(0, 8)}...`);
 
-        // PDAs
+        // Get all PDAs from IDL
         const global = PumpFunPda.getGlobal();
         const bondingCurve = PumpFunPda.getBondingCurve(mint);
         const associatedBondingCurve = PumpFunPda.getAssociatedBondingCurve(bondingCurve, mint);
         const creatorVault = PumpFunPda.getCreatorVault(creator);
         const eventAuthority = PumpFunPda.getEventAuthority();
         const feeConfig = PumpFunPda.getFeeConfig();
+        const feeRecipient = PROTOCOL_FEE_RECIPIENT; // From constants
+
+        console.log(`📊 PDAs for sell:`);
+        console.log(`   Global: ${global.toBase58()}`);
+        console.log(`   Bonding Curve: ${bondingCurve.toBase58()}`);
+        console.log(`   Associated Bonding Curve: ${associatedBondingCurve.toBase58()}`);
+        console.log(`   Creator Vault: ${creatorVault.toBase58()}`);
+        console.log(`   Fee Recipient: ${feeRecipient.toBase58()}`);
 
         // Encode instruction data: discriminator + amount (u64) + min_sol_output (u64)
         const args = Buffer.alloc(16);
@@ -470,42 +547,55 @@ export class PumpFunInstructionBuilder {
         args.writeBigUInt64LE(minSolOutput, 8);
 
         const data = Buffer.concat([
-            this.SELL_DISCRIMINATOR,  // [51, 230, 133, 164, 1, 127, 131, 173]
+            this.SELL_DISCRIMINATOR,
             args
         ]);
 
-        // EXACT 14 accounts in order from current IDL
+        // EXACT 14 accounts in order from IDL (verified from Solscan)
         return new TransactionInstruction({
             programId: PUMP_FUN_PROGRAM_ID,
             keys: [
                 // 0: global
                 { pubkey: global, isSigner: false, isWritable: false },
-                // 1: fee_recipient (hardcoded protocol wallet)
-                { pubkey: PROTOCOL_FEE_RECIPIENT, isSigner: false, isWritable: true },
+                
+                // 1: fee_recipient (writable)
+                { pubkey: feeRecipient, isSigner: false, isWritable: true },
+                
                 // 2: mint
                 { pubkey: mint, isSigner: false, isWritable: false },
-                // 3: bonding_curve
+                
+                // 3: bonding_curve (writable)
                 { pubkey: bondingCurve, isSigner: false, isWritable: true },
-                // 4: associated_bonding_curve
+                
+                // 4: associated_bonding_curve (writable)
                 { pubkey: associatedBondingCurve, isSigner: false, isWritable: true },
-                // 5: associated_user (user's ATA for the token)
+                
+                // 5: associated_user (user's ATA, writable)
                 { pubkey: userAta, isSigner: false, isWritable: true },
-                // 6: user (signer)
+                
+                // 6: user (signer, writable)
                 { pubkey: user, isSigner: true, isWritable: true },
+                
                 // 7: system_program
                 { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-                // 8: creator_vault
+                
+                // 8: creator_vault (writable)
                 { pubkey: creatorVault, isSigner: false, isWritable: true },
-                // 9: token_program → Regular Token Program (NOT Token-2022!)
-                { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+                
+                // 9: token_program (Token-2022 for selling tokens)
+                { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+                
                 // 10: event_authority
                 { pubkey: eventAuthority, isSigner: false, isWritable: false },
+                
                 // 11: program (self-reference)
                 { pubkey: PUMP_FUN_PROGRAM_ID, isSigner: false, isWritable: false },
+                
                 // 12: fee_config
                 { pubkey: feeConfig, isSigner: false, isWritable: false },
+                
                 // 13: fee_program
-                { pubkey: FEE_PROGRAM_ID, isSigner: false, isWritable: false },
+                { pubkey: FEE_PROGRAM_ID, isSigner: false, isWritable: false }
             ],
             data,
         });

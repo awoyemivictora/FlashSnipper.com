@@ -14,12 +14,13 @@ import { executeBuy, executeBotBuy } from './buyExecution';
 import { executeSell, executeBotSell } from './sellExecution';
 import { createCompleteLaunchBundle, executeAtomicLaunch, executeBotBuys, fundBots } from './botManager';
 import { estimateCost } from './costEstimator';
-import { CreateTokenRequest, BuyRequest, SellRequest, FundBotsRequest, EstimateCostRequest, AtomicLaunchRequest, ExecuteBotBuysRequest } from '../types/api';
+import { CreateTokenRequest, BuyRequest, SellRequest, FundBotsRequest, EstimateCostRequest, AtomicLaunchRequest, ExecuteBotBuysRequest, BotSellRequest } from '../types/api';
 import { validateRequest } from '../types/validation';
 import axios from 'axios';
 import bs58  from 'bs58';
 import { createJitoBundleSender } from '../jito_bundles/jito-integration';
 import { createToken } from './tokenCreation';
+import { createCompleteLaunchWithAutoSell, executeSmartSells } from './sellManager';
 
 dotenv.config();
 
@@ -443,6 +444,29 @@ app.post('/api/onchain/execute-bot-buys', async (req: Request, res: Response) =>
 //     // ✅ DEBUG: Log the entire request body
 //     logger.info('📋 Request body:', JSON.stringify(req.body, null, 2));
     
+//     // ✅ CRITICAL FIX: Check for BOTH "bot_buys" and "bot_wallets"
+//     let botBuys = [];
+    
+//     // Check for bot_buys (what the backend sends)
+//     if (req.body.bot_buys && Array.isArray(req.body.bot_buys)) {
+//       botBuys = req.body.bot_buys;
+//       logger.info(`✅ Found bot_buys: ${botBuys.length} bots`);
+//     } 
+//     // Check for bot_wallets (legacy field)
+//     else if (req.body.bot_wallets && Array.isArray(req.body.bot_wallets)) {
+//       botBuys = req.body.bot_wallets;
+//       logger.info(`✅ Found bot_wallets: ${botBuys.length} bots`);
+//     }
+//     // Check for botBuys (camelCase)
+//     else if (req.body.botBuys && Array.isArray(req.body.botBuys)) {
+//       botBuys = req.body.botBuys;
+//       logger.info(`✅ Found botBuys: ${botBuys.length} bots`);
+//     }
+//     else {
+//       logger.warn('⚠️ No bot arrays found in request');
+//       logger.warn('Available keys:', Object.keys(req.body));
+//     }
+    
 //     // ✅ DEBUG: Log metadata structure
 //     if (req.body.metadata) {
 //       logger.info('📄 Metadata structure:');
@@ -451,18 +475,9 @@ app.post('/api/onchain/execute-bot-buys', async (req: Request, res: Response) =>
 //       logger.info(`   Has name: ${!!req.body.metadata.name}`);
 //       logger.info(`   Has symbol: ${!!req.body.metadata.symbol}`);
 //       logger.info(`   Has uri: ${!!req.body.metadata.uri}`);
-//       logger.info(`   Has image: ${!!req.body.metadata.image}`);
-//       logger.info(`   Has description: ${!!req.body.metadata.description}`);
       
-//       // Log specific values
 //       if (req.body.metadata.uri) {
 //         logger.info(`🔗 URI value: ${req.body.metadata.uri}`);
-//         logger.info(`   URI length: ${req.body.metadata.uri.length}`);
-//         logger.info(`   Is IPFS: ${req.body.metadata.uri.includes('ipfs.io')}`);
-//       }
-//       if (req.body.metadata.image) {
-//         logger.info(`🖼️ Image value: ${req.body.metadata.image}`);
-//         logger.info(`   Image length: ${req.body.metadata.image.length}`);
 //       }
 //     }
     
@@ -496,17 +511,23 @@ app.post('/api/onchain/execute-bot-buys', async (req: Request, res: Response) =>
 //     logger.info(`   Name: ${name}`);
 //     logger.info(`   Symbol: ${symbol}`);
 //     logger.info(`   URI: ${uri}`);
-//     logger.info(`   URI preview: ${uri.substring(0, 100)}${uri.length > 100 ? '...' : ''}`);
 //     logger.info(`   Creator buy amount: ${req.body.creator_buy_amount || 0.01}`);
-//     logger.info(`   Bot count: ${(req.body.bot_wallets || []).length}`);
+//     logger.info(`   Bot count: ${botBuys.length}`);
 //     logger.info(`   Use Jito: ${req.body.use_jito !== false}`);
     
-//     // Map bot wallets properly
-//     const botBuys = (req.body.bot_wallets || []).map((bot: any) => {
-//       logger.info(`   Bot: ${bot.public_key?.slice(0, 8)}..., Amount: ${bot.amount_sol || bot.buy_amount}`);
+//     // Log first few bots for debugging
+//     if (botBuys.length > 0) {
+//       logger.info('📋 Bot details (first 3):');
+//       botBuys.slice(0, 3).forEach((bot: any, i: number) => {
+//         logger.info(`   Bot ${i+1}: ${bot.public_key?.slice(0, 8)}..., Amount: ${bot.amount_sol || bot.buy_amount || 0.0001}`);
+//       });
+//     }
+    
+//     // Map bot wallets properly - handle different field names
+//     const mappedBotBuys = botBuys.map((bot: any) => {
 //       return {
-//           public_key: bot.public_key,
-//           amount_sol: bot.amount_sol || bot.buy_amount || 0.0001
+//         public_key: bot.public_key || bot.publicKey,
+//         amount_sol: bot.amount_sol || bot.buy_amount || bot.amount || 0.0001
 //       };
 //     });
 
@@ -516,10 +537,10 @@ app.post('/api/onchain/execute-bot-buys', async (req: Request, res: Response) =>
 //       metadata: {
 //         name,
 //         symbol,
-//         uri // ✅ Only URI, not complex metadata
+//         uri
 //       },
 //       creator_buy_amount: req.body.creator_buy_amount || 0.01,
-//       bot_buys: botBuys,
+//       bot_buys: mappedBotBuys,  // ✅ This is what botManager.ts expects
 //       use_jito: req.body.use_jito !== false,
 //       slippage_bps: req.body.slippage_bps || 500
 //     });
@@ -565,12 +586,42 @@ app.post('/api/onchain/execute-bot-buys', async (req: Request, res: Response) =>
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Cost estimation endpoint
+
+
+
 app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
   try {
     logger.info('📨 Received atomic launch request');
     
     // ✅ DEBUG: Log the entire request body
     logger.info('📋 Request body:', JSON.stringify(req.body, null, 2));
+    
+    // ✅ ALWAYS USE AUTO-SELL - NO CHECK NEEDED
+    logger.info('🚀 Processing ATOMIC LAUNCH WITH AUTO-SELL...');
     
     // ✅ CRITICAL FIX: Check for BOTH "bot_buys" and "bot_wallets"
     let botBuys = [];
@@ -633,24 +684,6 @@ app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
       });
     }
     
-    // ✅ DEBUG: Log what we're sending to createCompleteLaunchBundle
-    logger.info('🚀 Calling createCompleteLaunchBundle with:');
-    logger.info(`   User wallet: ${req.body.user_wallet}`);
-    logger.info(`   Name: ${name}`);
-    logger.info(`   Symbol: ${symbol}`);
-    logger.info(`   URI: ${uri}`);
-    logger.info(`   Creator buy amount: ${req.body.creator_buy_amount || 0.01}`);
-    logger.info(`   Bot count: ${botBuys.length}`);
-    logger.info(`   Use Jito: ${req.body.use_jito !== false}`);
-    
-    // Log first few bots for debugging
-    if (botBuys.length > 0) {
-      logger.info('📋 Bot details (first 3):');
-      botBuys.slice(0, 3).forEach((bot: any, i: number) => {
-        logger.info(`   Bot ${i+1}: ${bot.public_key?.slice(0, 8)}..., Amount: ${bot.amount_sol || bot.buy_amount || 0.0001}`);
-      });
-    }
-    
     // Map bot wallets properly - handle different field names
     const mappedBotBuys = botBuys.map((bot: any) => {
       return {
@@ -659,8 +692,32 @@ app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
       };
     });
 
-    // Call the function
-    const result = await createCompleteLaunchBundle(connection, {
+    // ✅ ALWAYS USE AUTO-SELL STRATEGY
+    // Parse sell strategy from request or use defaults
+    const sellStrategy = req.body.sell_strategy || {
+      minProfitPercentage: req.body.min_profit_percentage || 30,
+      maxHoldTimeSeconds: req.body.max_hold_time || 60,
+      stopLossPercentage: req.body.stop_loss_percentage || 15,
+      staggeredSellDelayMs: req.body.staggered_sell_delay || 2000,
+      partialSellPercentages: req.body.partial_sell_percentages || [50, 50]
+    };
+    
+    logger.info('💰 Auto-sell strategy:', JSON.stringify(sellStrategy, null, 2));
+    
+    // ✅ DEBUG: Log what we're sending to createCompleteLaunchWithAutoSell
+    logger.info('🚀 Calling createCompleteLaunchWithAutoSell with:');
+    logger.info(`   User wallet: ${req.body.user_wallet}`);
+    logger.info(`   Name: ${name}`);
+    logger.info(`   Symbol: ${symbol}`);
+    logger.info(`   URI: ${uri}`);
+    logger.info(`   Creator buy amount: ${req.body.creator_buy_amount || 0.01}`);
+    logger.info(`   Bot count: ${mappedBotBuys.length}`);
+    logger.info(`   Use Jito: ${req.body.use_jito !== false}`);
+    logger.info(`   Slippage: ${req.body.slippage_bps || 500} bps`);
+    logger.info(`   Sell strategy: ${JSON.stringify(sellStrategy, null, 2)}`);
+    
+    // ✅ ALWAYS CALL createCompleteLaunchWithAutoSell
+    const result = await createCompleteLaunchWithAutoSell(connection, {
       user_wallet: req.body.user_wallet,
       metadata: {
         name,
@@ -668,35 +725,55 @@ app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
         uri
       },
       creator_buy_amount: req.body.creator_buy_amount || 0.01,
-      bot_buys: mappedBotBuys,  // ✅ This is what botManager.ts expects
+      bot_buys: mappedBotBuys,
+      sell_strategy: sellStrategy,
       use_jito: req.body.use_jito !== false,
       slippage_bps: req.body.slippage_bps || 500
     });
-
+    
     // ✅ DEBUG: Log the result
-    logger.info('📊 createCompleteLaunchBundle result:');
+    logger.info('📊 Launch result:');
     logger.info(`   Success: ${result.success}`);
     logger.info(`   Mint address: ${result.mint_address || 'NONE'}`);
     logger.info(`   Error: ${result.error || 'NONE'}`);
     logger.info(`   Signature count: ${result.signatures?.length || 0}`);
+    logger.info(`   Estimated cost: ${result.estimated_cost || 0} SOL`);
+    logger.info(`   Total SOL received: ${result.total_sol_received || 0} SOL`);
     
     if (result.signatures && result.signatures.length > 0) {
       result.signatures.forEach((sig: string, i: number) => {
         logger.info(`   Signature ${i}: ${sig.slice(0, 16)}...`);
       });
     }
-
-    res.json({
+    
+    // Return response with sell stats
+    const response = {
       success: result.success,
       bundle_id: result.bundle_id,
       signatures: result.signatures,
       mint_address: result.mint_address,
       error: result.error,
       estimated_cost: result.estimated_cost,
+      sell_stats: result.sell_stats,
+      total_sol_received: result.total_sol_received,
+      auto_sell: true, // Always true now
       timestamp: new Date().toISOString()
-    });
+    };
 
-    logger.info(`✅ Atomic launch completed: ${result.success ? 'SUCCESS' : 'FAILED'}`);
+    res.json(response);
+    
+    // Calculate profit/loss if possible
+    if (result.estimated_cost && result.total_sol_received) {
+      const profit = result.total_sol_received - result.estimated_cost;
+      const roi = (profit / result.estimated_cost) * 100;
+      logger.info(`💰 Profit/Loss Summary:`);
+      logger.info(`   Total spent: ${result.estimated_cost.toFixed(6)} SOL`);
+      logger.info(`   Total received: ${result.total_sol_received.toFixed(6)} SOL`);
+      logger.info(`   Net: ${profit >= 0 ? '+' : ''}${profit.toFixed(6)} SOL`);
+      logger.info(`   ROI: ${roi.toFixed(2)}%`);
+    }
+    
+    logger.info(`✅ Atomic launch with auto-sell completed: ${result.success ? 'SUCCESS' : 'FAILED'}`);
 
   } catch (error: any) {
     logger.error(`❌ Atomic launch error:`, {
@@ -704,6 +781,51 @@ app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
       stack: error.stack,
       body: JSON.stringify(req.body, null, 2)
     });
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Keep the separate endpoint for selling existing tokens if needed
+app.post('/api/onchain/execute-smart-sells', async (req: Request, res: Response) => {
+  try {
+    logger.info('📨 Received smart sell request for existing token');
+    
+    const request: BotSellRequest = {
+      mint_address: req.body.mint_address,
+      user_wallet: req.body.user_wallet,
+      creator_wallet: req.body.creator_wallet,
+      bot_wallets: req.body.bot_wallets || [],
+      sell_strategy: req.body.sell_strategy || {
+        minProfitPercentage: 30,
+        maxHoldTimeSeconds: 60,
+        stopLossPercentage: 15,
+        staggeredSellDelayMs: 2000,
+        partialSellPercentages: [50, 50]
+      },
+      use_jito: req.body.use_jito !== false
+    };
+    
+    logger.info('💰 Smart sell request:', JSON.stringify(request, null, 2));
+    
+    const result = await executeSmartSells(connection, request);
+    
+    res.json({
+      success: result.success,
+      signatures: result.signatures,
+      total_sol_received: result.total_sol_received,
+      error: result.error,
+      stats: result.stats,
+      timestamp: new Date().toISOString()
+    });
+    
+    logger.info(`✅ Smart sells completed: ${result.success ? 'SUCCESS' : 'FAILED'}`);
+    
+  } catch (error: any) {
+    logger.error(`❌ Smart sell error:`, error.message);
     res.status(500).json({
       success: false,
       error: error.message,
@@ -721,23 +843,6 @@ app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Cost estimation endpoint
 app.post('/api/onchain/estimate-cost', async (req: Request, res: Response) => {
   try {
     logger.info('Received cost estimation request');
