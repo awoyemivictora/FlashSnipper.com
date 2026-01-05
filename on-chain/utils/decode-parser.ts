@@ -1,7 +1,7 @@
 import { PublicKey, VersionedTransactionResponse } from "@solana/web3.js";
 import { bnLayoutFormatter } from "./bn-layout-formatter";
 import { BN } from "@coral-xyz/anchor";
-import pumpFunIdl from "../idls/pump_0.1.0.json";
+import pumpFunIdl from "../pumpfun/idls/pump_0.1.0.json";
 import { PUMP_FUN_EVENT_PARSER, PUMP_FUN_IX_PARSER, PUMP_FUN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "./type";
 
 

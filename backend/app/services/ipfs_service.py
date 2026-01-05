@@ -1,157 +1,3 @@
-# # app/services/ipfs_service.py
-# import json
-# import aiohttp
-# import asyncio
-# from typing import Dict, Any, Optional
-# from app.config import settings
-# import logging
-
-# logger = logging.getLogger(__name__)
-
-# class IPFSService:
-#     def __init__(self):
-#         self.pinata_api_key = settings.PINATA_API_KEY
-#         self.pinata_secret_key = settings.PINATA_SECRET_KEY
-#         self.pinata_jwt = settings.PINATA_JWT
-#         self.gateway_url = "https://gateway.pinata.cloud/ipfs/{cid}"
-#         self.api_url = "https://api.pinata.cloud/pinning"
-        
-#     async def pin_json(self, json_data: Dict[str, Any], name: str) -> Optional[str]:
-#         """
-#         Pin JSON metadata to IPFS via Pinata
-#         Returns the IPFS CID if successful
-#         """
-#         headers = {
-#             "Authorization": f"Bearer {self.pinata_jwt}",
-#             "Content-Type": "application/json"
-#         }
-        
-#         pinata_content = {
-#             "pinataContent": json_data,
-#             "pinataMetadata": {
-#                 "name": f"{name}_metadata.json"
-#             }
-#         }
-        
-#         try:
-#             async with aiohttp.ClientSession() as session:
-#                 async with session.post(
-#                     f"{self.api_url}/pinJSONToIPFS",
-#                     headers=headers,
-#                     json=pinata_content
-#                 ) as response:
-                    
-#                     if response.status == 200:
-#                         result = await response.json()
-#                         cid = result.get("IpfsHash")
-#                         if cid:
-#                             logger.info(f"Pinned metadata to IPFS with CID: {cid}")
-#                             return cid
-#                     else:
-#                         error_text = await response.text()
-#                         logger.error(f"Pinata API error: {response.status} - {error_text}")
-#                         return None
-                        
-#         except Exception as e:
-#             logger.error(f"Failed to pin to IPFS: {e}")
-#             return None
-    
-#     async def pin_file_from_url(self, image_url: str, name: str) -> Optional[str]:
-#         """
-#         Download image from URL and pin to IPFS
-#         Returns the IPFS CID if successful
-#         """
-#         try:
-#             # First download the image
-#             async with aiohttp.ClientSession() as session:
-#                 async with session.get(image_url) as response:
-#                     if response.status != 200:
-#                         logger.error(f"Failed to download image: {response.status}")
-#                         return None
-                    
-#                     image_data = await response.read()
-                    
-#                     # Prepare multipart form data
-#                     form_data = aiohttp.FormData()
-#                     form_data.add_field('file',
-#                                       image_data,
-#                                       filename=f'{name}_image.png',
-#                                       content_type='image/png')
-                    
-#                     form_data.add_field('pinataMetadata',
-#                                       json.dumps({"name": f"{name}_image.png"}))
-                    
-#                     headers = {
-#                         "Authorization": f"Bearer {self.pinata_jwt}"
-#                     }
-                    
-#                     # Upload to Pinata
-#                     async with session.post(
-#                         f"{self.api_url}/pinFileToIPFS",
-#                         headers=headers,
-#                         data=form_data
-#                     ) as pinata_response:
-                        
-#                         if pinata_response.status == 200:
-#                             result = await pinata_response.json()
-#                             cid = result.get("IpfsHash")
-#                             logger.info(f"Pinned image to IPFS with CID: {cid}")
-#                             return cid
-#                         else:
-#                             error_text = await pinata_response.text()
-#                             logger.error(f"Pinata file upload error: {error_text}")
-#                             return None
-                            
-#         except Exception as e:
-#             logger.error(f"Failed to pin image to IPFS: {e}")
-#             return None
-    
-#     async def upload_metadata_with_image(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
-#         """
-#         Complete workflow:
-#         1. Upload image to IPFS
-#         2. Update metadata with IPFS image URL
-#         3. Upload metadata JSON to IPFS
-#         4. Return both CIDs
-#         """
-#         try:
-#             name = metadata.get("name", "token")
-            
-#             # 1. Upload image to IPFS if it's a URL (not already IPFS)
-#             image_url = metadata.get("image", "")
-#             image_cid = None
-            
-#             if image_url and not image_url.startswith("ipfs://"):
-#                 image_cid = await self.pin_file_from_url(image_url, name)
-#                 if image_cid:
-#                     # Update metadata with IPFS image URL
-#                     metadata["image"] = f"ipfs://{image_cid}"
-            
-#             # 2. Upload metadata JSON to IPFS
-#             metadata_cid = await self.pin_json(metadata, name)
-            
-#             return {
-#                 "success": True,
-#                 "metadata_cid": metadata_cid,
-#                 "image_cid": image_cid,
-#                 "metadata_uri": f"ipfs://{metadata_cid}" if metadata_cid else None,
-#                 "image_uri": f"ipfs://{image_cid}" if image_cid else None
-#             }
-            
-#         except Exception as e:
-#             logger.error(f"IPFS upload workflow failed: {e}")
-#             return {"success": False, "error": str(e)}
-    
-#     def get_gateway_url(self, cid: str) -> str:
-#         """Get HTTP gateway URL from CID"""
-#         return self.gateway_url.format(cid=cid)
-
-# # Singleton instance
-# ipfs_service = IPFSService()
-
-
-
-# app/services/ipfs_service.py
 import json
 import aiohttp
 import asyncio
@@ -211,7 +57,6 @@ class IPFSService:
             logger.error(f"Failed to pin to IPFS: {e}")
             return None
     
-
     async def pin_file_from_url(self, image_url: str, name: str) -> Optional[str]:
         """
         Download image from URL and pin to IPFS
@@ -279,7 +124,6 @@ class IPFSService:
         else:
             return '.png'  # default
         
-
     async def upload_metadata_with_image(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
         """
         Complete workflow:
@@ -351,7 +195,6 @@ class IPFSService:
             logger.error(f"IPFS upload workflow failed: {e}")
             return {"success": False, "error": str(e)}
         
-    
     def get_gateway_url(self, cid: str) -> str:
         """Get HTTP gateway URL from CID"""
         return self.public_gateway_url.format(cid=cid)

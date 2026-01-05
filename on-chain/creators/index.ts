@@ -18,7 +18,7 @@ import { CreateTokenRequest, BuyRequest, SellRequest, FundBotsRequest, EstimateC
 import { validateRequest } from '../types/validation';
 import axios from 'axios';
 import bs58  from 'bs58';
-import { jitoBundleSender } from '../jito_bundles/jito-integration';
+import { createJitoBundleSender } from '../jito_bundles/jito-integration';
 import { createToken } from './tokenCreation';
 
 dotenv.config();
@@ -166,13 +166,15 @@ app.post('/api/onchain/atomic-create-and-buy', async (req: Request, res: Respons
     if (use_jito && allTransactions.length > 0) {
       try {
         logger.info(`🚀 Sending atomic bundle via Jito...`);
-        bundleResult = await jitoBundleSender.sendBundle(allTransactions, connection);
+        // Create Jito sender instance
+        const jitoSender = createJitoBundleSender(connection);
+        bundleResult = await jitoSender.sendBundle(allTransactions);
       } catch (jitoError) {
         logger.error('Jito atomic bundle failed:', jitoError);
         bundleResult = { success: false };
       }
     }
-    
+
     // 4. Calculate estimated results
     const totalCost = creator_buy_amount + 
                      bot_wallets.reduce((sum: number, bot: any) => sum + bot.buy_amount, 0);
@@ -282,76 +284,76 @@ app.post('/api/onchain/create-token', async (req: Request, res: Response) => {
 });
 
 // Buy execution endpoint
-app.post('/api/onchain/buy', async (req: Request, res: Response) => {
-  try {
-    logger.info('Received buy execution request');
+// app.post('/api/onchain/buy', async (req: Request, res: Response) => {
+//   try {
+//     logger.info('Received buy execution request');
     
-    const validation = validateRequest<BuyRequest>(req.body, 'buy');
-    if (!validation.valid) {
-      return res.status(400).json({
-        success: false,
-        error: validation.errors?.join(', ')
-      });
-    }
+//     const validation = validateRequest<BuyRequest>(req.body, 'buy');
+//     if (!validation.valid) {
+//       return res.status(400).json({
+//         success: false,
+//         error: validation.errors?.join(', ')
+//       });
+//     }
     
-    const result = await executeBuy(connection, req.body);
+//     const result = await executeBuy(connection, req.body);
     
-    res.json({
-      success: result.success,
-      bundle_id: result.bundle_id,
-      signatures: result.signatures,
-      error: result.error,
-      estimated_cost: result.estimated_cost,
-      timestamp: new Date().toISOString()
-    });
+//     res.json({
+//       success: result.success,
+//       bundle_id: result.bundle_id,
+//       signatures: result.signatures,
+//       error: result.error,
+//       estimated_cost: result.estimated_cost,
+//       timestamp: new Date().toISOString()
+//     });
     
-    logger.info(`Buy execution completed: ${result.success ? 'success' : 'failed'}`);
+//     logger.info(`Buy execution completed: ${result.success ? 'success' : 'failed'}`);
     
-  } catch (error: any) {
-    logger.error(`Buy execution error: ${error.message}`, { stack: error.stack });
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
+//   } catch (error: any) {
+//     logger.error(`Buy execution error: ${error.message}`, { stack: error.stack });
+//     res.status(500).json({
+//       success: false,
+//       error: error.message,
+//       timestamp: new Date().toISOString()
+//     });
+//   }
+// });
 
-// Sell execution endpoint
-app.post('/api/onchain/sell', async (req: Request, res: Response) => {
-  try {
-    logger.info('Received sell execution request');
+// // Sell execution endpoint
+// app.post('/api/onchain/sell', async (req: Request, res: Response) => {
+//   try {
+//     logger.info('Received sell execution request');
     
-    const validation = validateRequest<SellRequest>(req.body, 'sell');
-    if (!validation.valid) {
-      return res.status(400).json({
-        success: false,
-        error: validation.errors?.join(', ')
-      });
-    }
+//     const validation = validateRequest<SellRequest>(req.body, 'sell');
+//     if (!validation.valid) {
+//       return res.status(400).json({
+//         success: false,
+//         error: validation.errors?.join(', ')
+//       });
+//     }
     
-    const result = await executeSell(connection, req.body);
+//     const result = await executeSell(connection, req.body);
     
-    res.json({
-      success: result.success,
-      bundle_id: result.bundle_id,
-      signatures: result.signatures,
-      error: result.error,
-      estimated_cost: result.estimated_cost,
-      timestamp: new Date().toISOString()
-    });
+//     res.json({
+//       success: result.success,
+//       bundle_id: result.bundle_id,
+//       signatures: result.signatures,
+//       error: result.error,
+//       estimated_cost: result.estimated_cost,
+//       timestamp: new Date().toISOString()
+//     });
     
-    logger.info(`Sell execution completed: ${result.success ? 'success' : 'failed'}`);
+//     logger.info(`Sell execution completed: ${result.success ? 'success' : 'failed'}`);
     
-  } catch (error: any) {
-    logger.error(`Sell execution error: ${error.message}`, { stack: error.stack });
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
+//   } catch (error: any) {
+//     logger.error(`Sell execution error: ${error.message}`, { stack: error.stack });
+//     res.status(500).json({
+//       success: false,
+//       error: error.message,
+//       timestamp: new Date().toISOString()
+//     });
+//   }
+// });
 
 // Fund bots endpoint
 app.post('/api/onchain/fund-bots', async (req: Request, res: Response) => {
@@ -389,62 +391,151 @@ app.post('/api/onchain/fund-bots', async (req: Request, res: Response) => {
   }
 });
 
-// Execute bot buys endpoint (for pre-funded bots)
-// app.post('/api/onchain/execute-bot-buys', async (req: Request, res: Response) => {
-//   try {
-//     logger.info('Received execute bot buys request');
+app.post('/api/onchain/execute-bot-buys', async (req: Request, res: Response) => {
+  try {
+    logger.info('Received execute bot buys request');
 
-//     const validation = validateRequest<ExecuteBotBuysRequest>(req.body, 'execute_bot_buys');
-//     if (!validation.valid) {
-//       return res.status(400).json({
-//         success: false,
-//         error: validation.errors?.join(', ')
-//       });
-//     }
+    // Validate request
+    const validation = validateRequest<ExecuteBotBuysRequest>(req.body, 'execute_bot_buys');
+    if (!validation.valid) {
+      return res.status(400).json({
+        success: false,
+        error: validation.errors?.join(', ')
+      });
+    }
 
-//     const result = await executeBotBuys(connection, req.body);
+    const result = await executeBotBuys(connection, req.body);
 
-//     res.json({
-//       success: result.success,
-//       bundle_id: result.bundle_id,
-//       signatures: result.signatures,
-//       mint_address: req.body.mint_address,
-//       error: result.error,
-//       estimated_cost: result.estimated_cost,
-//       timestamp: new Date().toISOString()
-//     });
+    res.json({
+      success: result.success,
+      bundle_id: result.bundle_id,
+      signatures: result.signatures,
+      mint_address: req.body.mint_address,
+      error: result.error,
+      estimated_cost: result.estimated_cost,
+      stats: result.stats, // ✅ Now this will work
+      timestamp: new Date().toISOString()
+    });
 
-//     logger.info(`Execute bot buys completed: ${result.success ? 'success' : 'failed'}`);
+    logger.info(`Execute bot buys completed: ${result.success ? 'success' : 'failed'}`);
 
-//   } catch (error: any) {
-//     logger.error(`Execute bot buys error: ${error.message}`, { stack: error.stack });
-//     res.status(500).json({
-//       success: false,
-//       error: error.message,
-//       timestamp: new Date().toISOString()
-//     });
-//   }
-// });
-
-
-
+  } catch (error: any) {
+    logger.error(`Execute bot buys error: ${error.message}`, { stack: error.stack });
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 
 
-// Atomic launch endpoint (token creation + buys in one bundle)
+
+
+
+
+
 // app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
 //   try {
-//     logger.info('Received atomic launch request');
+//     logger.info('📨 Received atomic launch request');
+    
+//     // ✅ DEBUG: Log the entire request body
+//     logger.info('📋 Request body:', JSON.stringify(req.body, null, 2));
+    
+//     // ✅ DEBUG: Log metadata structure
+//     if (req.body.metadata) {
+//       logger.info('📄 Metadata structure:');
+//       logger.info(`   Type: ${typeof req.body.metadata}`);
+//       logger.info(`   Keys: ${Object.keys(req.body.metadata).join(', ')}`);
+//       logger.info(`   Has name: ${!!req.body.metadata.name}`);
+//       logger.info(`   Has symbol: ${!!req.body.metadata.symbol}`);
+//       logger.info(`   Has uri: ${!!req.body.metadata.uri}`);
+//       logger.info(`   Has image: ${!!req.body.metadata.image}`);
+//       logger.info(`   Has description: ${!!req.body.metadata.description}`);
+      
+//       // Log specific values
+//       if (req.body.metadata.uri) {
+//         logger.info(`🔗 URI value: ${req.body.metadata.uri}`);
+//         logger.info(`   URI length: ${req.body.metadata.uri.length}`);
+//         logger.info(`   Is IPFS: ${req.body.metadata.uri.includes('ipfs.io')}`);
+//       }
+//       if (req.body.metadata.image) {
+//         logger.info(`🖼️ Image value: ${req.body.metadata.image}`);
+//         logger.info(`   Image length: ${req.body.metadata.image.length}`);
+//       }
+//     }
+    
+//     // ✅ DEBUG: Check if metadata is being passed correctly
+//     if (!req.body.metadata) {
+//       logger.error('❌ No metadata in request');
+//       return res.status(400).json({
+//         success: false,
+//         error: 'No metadata provided'
+//       });
+//     }
+    
+//     const { name, symbol, uri } = req.body.metadata;
+    
+//     // ✅ CRITICAL: Validate we have the minimal required fields
+//     if (!name || !symbol || !uri) {
+//       logger.error('❌ Missing required metadata fields:');
+//       logger.error(`   Name: ${name || 'MISSING'}`);
+//       logger.error(`   Symbol: ${symbol || 'MISSING'}`);
+//       logger.error(`   URI: ${uri || 'MISSING'}`);
+      
+//       return res.status(400).json({
+//         success: false,
+//         error: 'Metadata must include name, symbol, and uri'
+//       });
+//     }
+    
+//     // ✅ DEBUG: Log what we're sending to createCompleteLaunchBundle
+//     logger.info('🚀 Calling createCompleteLaunchBundle with:');
+//     logger.info(`   User wallet: ${req.body.user_wallet}`);
+//     logger.info(`   Name: ${name}`);
+//     logger.info(`   Symbol: ${symbol}`);
+//     logger.info(`   URI: ${uri}`);
+//     logger.info(`   URI preview: ${uri.substring(0, 100)}${uri.length > 100 ? '...' : ''}`);
+//     logger.info(`   Creator buy amount: ${req.body.creator_buy_amount || 0.01}`);
+//     logger.info(`   Bot count: ${(req.body.bot_wallets || []).length}`);
+//     logger.info(`   Use Jito: ${req.body.use_jito !== false}`);
+    
+//     // Map bot wallets properly
+//     const botBuys = (req.body.bot_wallets || []).map((bot: any) => {
+//       logger.info(`   Bot: ${bot.public_key?.slice(0, 8)}..., Amount: ${bot.amount_sol || bot.buy_amount}`);
+//       return {
+//           public_key: bot.public_key,
+//           amount_sol: bot.amount_sol || bot.buy_amount || 0.0001
+//       };
+//     });
 
-//     // Use the new function
+//     // Call the function
 //     const result = await createCompleteLaunchBundle(connection, {
 //       user_wallet: req.body.user_wallet,
-//       metadata: req.body.metadata,
+//       metadata: {
+//         name,
+//         symbol,
+//         uri // ✅ Only URI, not complex metadata
+//       },
 //       creator_buy_amount: req.body.creator_buy_amount || 0.01,
-//       bot_buys: req.body.bot_wallets || [],
+//       bot_buys: botBuys,
 //       use_jito: req.body.use_jito !== false,
 //       slippage_bps: req.body.slippage_bps || 500
 //     });
+
+//     // ✅ DEBUG: Log the result
+//     logger.info('📊 createCompleteLaunchBundle result:');
+//     logger.info(`   Success: ${result.success}`);
+//     logger.info(`   Mint address: ${result.mint_address || 'NONE'}`);
+//     logger.info(`   Error: ${result.error || 'NONE'}`);
+//     logger.info(`   Signature count: ${result.signatures?.length || 0}`);
+    
+//     if (result.signatures && result.signatures.length > 0) {
+//       result.signatures.forEach((sig: string, i: number) => {
+//         logger.info(`   Signature ${i}: ${sig.slice(0, 16)}...`);
+//       });
+//     }
 
 //     res.json({
 //       success: result.success,
@@ -456,10 +547,14 @@ app.post('/api/onchain/fund-bots', async (req: Request, res: Response) => {
 //       timestamp: new Date().toISOString()
 //     });
 
-//     logger.info(`Atomic launch completed: ${result.success ? 'success' : 'failed'}`);
+//     logger.info(`✅ Atomic launch completed: ${result.success ? 'SUCCESS' : 'FAILED'}`);
 
 //   } catch (error: any) {
-//     logger.error(`Atomic launch error: ${error.message}`, { stack: error.stack });
+//     logger.error(`❌ Atomic launch error:`, {
+//       message: error.message,
+//       stack: error.stack,
+//       body: JSON.stringify(req.body, null, 2)
+//     });
 //     res.status(500).json({
 //       success: false,
 //       error: error.message,
@@ -469,12 +564,36 @@ app.post('/api/onchain/fund-bots', async (req: Request, res: Response) => {
 // });
 
 
+
 app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
   try {
     logger.info('📨 Received atomic launch request');
     
     // ✅ DEBUG: Log the entire request body
     logger.info('📋 Request body:', JSON.stringify(req.body, null, 2));
+    
+    // ✅ CRITICAL FIX: Check for BOTH "bot_buys" and "bot_wallets"
+    let botBuys = [];
+    
+    // Check for bot_buys (what the backend sends)
+    if (req.body.bot_buys && Array.isArray(req.body.bot_buys)) {
+      botBuys = req.body.bot_buys;
+      logger.info(`✅ Found bot_buys: ${botBuys.length} bots`);
+    } 
+    // Check for bot_wallets (legacy field)
+    else if (req.body.bot_wallets && Array.isArray(req.body.bot_wallets)) {
+      botBuys = req.body.bot_wallets;
+      logger.info(`✅ Found bot_wallets: ${botBuys.length} bots`);
+    }
+    // Check for botBuys (camelCase)
+    else if (req.body.botBuys && Array.isArray(req.body.botBuys)) {
+      botBuys = req.body.botBuys;
+      logger.info(`✅ Found botBuys: ${botBuys.length} bots`);
+    }
+    else {
+      logger.warn('⚠️ No bot arrays found in request');
+      logger.warn('Available keys:', Object.keys(req.body));
+    }
     
     // ✅ DEBUG: Log metadata structure
     if (req.body.metadata) {
@@ -484,18 +603,9 @@ app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
       logger.info(`   Has name: ${!!req.body.metadata.name}`);
       logger.info(`   Has symbol: ${!!req.body.metadata.symbol}`);
       logger.info(`   Has uri: ${!!req.body.metadata.uri}`);
-      logger.info(`   Has image: ${!!req.body.metadata.image}`);
-      logger.info(`   Has description: ${!!req.body.metadata.description}`);
       
-      // Log specific values
       if (req.body.metadata.uri) {
         logger.info(`🔗 URI value: ${req.body.metadata.uri}`);
-        logger.info(`   URI length: ${req.body.metadata.uri.length}`);
-        logger.info(`   Is IPFS: ${req.body.metadata.uri.includes('ipfs.io')}`);
-      }
-      if (req.body.metadata.image) {
-        logger.info(`🖼️ Image value: ${req.body.metadata.image}`);
-        logger.info(`   Image length: ${req.body.metadata.image.length}`);
       }
     }
     
@@ -529,17 +639,23 @@ app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
     logger.info(`   Name: ${name}`);
     logger.info(`   Symbol: ${symbol}`);
     logger.info(`   URI: ${uri}`);
-    logger.info(`   URI preview: ${uri.substring(0, 100)}${uri.length > 100 ? '...' : ''}`);
     logger.info(`   Creator buy amount: ${req.body.creator_buy_amount || 0.01}`);
-    logger.info(`   Bot count: ${(req.body.bot_wallets || []).length}`);
+    logger.info(`   Bot count: ${botBuys.length}`);
     logger.info(`   Use Jito: ${req.body.use_jito !== false}`);
     
-    // Map bot wallets properly
-    const botBuys = (req.body.bot_wallets || []).map((bot: any) => {
-      logger.info(`   Bot: ${bot.public_key?.slice(0, 8)}..., Amount: ${bot.amount_sol || bot.buy_amount}`);
+    // Log first few bots for debugging
+    if (botBuys.length > 0) {
+      logger.info('📋 Bot details (first 3):');
+      botBuys.slice(0, 3).forEach((bot: any, i: number) => {
+        logger.info(`   Bot ${i+1}: ${bot.public_key?.slice(0, 8)}..., Amount: ${bot.amount_sol || bot.buy_amount || 0.0001}`);
+      });
+    }
+    
+    // Map bot wallets properly - handle different field names
+    const mappedBotBuys = botBuys.map((bot: any) => {
       return {
-        public_key: bot.public_key,
-        amount_sol: bot.amount_sol || bot.buy_amount || 0.0001
+        public_key: bot.public_key || bot.publicKey,
+        amount_sol: bot.amount_sol || bot.buy_amount || bot.amount || 0.0001
       };
     });
 
@@ -549,10 +665,10 @@ app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
       metadata: {
         name,
         symbol,
-        uri // ✅ Only URI, not complex metadata
+        uri
       },
       creator_buy_amount: req.body.creator_buy_amount || 0.01,
-      bot_buys: botBuys,
+      bot_buys: mappedBotBuys,  // ✅ This is what botManager.ts expects
       use_jito: req.body.use_jito !== false,
       slippage_bps: req.body.slippage_bps || 500
     });
@@ -595,10 +711,6 @@ app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
     });
   }
 });
-
-
-
-
 
 
 

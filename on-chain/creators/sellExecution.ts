@@ -12,7 +12,7 @@ import {
   BondingCurveFetcher,
   TOKEN_2022_PROGRAM_ID
 } from '../pumpfun/pumpfun-idl-client';
-import { jitoBundleSender } from '../jito_bundles/jito-integration';
+import { createJitoBundleSender } from '../jito_bundles/jito-integration';
 import { SellRequest } from '../types/api';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { KeyService } from './keyService';
@@ -130,14 +130,16 @@ export async function executeSell(
     if (request.use_jito) {
       try {
         console.log('🚀 Sending via Jito bundle...');
-        const result = await jitoBundleSender.sendBundle([transaction], connection);
+        
+        const jitoSender = createJitoBundleSender(connection);
+        const result = await jitoSender.sendBundle([transaction]);
         
         if (result.success) {
           console.log(`✅ Jito bundle sent successfully`);
           return {
             success: true,
             bundle_id: result.bundleId,
-            estimated_cost: 0 // Selling costs minimal fees
+            estimated_cost: 0
           };
         } else {
           console.log('🔄 Jito failed, falling back to RPC...');
@@ -332,8 +334,9 @@ export async function executeBotSell(
     // Execute transaction
     if (useJito) {
       try {
-        const result = await jitoBundleSender.sendBundle([transaction], connection);
-        
+        const jitoSender = createJitoBundleSender(connection);
+        const result = await jitoSender.sendBundle([transaction]);
+
         if (result.success) {
           return {
             success: true,

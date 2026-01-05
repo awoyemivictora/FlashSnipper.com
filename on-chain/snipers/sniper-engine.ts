@@ -26,7 +26,7 @@ import {
     BondingCurveMath,
     PumpFunPda
 } from '../pumpfun/pumpfun-idl-client';
-import { jitoBundleSender, JitoBundleSender } from "../jito_bundles/jito-integration";
+import { JitoBundleSender } from "../jito_bundles/jito-integration";
 
 // ============================================
 // CONFIGURATION
@@ -120,12 +120,12 @@ export class ProductionSniperEngine {
         // console.log('🔧 Jito-optimized version');
 
         // Initialize Jito with connection testing
-        try {
-            await jitoBundleSender.initialize();
-            // console.log('✅ Jito SDK initialized with endpoint testing');
-        } catch (error) {
-            console.error('⚠️ Jito SDK initialization failed:', error);
-        }
+        // try {
+        //     await jitoBundleSender.initialize();
+        //     // console.log('✅ Jito SDK initialized with endpoint testing');
+        // } catch (error) {
+        //     console.error('⚠️ Jito SDK initialization failed:', error);
+        // }
 
         // Start services
         this.startUserRefreshLoop();
@@ -233,19 +233,19 @@ export class ProductionSniperEngine {
 
         // Try Jito first
         // console.log('🚀 Attempting Jito bundle...');
-        const jitoResult = await jitoBundleSender.sendBundle([transaction], connection);
+        // const jitoResult = await jitoBundleSender.sendBundle([transaction], connection);
         
-        if (jitoResult.success) {
-            return {
-                bundleId: jitoResult.bundleId,
-                success: true,
-                method: 'jito',
-                retryCount: jitoResult.retryCount
-            };
-        }
+        // if (jitoResult.success) {
+        //     return {
+        //         bundleId: jitoResult.bundleId,
+        //         success: true,
+        //         method: 'jito',
+        //         retryCount: jitoResult.retryCount
+        //     };
+        // }
 
-        // Jito failed, try RPC fallback
-        console.log('🔄 Jito failed, trying RPC with simulation...');
+        // // Jito failed, try RPC fallback
+        // console.log('🔄 Jito failed, trying RPC with simulation...');
         
         // Try RPC with simulation enabled
         try {
@@ -502,7 +502,7 @@ export class ProductionSniperEngine {
         }
 
         try {
-            const response = await axios.get(`${BACKEND_URL}/user/active-users`, {
+            const response = await axios.get(`${BACKEND_URL}/snipers/user/active-users`, {
                 params: { api_key: ONCHAIN_API_KEY },
                 timeout: 5000
             });

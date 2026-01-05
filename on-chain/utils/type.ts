@@ -2,7 +2,8 @@ import { SolanaParser } from "@shyft-to/solana-transaction-parser";
 import { BN, BorshCoder, BorshInstructionCoder, Idl } from "@coral-xyz/anchor";
 import { SolanaEventParser } from "./event-parser";
 import { PublicKey } from "@solana/web3.js";
-import pumpFunIdl from "../idls/pump_0.1.0.json";
+import pumpFunIdl from "../pumpfun/idls/pump_0.1.0.json";
+
 
 
 export const PUMP_FUN_PROGRAM_ID = new PublicKey(

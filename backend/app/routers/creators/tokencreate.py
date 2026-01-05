@@ -1,4 +1,3 @@
-# app/routers/tokencreate.py
 import asyncio
 from datetime import datetime
 import json
@@ -56,61 +55,116 @@ class LaunchCoordinator:
         self.bot_wallets: List[BotWallet] = []
         self.launch_record: Optional[TokenLaunch] = None
         
+    # async def prepare_launch(self, config: LaunchConfigCreate) -> bool:
+    #     """Prepare launch - validate and setup"""
+    #     try:
+    #         # Store config FIRST
+    #         self.launch_config = config.model_dump()
+            
+    #         # Create launch record BEFORE any status updates
+    #         await self._create_launch_record()
+            
+    #         # Now update status
+    #         await self._update_status(LaunchStatus.SETUP, 10, "Validating configuration...")
+            
+    #         # Validate user has creator mode enabled
+    #         if not self.user.creator_enabled:
+    #             raise HTTPException(
+    #                 status_code=403,
+    #                 detail="Creator mode not enabled"
+    #             )
+            
+    #         # Check user balance
+    #         total_required = await self._calculate_required_balance(config)
+    #         user_balance = await get_sol_balance(self.user.wallet_address)
+            
+    #         if user_balance < total_required:
+    #             raise HTTPException(
+    #                 status_code=400,
+    #                 detail=f"Insufficient balance. Need {total_required} SOL, have {user_balance} SOL"
+    #             )
+            
+    #         # Get or generate metadata
+    #         # await self._get_metadata(config)
+    #         # await self._update_status(LaunchStatus.METADATA_GENERATED, 20, "Metadata generated")
+            
+    #         # Get bot wallets - UPDATED
+    #         await self._get_available_funded_bots(
+    #             config.bot_count, 
+    #             min_balance=config.bot_buy_amount
+    #         )
+    #         await self._update_status(LaunchStatus.SETUP, 30, "Bot wallets prepared")
+            
+    #         # Get bot wallets
+    #         await self._get_bot_wallets(config.bot_count)
+    #         await self._update_status(LaunchStatus.SETUP, 30, "Bot wallets prepared")
+            
+    #         # Update launch record with metadata
+    #         await self._update_launch_with_metadata()
+            
+    #         return True
+            
+    #     except Exception as e:
+    #         logger.error(f"Failed to prepare launch {self.launch_id}: {e}", exc_info=True)
+    #         # Rollback any database changes on error
+    #         await self.db.rollback()
+    #         await self._update_status(LaunchStatus.FAILED, 0, f"Preparation failed: {str(e)}")
+    #         return False
+    
+    
     async def prepare_launch(self, config: LaunchConfigCreate) -> bool:
         """Prepare launch - validate and setup"""
         try:
             # Store config FIRST
             self.launch_config = config.model_dump()
-            
+        
             # Create launch record BEFORE any status updates
             await self._create_launch_record()
-            
+        
             # Now update status
             await self._update_status(LaunchStatus.SETUP, 10, "Validating configuration...")
-            
+        
             # Validate user has creator mode enabled
             if not self.user.creator_enabled:
                 raise HTTPException(
                     status_code=403,
                     detail="Creator mode not enabled"
                 )
-            
+        
             # Check user balance
             total_required = await self._calculate_required_balance(config)
             user_balance = await get_sol_balance(self.user.wallet_address)
-            
+        
             if user_balance < total_required:
                 raise HTTPException(
                     status_code=400,
                     detail=f"Insufficient balance. Need {total_required} SOL, have {user_balance} SOL"
                 )
-            
+        
             # Get or generate metadata
             # await self._get_metadata(config)
             # await self._update_status(LaunchStatus.METADATA_GENERATED, 20, "Metadata generated")
-            
+        
             # Get bot wallets - UPDATED
             await self._get_available_funded_bots(
-                config.bot_count, 
+                config.bot_count,
                 min_balance=config.bot_buy_amount
             )
             await self._update_status(LaunchStatus.SETUP, 30, "Bot wallets prepared")
-            
-            # Get bot wallets
-            await self._get_bot_wallets(config.bot_count)
-            await self._update_status(LaunchStatus.SETUP, 30, "Bot wallets prepared")
-            
+        
             # Update launch record with metadata
             await self._update_launch_with_metadata()
-            
+        
             return True
-            
+        
         except Exception as e:
             logger.error(f"Failed to prepare launch {self.launch_id}: {e}", exc_info=True)
             # Rollback any database changes on error
             await self.db.rollback()
             await self._update_status(LaunchStatus.FAILED, 0, f"Preparation failed: {str(e)}")
             return False
+    
+    
     
     async def _update_user_stats(self, results: Dict[str, Any]):
         """Update user stats after successful launch"""
@@ -135,7 +189,7 @@ class LaunchCoordinator:
             # Don't fail the launch if stats update fails
     
     async def execute_launch(self):
-        """Execute the complete launch process with better error handling"""
+        """Execute the complete launch process with atomic-launch"""
         try:
             # Check on-chain service health first
             if not await onchain_client.health_check():
@@ -146,61 +200,23 @@ class LaunchCoordinator:
                 logger.warning("No metadata found, ensuring metadata exists...")
                 await self._ensure_metadata()
                 
-            # 1. Create token on-chain
-            await self._update_status(LaunchStatus.ONCHAIN_CREATION, 40, "Creating token...")
+            # 1. Create token + creator buy + all bot buys in ONE atomic launch
+            await self._update_status(LaunchStatus.ONCHAIN_CREATION, 40, "Creating token with atomic launch...")
             token_result = await self._create_token_onchain()
             
             if not token_result.get("success"):
                 error_msg = token_result.get("error", "Unknown error")
-                raise Exception(f"Token creation failed: {error_msg}")
+                raise Exception(f"Atomic launch failed: {error_msg}")
             
             self.mint_address = token_result.get("mint_address")
             
-            # Update launch record with mint address
+            # Update launch record
             self.launch_record.mint_address = self.mint_address
-            self.launch_record.creator_tx_hash = token_result.get("signature")
-            # self.launch_record.creator_bundle_id = token_result.get("bundle_id")
+            self.launch_record.creator_tx_hash = token_result.get("signatures", [None])[0]
             await self.db.commit()
             
-            # 2. Fund bot wallets
-            await self._update_status(LaunchStatus.FUNDING, 60, "Funding bot wallets...")
-            fund_result = await self._fund_bot_wallets()
-            
-            if not fund_result.get("success"):
-                raise Exception(f"Bot funding failed: {fund_result.get('error')}")
-            
-            # Record funding bundle
-            # self.launch_record.funding_bundle_id = fund_result.get("bundle_id")
-            # self.launch_record.estimated_cost = fund_result.get("estimated_cost")
-            await self.db.commit()
-            
-            # 3. Execute creator buy
-            await self._update_status(LaunchStatus.BUYING, 70, "Executing creator buy...")
-            creator_buy_result = await self._execute_creator_buy()
-            
-            if not creator_buy_result.get("success"):
-                raise Exception(f"Creator buy failed: {creator_buy_result.get('error')}")
-            
-            # 4. Execute bot buys
-            await self._update_status(LaunchStatus.BUYING, 80, "Executing bot buys...")
-            bot_buy_result = await self._execute_bot_buys()
-            
-            if not bot_buy_result.get("success"):
-                raise Exception(f"Bot buys failed: {bot_buy_result.get('error')}")
-            
-            # Record bot buy bundle
-            self.launch_record.bot_buy_bundle_id = bot_buy_result.get("bundle_id")
-            await self.db.commit()
-            
-            # 5. Monitor and sell
-            await self._update_status(LaunchStatus.MONITORING, 90, "Monitoring performance...")
-            sell_result = await self._monitor_and_sell()
-            
-            if not sell_result.get("success"):
-                raise Exception(f"Sell execution failed: {sell_result.get('error')}")
-            
-            # 6. Complete
-            await self._update_status(LaunchStatus.COMPLETE, 100, "🎉 Launch completed successfully!")
+            # 2. Skip monitoring for now - just complete the launch
+            await self._update_status(LaunchStatus.COMPLETE, 100, "🎉 Atomic launch completed successfully!")
             
             # Calculate results
             results = await self._calculate_results()
@@ -211,7 +227,6 @@ class LaunchCoordinator:
             self.launch_record.roi = results["roi"]
             self.launch_record.duration = results["duration"]
             self.launch_record.completed_at = datetime.utcnow()
-            self.launch_record.bot_sell_bundle_id = sell_result.get("bundle_id")
             await self.db.commit()
             
             # Update user stats
@@ -249,91 +264,6 @@ class LaunchCoordinator:
         
         return bot_cost + creator_cost + fees
     
-    # async def _get_metadata(self, config: LaunchConfigCreate):
-    #     """Get or generate metadata using OpenAI"""
-    #     try:
-    #         logger.info(f"Generating metadata for launch {self.launch_id}")
-            
-    #         # Convert config to dict for easier access
-    #         config_dict = config.model_dump()
-            
-    #         if config_dict.get("custom_metadata"):
-    #             # Use custom metadata provided by user
-    #             custom_data = config_dict["custom_metadata"]
-                
-    #             # Instead of trying to create TokenMetadata DB model,
-    #             # create a simple dict to store metadata
-    #             self.metadata_for_token = {
-    #                 "name": custom_data.get("name", f"Token_{int(datetime.utcnow().timestamp())}"),
-    #                 "symbol": custom_data.get("symbol", "TKN"),
-    #                 "description": custom_data.get("description", "Token created via Flash Sniper"),
-    #                 "image": custom_data.get("image", "https://placehold.co/600x400"),
-    #                 "attributes": [
-    #                     {"trait_type": "Platform", "value": "Flash Sniper"},
-    #                     {"trait_type": "Created", "value": datetime.utcnow().strftime("%Y-%m-%d")},
-    #                 ]
-    #             }
-                
-    #         elif config_dict.get("use_ai_metadata", True):
-    #             # Generate AI metadata
-    #             metadata_request = MetadataRequest(
-    #                 style=config_dict.get("metadata_style", "meme"),
-    #                 keywords=config_dict.get("metadata_keywords", ""),
-    #                 category=config_dict.get("metadata_category", "meme"),
-    #                 theme=f"Launch by {self.user.wallet_address[:8]}...",
-    #                 use_dalle=config_dict.get("use_dalle_generation", False)
-    #             )
-                
-    #             # Call the OpenAI metadata generation function
-    #             response = await generate_metadata(metadata_request)
-                
-    #             if not response or not response.metadata_for_token:
-    #                 raise Exception("AI metadata generation failed")
-                
-    #             # Convert Pydantic model to dict
-    #             self.metadata_for_token = response.metadata_for_token.dict()
-    #             logger.info(f"AI metadata generated: {self.metadata_for_token['name']} ({self.metadata_for_token['symbol']})")
-                
-    #         else:
-    #             # Generate basic metadata
-    #             timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    #             self.metadata_for_token = {
-    #                 "name": f"Token_{timestamp}",
-    #                 "symbol": f"TKN{timestamp[-4:]}",
-    #                 "description": "Token created via Flash Sniper",
-    #                 "image": "https://placehold.co/600x400",
-    #                 "attributes": [
-    #                     {"trait_type": "Platform", "value": "Flash Sniper"},
-    #                     {"trait_type": "Created", "value": datetime.utcnow().strftime("%Y-%m-%d")},
-    #                 ]
-    #             }
-            
-    #         # Add creator attribution
-    #         self.metadata_for_token["attributes"].append({
-    #             "trait_type": "Creator",
-    #             "value": self.user.wallet_address[:8] + "..."
-    #         })
-            
-    #         logger.info(f"Metadata ready: {self.metadata_for_token['name']}")
-            
-    #     except Exception as e:
-    #         logger.error(f"Failed to generate metadata: {e}", exc_info=True)
-    #         # Fallback to basic metadata
-    #         timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    #         self.metadata_for_token = {
-    #             "name": f"Token_{timestamp}",
-    #             "symbol": f"TKN{timestamp[-4:]}",
-    #             "description": "Token created via Flash Sniper",
-    #             "image": "https://placehold.co/600x400",
-    #             "attributes": [
-    #                 {"trait_type": "Platform", "value": "Flash Sniper"},
-    #                 {"trait_type": "Created", "value": datetime.utcnow().strftime("%Y-%m-%d")},
-    #                 {"trait_type": "Creator", "value": self.user.wallet_address[:8] + "..."},
-    #             ]
-    #         }
-    
-    
-    # app/routers/creators/tokencreate.py - Update _get_metadata method
     async def _get_metadata(self, config: LaunchConfigCreate):
         """Get or generate metadata using OpenAI"""
         try:
@@ -440,6 +370,8 @@ class LaunchCoordinator:
         for bot in all_bots:
             try:
                 balance = await get_sol_balance(bot.public_key)
+                logger.info(f"Bot {bot.public_key[:8]}...: {balance} SOL (required: {min_balance})")
+                
                 if balance >= min_balance:
                     available_bots.append(bot)
                     
@@ -474,8 +406,11 @@ class LaunchCoordinator:
         result = await self.db.execute(stmt)
         self.bot_wallets = result.scalars().all()
         
-        logger.info(f"Found {len(self.bot_wallets)} available bot wallets")
-        
+        # ✅ ADD DEBUG LOGGING
+        logger.info(f"🔍 Found {len(self.bot_wallets)} available bot wallets")
+        for i, bot in enumerate(self.bot_wallets):
+            logger.info(f"  Bot {i+1}: {bot.public_key[:8]}..., Status: {bot.status}")
+            
         if len(self.bot_wallets) < count:
             raise Exception(f"Not enough bot wallets. Need {count}, have {len(self.bot_wallets)}")
         
@@ -501,7 +436,6 @@ class LaunchCoordinator:
         except Exception as e:
             logger.error(f"Failed to create launch record: {e}", exc_info=True)
             raise
-    
     
     async def _update_status(self, status: LaunchStatus, progress: int, message: str):
         """Update launch status"""
@@ -556,7 +490,6 @@ class LaunchCoordinator:
         except Exception as e:
             logger.error(f"Failed to update status for {self.launch_id}: {e}", exc_info=True)
             
-        
     async def _update_launch_with_metadata(self):
         """Update launch record with generated metadata"""
         try:
@@ -567,20 +500,51 @@ class LaunchCoordinator:
             logger.error(f"Failed to update launch with metadata: {e}", exc_info=True)
             
     # async def _create_token_onchain(self) -> Dict[str, Any]:
-    #     """Create token with 2-step approach (like top 1% bots)"""
+    #     """Create token with 2-step approach"""
     #     try:
     #         # Ensure metadata exists
     #         if not self.metadata_for_token:
     #             await self._ensure_metadata()
-                
-    #             if not self.metadata_for_token:
-    #                 timestamp = int(datetime.utcnow().timestamp())
-    #                 self.metadata_for_token = {
-    #                     "name": f"Token_{timestamp}",
-    #                     "symbol": f"TKN{timestamp % 10000:04d}",
-    #                     "image": "https://placehold.co/400x400",
-    #                     "description": "Token created via Flash Sniper"
-    #                 }
+            
+    #         # ✅ ADD DETAILED DEBUG LOGGING
+    #         logger.info(f"=== METADATA DEBUG ===")
+    #         logger.info(f"Metadata dict keys: {list(self.metadata_for_token.keys())}")
+    #         logger.info(f"Name: {self.metadata_for_token.get('name')}")
+    #         logger.info(f"Symbol: {self.metadata_for_token.get('symbol')}")
+    #         logger.info(f"URI: {self.metadata_for_token.get('uri')}")
+    #         logger.info(f"Metadata URI: {self.metadata_for_token.get('metadata_uri')}")
+    #         logger.info(f"Image: {self.metadata_for_token.get('image')}")
+    #         logger.info(f"Image URL: {self.metadata_for_token.get('image_url')}")
+            
+    #         # ✅ CRITICAL: Extract the correct URI field
+    #         # Try multiple possible field names
+    #         metadata_uri = (
+    #             self.metadata_for_token.get('uri') or
+    #             self.metadata_for_token.get('metadata_uri') or
+    #             self.metadata_for_token.get('image_url') or
+    #             self.metadata_for_token.get('image')
+    #         )
+            
+    #         token_name = self.metadata_for_token.get('name')
+    #         token_symbol = self.metadata_for_token.get('symbol')
+            
+    #         if not token_name or not token_symbol or not metadata_uri:
+    #             logger.error("❌ Missing required metadata fields")
+    #             logger.error(f"Available: name={token_name}, symbol={token_symbol}")
+    #             logger.error(f"URI sources: uri={self.metadata_for_token.get('uri')}, "
+    #                         f"metadata_uri={self.metadata_for_token.get('metadata_uri')}, "
+    #                         f"image_url={self.metadata_for_token.get('image_url')}, "
+    #                         f"image={self.metadata_for_token.get('image')}")
+    #             raise Exception("Missing required metadata fields for token creation")
+            
+    #         logger.info(f"🔗 Using metadata URI for on-chain: {metadata_uri}")
+            
+    #         # ✅ SIMPLIFIED ON-CHAIN PAYLOAD
+    #         onchain_metadata = {
+    #             "name": token_name,
+    #             "symbol": token_symbol,
+    #             "uri": metadata_uri  # ✅ Only the URI goes on-chain
+    #         }
             
     #         # Prepare bot configs
     #         bot_configs = []
@@ -590,19 +554,15 @@ class LaunchCoordinator:
     #                 "amount_sol": self.launch_config.get("bot_buy_amount", 0.0001)
     #             })
             
-    #         logger.info(f"🔧 Starting 2-step launch with {len(bot_configs)} bots")
+    #         logger.info(f"🔧 Starting launch with {len(bot_configs)} bots")
             
-    #         # Call the new 2-step endpoint
+    #         # Call the on-chain service with simplified metadata
     #         async with httpx.AsyncClient(timeout=30.0) as client:
     #             response = await client.post(
-    #                 f"{settings.ONCHAIN_CLIENT_URL}/api/onchain/atomic-launch",  # NEW ENDPOINT
+    #                 f"{settings.ONCHAIN_CLIENT_URL}/api/onchain/atomic-launch",
     #                 json={
     #                     "user_wallet": self.user.wallet_address,
-    #                     "metadata": {
-    #                         "name": self.metadata_for_token.get("name"),
-    #                         "symbol": self.metadata_for_token.get("symbol"),
-    #                         "uri": self.metadata_for_token.get("image", "https://placehold.co/400x400")
-    #                     },
+    #                     "metadata": onchain_metadata,  # ✅ Only name, symbol, URI
     #                     "creator_buy_amount": self.launch_config.get("creator_buy_amount", 0.001),
     #                     "bot_buys": bot_configs,
     #                     "use_jito": self.launch_config.get("use_jito_bundle", True),
@@ -630,34 +590,92 @@ class LaunchCoordinator:
     #                 self.launch_record.atomic_bundle = True
     #                 await self.db.commit()
                 
-    #             logger.info(f"✅ 2-step launch successful: {self.mint_address}")
+    #             logger.info(f"✅ Launch successful: {self.mint_address}")
                 
     #             return result
                 
     #     except Exception as e:
-    #         logger.error(f"2-step launch failed: {e}", exc_info=True)
+    #         logger.error(f"Launch failed: {e}", exc_info=True)
     #         return {"success": False, "error": str(e)}
         
-
+    # async def _create_token_onchain(self) -> Dict[str, Any]:
+    #     """Create token with creator buy (NO BOT BUYS HERE)"""
+    #     try:
+    #         # Ensure metadata exists
+    #         if not self.metadata_for_token:
+    #             await self._ensure_metadata()
+            
+    #         # ✅ Extract metadata
+    #         metadata_uri = (
+    #             self.metadata_for_token.get('uri') or
+    #             self.metadata_for_token.get('metadata_uri') or
+    #             self.metadata_for_token.get('image_url') or
+    #             self.metadata_for_token.get('image')
+    #         )
+            
+    #         token_name = self.metadata_for_token.get('name')
+    #         token_symbol = self.metadata_for_token.get('symbol')
+            
+    #         if not token_name or not token_symbol or not metadata_uri:
+    #             raise Exception("Missing required metadata fields for token creation")
+            
+    #         # ✅ SIMPLIFIED ON-CHAIN PAYLOAD - JUST TOKEN CREATION + CREATOR BUY
+    #         onchain_metadata = {
+    #             "name": token_name,
+    #             "symbol": token_symbol,
+    #             "uri": metadata_uri
+    #         }
+            
+    #         logger.info(f"🔧 Creating token: {token_name} ({token_symbol})")
+            
+    #         # Call the on-chain service - ONLY TOKEN CREATION + CREATOR BUY
+    #         async with httpx.AsyncClient(timeout=30.0) as client:
+    #             response = await client.post(
+    #                 f"{settings.ONCHAIN_CLIENT_URL}/api/onchain/atomic-launch",
+    #                 json={
+    #                     "user_wallet": self.user.wallet_address,
+    #                     "metadata": onchain_metadata,
+    #                     "creator_buy_amount": self.launch_config.get("creator_buy_amount", 0.001),
+    #                     "bot_buys": bot_configs,  # PASS BOT BUYS HERE
+    #                     "use_jito": self.launch_config.get("use_jito_bundle", True),
+    #                     "slippage_bps": 500
+    #                 },
+    #                 headers={"X-API-Key": settings.ONCHAIN_API_KEY}
+    #             )
+                
+    #             if response.status_code != 200:
+    #                 error_text = response.text[:200] if response.text else "No error message"
+    #                 return {"success": False, "error": f"HTTP {response.status_code}: {error_text}"}
+                
+    #             result = response.json()
+                
+    #             if not result.get("success"):
+    #                 return {"success": False, "error": result.get("error", "Unknown error")}
+                
+    #             self.mint_address = result.get("mint_address")
+                
+    #             # Update launch record
+    #             if self.launch_record:
+    #                 self.launch_record.mint_address = self.mint_address
+    #                 self.launch_record.creator_tx_hash = result.get("signatures", [None])[0]
+    #                 await self.db.commit()
+                
+    #             logger.info(f"✅ Token created: {self.mint_address}")
+                
+    #             return result
+                
+    #     except Exception as e:
+    #         logger.error(f"Token creation failed: {e}", exc_info=True)
+    #         return {"success": False, "error": str(e)}
+        
     async def _create_token_onchain(self) -> Dict[str, Any]:
-        """Create token with 2-step approach"""
+        """Create token with creator buy AND all bot buys in atomic launch"""
         try:
             # Ensure metadata exists
             if not self.metadata_for_token:
                 await self._ensure_metadata()
             
-            # ✅ ADD DETAILED DEBUG LOGGING
-            logger.info(f"=== METADATA DEBUG ===")
-            logger.info(f"Metadata dict keys: {list(self.metadata_for_token.keys())}")
-            logger.info(f"Name: {self.metadata_for_token.get('name')}")
-            logger.info(f"Symbol: {self.metadata_for_token.get('symbol')}")
-            logger.info(f"URI: {self.metadata_for_token.get('uri')}")
-            logger.info(f"Metadata URI: {self.metadata_for_token.get('metadata_uri')}")
-            logger.info(f"Image: {self.metadata_for_token.get('image')}")
-            logger.info(f"Image URL: {self.metadata_for_token.get('image_url')}")
-            
-            # ✅ CRITICAL: Extract the correct URI field
-            # Try multiple possible field names
+            # ✅ Extract metadata
             metadata_uri = (
                 self.metadata_for_token.get('uri') or
                 self.metadata_for_token.get('metadata_uri') or
@@ -665,57 +683,50 @@ class LaunchCoordinator:
                 self.metadata_for_token.get('image')
             )
             
-            token_name = self.metadata_for_token.get('name')
-            token_symbol = self.metadata_for_token.get('symbol')
-            
-            if not token_name or not token_symbol or not metadata_uri:
-                logger.error("❌ Missing required metadata fields")
-                logger.error(f"Available: name={token_name}, symbol={token_symbol}")
-                logger.error(f"URI sources: uri={self.metadata_for_token.get('uri')}, "
-                            f"metadata_uri={self.metadata_for_token.get('metadata_uri')}, "
-                            f"image_url={self.metadata_for_token.get('image_url')}, "
-                            f"image={self.metadata_for_token.get('image')}")
-                raise Exception("Missing required metadata fields for token creation")
-            
-            logger.info(f"🔗 Using metadata URI for on-chain: {metadata_uri}")
-            
-            # ✅ SIMPLIFIED ON-CHAIN PAYLOAD
-            onchain_metadata = {
-                "name": token_name,
-                "symbol": token_symbol,
-                "uri": metadata_uri  # ✅ Only the URI goes on-chain
-            }
-            
-            # Prepare bot configs
+            # ✅ CRITICAL FIX: Use correct field name "amount_sol" instead of "buy_amount"
             bot_configs = []
             for bot in self.bot_wallets:
                 bot_configs.append({
                     "public_key": bot.public_key,
-                    "amount_sol": self.launch_config.get("bot_buy_amount", 0.0001)
+                    "amount_sol": float(self.launch_config.get("bot_buy_amount", 0.0001))  # ✅ Use "amount_sol"
                 })
             
-            logger.info(f"🔧 Starting launch with {len(bot_configs)} bots")
+            logger.info(f"🔧 Starting atomic launch with {len(bot_configs)} bots")
+            logger.info(f"Bot configs: {bot_configs}")
             
-            # Call the on-chain service with simplified metadata
+            # ✅ Call atomic-launch with ALL bot buys
             async with httpx.AsyncClient(timeout=30.0) as client:
+                payload = {
+                    "user_wallet": self.user.wallet_address,
+                    "metadata": {
+                        "name": self.metadata_for_token.get('name', 'UnknownToken'),
+                        "symbol": self.metadata_for_token.get('symbol', 'TKN'),
+                        "uri": metadata_uri
+                    },
+                    "creator_buy_amount": float(self.launch_config.get("creator_buy_amount", 0.001)),
+                    "bot_buys": bot_configs,  # ✅ Now uses "amount_sol"
+                    "use_jito": bool(self.launch_config.get("use_jito_bundle", True)),
+                    "slippage_bps": 500
+                }
+                
+                logger.info(f"📤 Sending payload to atomic-launch:")
+                logger.info(f"  Bot count: {len(payload['bot_buys'])}")
+                if payload['bot_buys']:
+                    logger.info(f"  Bot buy amount: {payload['bot_buys'][0]['amount_sol']} SOL")
+                
                 response = await client.post(
                     f"{settings.ONCHAIN_CLIENT_URL}/api/onchain/atomic-launch",
-                    json={
-                        "user_wallet": self.user.wallet_address,
-                        "metadata": onchain_metadata,  # ✅ Only name, symbol, URI
-                        "creator_buy_amount": self.launch_config.get("creator_buy_amount", 0.001),
-                        "bot_buys": bot_configs,
-                        "use_jito": self.launch_config.get("use_jito_bundle", True),
-                        "slippage_bps": 500
-                    },
+                    json=payload,
                     headers={"X-API-Key": settings.ONCHAIN_API_KEY}
                 )
                 
                 if response.status_code != 200:
-                    error_text = response.text[:200] if response.text else "No error message"
+                    error_text = response.text[:500] if response.text else "No error message"
+                    logger.error(f"❌ Atomic launch HTTP error {response.status_code}: {error_text}")
                     return {"success": False, "error": f"HTTP {response.status_code}: {error_text}"}
                 
                 result = response.json()
+                logger.info(f"✅ Atomic launch response: {result}")
                 
                 if not result.get("success"):
                     return {"success": False, "error": result.get("error", "Unknown error")}
@@ -726,20 +737,17 @@ class LaunchCoordinator:
                 if self.launch_record:
                     self.launch_record.mint_address = self.mint_address
                     self.launch_record.creator_tx_hash = result.get("signatures", [None])[0]
-                    self.launch_record.bot_buy_bundle_id = result.get("bundle_id")
-                    self.launch_record.atomic_bundle = True
                     await self.db.commit()
                 
-                logger.info(f"✅ Launch successful: {self.mint_address}")
+                logger.info(f"✅ Atomic launch successful: {self.mint_address}")
                 
                 return result
-                
+                    
         except Exception as e:
-            logger.error(f"Launch failed: {e}", exc_info=True)
+            logger.error(f"Atomic launch failed: {e}", exc_info=True)
             return {"success": False, "error": str(e)}
         
         
-    # Update bot funding
     async def _fund_bot_wallets(self) -> Dict[str, Any]:
         """Fund bot wallets using on-chain service"""
         try:
@@ -752,7 +760,7 @@ class LaunchCoordinator:
             for wallet in self.bot_wallets:
                 bot_configs.append({
                     "public_key": wallet.public_key,
-                    "amount_sol": self.launch_config["bot_buy_amount"]
+                    "buy_amount": self.launch_config["buy_amount"]
                 })
             
             # Debug: Log what we're sending
@@ -816,42 +824,94 @@ class LaunchCoordinator:
         except Exception as e:
             return {"success": False, "error": str(e)}
         
+    # async def _execute_bot_buys(self) -> Dict[str, Any]:
+    #     """Execute bot buys using on-chain service"""
+    #     try:
+    #         bot_configs = []
+    #         for wallet in self.bot_wallets:
+    #             bot_configs.append({
+    #                 "public_key": wallet.public_key,
+    #                 "buy_amount": self.launch_config["bot_buy_amount"]
+    #             })
+            
+    #         result = await onchain_client.execute_buy(
+    #             user_wallet=self.user.wallet_address,
+    #             mint_address=self.mint_address,
+    #             amount_sol=0,  # Bots have their own SOL
+    #             bot_wallets=bot_configs,
+    #             use_jito=self.launch_config.get("use_jito_bundle", True)
+    #         )
+            
+    #         if not result.get("success"):
+    #             raise Exception(f"Bot buys failed: {result.get('error')}")
+            
+    #         # Update bot wallets
+    #         for wallet in self.bot_wallets:
+    #             wallet.status = "bought"
+    #             wallet.buy_tx_hash = result.get("signatures", [None])[0]  # Simplified
+    #             wallet.last_updated = datetime.utcnow()
+            
+    #         await self.db.commit()
+            
+    #         return result
+            
+    #     except Exception as e:
+    #         logger.error(f"Bot buys failed: {e}", exc_info=True)
+    #         return {"success": False, "error": str(e)}
+    
     async def _execute_bot_buys(self) -> Dict[str, Any]:
         """Execute bot buys using on-chain service"""
         try:
+            if not self.mint_address:
+                raise Exception("No mint address - token not created yet")
+            
+            # Prepare bot configs
             bot_configs = []
             for wallet in self.bot_wallets:
                 bot_configs.append({
                     "public_key": wallet.public_key,
-                    "buy_amount": self.launch_config["bot_buy_amount"]
+                    "amount_sol": float(self.launch_config.get("bot_buy_amount", 0.0001))  # ✅ Use "amount_sol"
                 })
             
-            result = await onchain_client.execute_buy(
-                user_wallet=self.user.wallet_address,
-                mint_address=self.mint_address,
-                amount_sol=0,  # Bots have their own SOL
-                bot_wallets=bot_configs,
-                use_jito=self.launch_config.get("use_jito_bundle", True)
-            )
+            logger.info(f"🤖 Executing bot buys for {self.mint_address}")
             
-            if not result.get("success"):
-                raise Exception(f"Bot buys failed: {result.get('error')}")
-            
-            # Update bot wallets
-            for wallet in self.bot_wallets:
-                wallet.status = "bought"
-                wallet.buy_tx_hash = result.get("signatures", [None])[0]  # Simplified
-                wallet.last_updated = datetime.utcnow()
-            
-            await self.db.commit()
-            
-            return result
-            
+            # Call the execute-bot-buys endpoint
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    f"{settings.ONCHAIN_CLIENT_URL}/api/onchain/execute-bot-buys",
+                    json={
+                        "action": "execute_bot_buys",
+                        "mint_address": self.mint_address,
+                        "user_wallet": self.user.wallet_address,
+                        "bot_wallets": bot_configs,
+                        "use_jito": self.launch_config.get("use_jito_bundle", True),
+                        "slippage_bps": 500
+                    },
+                    headers={"X-API-Key": settings.ONCHAIN_API_KEY}
+                )
+                
+                if response.status_code != 200:
+                    return {"success": False, "error": f"HTTP {response.status_code}"}
+                
+                result = response.json()
+                
+                if not result.get("success"):
+                    return {"success": False, "error": result.get("error")}
+                
+                # Update bot wallets
+                for wallet in self.bot_wallets:
+                    wallet.status = "bought"
+                    wallet.buy_tx_hash = result.get("signatures", [None])[0]
+                    wallet.last_updated = datetime.utcnow()
+                
+                await self.db.commit()
+                
+                return result
+                
         except Exception as e:
             logger.error(f"Bot buys failed: {e}", exc_info=True)
             return {"success": False, "error": str(e)}
     
-    # Update buy execution
     async def _execute_creator_buy(self) -> Dict[str, Any]:
         """Execute creator buy using on-chain service"""
         try:
@@ -886,19 +946,27 @@ class LaunchCoordinator:
     
     async def _monitor_and_sell(self):
         """Monitor token and execute sell"""
-        # Implement monitoring logic based on sell strategy
-        sell_strategy = self.launch_config["sell_strategy_type"]
+        try:
+            # For now, just return success without actual selling
+            # We can implement real selling later
+            logger.info(f"Skipping actual sell execution for now (focus on atomic launch)")
+            
+            # Simulate monitoring
+            await asyncio.sleep(2)
+            
+            return {
+                "success": True,
+                "message": "Sell monitoring completed (simulated)",
+                "note": "Actual selling not implemented yet"
+            }
+            
+        except Exception as e:
+            logger.error(f"Monitor and sell failed: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
         
-        if sell_strategy == SellStrategyType.VOLUME_BASED:
-            await self._monitor_volume_based()
-        elif sell_strategy == SellStrategyType.TIME_BASED:
-            await self._monitor_time_based()
-        elif sell_strategy == SellStrategyType.PRICE_TARGET:
-            await self._monitor_price_based()
-        
-        # Execute sells
-        await self._execute_sells()
-    
     async def _monitor_volume_based(self):
         """Monitor volume-based sell condition"""
         target_volume = self.launch_config.get("sell_volume_target", 5.0)
@@ -979,15 +1047,30 @@ class LaunchCoordinator:
     
     async def _calculate_results(self) -> Dict[str, Any]:
         """Calculate launch results"""
-        # Implement result calculation
-        return {
-            "total_profit": 0.0,
-            "roi": 0.0,
-            "duration": 300,
-            "bot_count": len(self.bot_wallets),
-            "successful_bots": len(self.bot_wallets)
-        }
-
+        try:
+            # Basic results for atomic launch (token creation + buys)
+            return {
+                "total_profit": 0.0,  # We don't calculate profit without selling
+                "roi": 0.0,
+                "duration": 60,  # 1 minute estimate
+                "bot_count": len(self.bot_wallets),
+                "successful_bots": len(self.bot_wallets),
+                "token_created": True,
+                "creator_buy_executed": True,
+                "bot_buys_executed": True,
+                "message": "Atomic launch completed successfully"
+            }
+        except Exception as e:
+            logger.error(f"Failed to calculate results: {e}")
+            return {
+                "total_profit": 0.0,
+                "roi": 0.0,
+                "duration": 0,
+                "bot_count": len(self.bot_wallets),
+                "successful_bots": 0,
+                "error": str(e)
+            }
+            
     async def _calculate_atomic_cost(self) -> float:
         """Calculate cost for atomic launch"""
         if not self.launch_config:
@@ -999,43 +1082,6 @@ class LaunchCoordinator:
         
         return bot_cost + creator_cost + fees
     
-    # async def _ensure_metadata(self):
-    #     """Ensure metadata exists, generate if not"""
-    #     if not self.metadata_for_token:
-    #         logger.info(f"No metadata found for launch {self.launch_id}, generating...")
-            
-    #         if self.launch_config:
-    #             # Try to get from custom_metadata
-    #             custom_metadata = self.launch_config.get("custom_metadata")
-    #             if custom_metadata:
-    #                 self.metadata_for_token = custom_metadata
-    #                 logger.info(f"Using custom metadata from config")
-    #             else:
-    #                 # Try to generate metadata if not exists
-    #                 try:
-    #                     # Create a config object for metadata generation
-    #                     config_for_metadata = LaunchConfigCreate(**self.launch_config) if isinstance(self.launch_config, dict) else self.launch_config
-    #                     await self._get_metadata(config_for_metadata)
-    #                     logger.info(f"Generated metadata via _get_metadata")
-    #                 except Exception as e:
-    #                     logger.error(f"Failed to generate metadata: {e}")
-                        
-    #         # Fallback if still None
-    #         if not self.metadata_for_token:
-    #             timestamp = int(datetime.utcnow().timestamp())
-    #             self.metadata_for_token = {
-    #                 "name": f"Token_{timestamp}",
-    #                 "symbol": f"TKN{timestamp % 10000:04d}",
-    #                 "image": "https://placehold.co/600x400",
-    #                 "description": "Token created via Flash Sniper",
-    #                 "attributes": [
-    #                     {"trait_type": "Platform", "value": "Flash Sniper"},
-    #                     {"trait_type": "Created", "value": datetime.utcnow().strftime("%Y-%m-%d")},
-    #                 ]
-    #             }
-    #             logger.info(f"Created fallback metadata: {self.metadata_for_token['name']}")
-            
-    # app/routers/creators/tokencreate.py - Update _ensure_metadata method
     async def _ensure_metadata(self):
         """Ensure metadata exists, generate if not"""
         if not self.metadata_for_token:
@@ -1149,10 +1195,6 @@ async def create_token_launch(
         logger.error(f"Failed to create launch: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to create launch: {str(e)}")
 
-
-
-
-# app/routers/creators/tokencreate.py - Update quick_launch method
 
 @router.post("/quick-launch", response_model=Dict[str, Any])
 async def quick_launch(
@@ -1533,38 +1575,6 @@ class AtomicLaunchCordinator(LaunchCoordinator):
             await self.db.rollback()
             await self._update_status(LaunchStatus.FAILED, 0, f"Preparation failed: {str(e)}")
             return False 
-    
-    # async def _get_pre_funded_bots(self, count: int):
-    #     """Get pre-funded bot wallets - check both database flag AND actual balance"""
-    #     from app.routers.creators.user import get_sol_balance
-        
-    #     # First get bots marked as pre-funded
-    #     stmt = select(BotWallet).where(
-    #         BotWallet.user_wallet_address == self.user.wallet_address,
-    #         BotWallet.is_pre_funded == True
-    #     ).order_by(BotWallet.created_at.desc()).limit(count * 2)
-        
-    #     result = await self.db.execute(stmt)
-    #     potential_bots = result.scalars().all()
-        
-    #     # Check actual balance
-    #     funded_bots = []
-    #     for bot in potential_bots:
-    #         try:
-    #             balance = await get_sol_balance(bot.public_key)
-    #             if balance > 0:
-    #                 funded_bots.append(bot)
-                    
-    #                 if len(funded_bots) >= count:
-    #                     break
-                        
-    #         except Exception as e:
-    #             logger.error(f"Failed to check balance for pre-funded bot {bot.public_key[:8]}: {e}")
-    #             continue
-        
-    #     self.pre_funded_bots = funded_bots
-    #     self.bot_wallets = funded_bots # For compatibility
-    #     return funded_bots
 
     async def _get_pre_funded_bots(self, count: int):
         """Get bot wallets with actual balance > 0"""
@@ -1608,118 +1618,6 @@ class AtomicLaunchCordinator(LaunchCoordinator):
                 raise HTTPException(status_code=400, detail=f"Bot {bot.public_key[:8]}... has insufficient pre-funding: "
                                                             f"{bot.pre_funded_amount} SOL, need > {config.bot_buy_amount} SOL")
     
-    # async def execute_atomic_launch(self) -> Dict[str, Any]:
-    #     """Execute atomic launch with Jito bundle - CREATE + ALL BUYS"""
-    #     try:
-    #         await self._update_status(LaunchStatus.ONCHAIN_CREATION, 40, "Creating token atomically...")
-            
-    #         # CRITICAL: Ensure metadata_for_token exists
-    #         if not self.metadata_for_token:
-    #             logger.error(f"No metadata_for_token found for launch {self.launch_id}")
-    #             logger.error(f"Launch config: {self.launch_config}")
-    #             raise Exception("No metadata generated for token creation")
-            
-    #         # Prepare atomic payload - ensure metadata has required fields
-    #         metadata_for_api = {
-    #             "name": self.metadata_for_token.get("name", f"Token_{int(datetime.utcnow().timestamp())}"),
-    #             "symbol": self.metadata_for_token.get("symbol", "TKN"),
-    #             "description": self.metadata_for_token.get("description", "Token created via Flash Sniper"),
-    #             "image": self.metadata_for_token.get("image", "https://placehold.co/600x400")
-    #         }
-            
-    #         atomic_payload = {
-    #             "action": "atomic_create_and_buy",
-    #             "user_wallet": self.user.wallet_address,
-    #             "metadata": metadata_for_api,  # Use the processed metadata
-    #             "creator_buy_amount": self.launch_config.get("creator_buy_amount", 0.001),
-    #             "bot_wallets": [],  # We'll populate this
-    #             "use_jito": True,
-    #             "atomic_bundle": True,
-    #             "sell_strategy": {
-    #                 "type": self.launch_config.get("sell_strategy_type", "volume_based"),
-    #                 "volume_target": self.launch_config.get("sell_volume_target", 5.0),
-    #                 "time_minutes": self.launch_config.get("sell_time_minutes", 5),
-    #                 "price_target": self.launch_config.get("sell_price_target", 2.0)
-    #             }
-    #         }
-            
-    #         # Prepare bot wallets for atomic bundle
-    #         for bot in self.pre_funded_bots:
-    #             atomic_payload["bot_wallets"].append({
-    #                 "public_key": bot.public_key,
-    #                 "buy_amount": self.launch_config.get("bot_buy_amount", 0.0001)
-    #             })
-            
-    #         logger.info(f"Atomic payload prepared with {len(atomic_payload['bot_wallets'])} bots")
-    #         logger.info(f"Token metadata: {metadata_for_api}")
-            
-    #         # Call atomic launch endpoint
-    #         result = await self._execute_atomic_create_and_buy(atomic_payload)
-            
-    #         if not result.get("success"):
-    #             error_msg = result.get("error", "Unknown error")
-    #             raise Exception(f"Atomic launch failed: {error_msg}")
-            
-    #         self.mint_address = result.get("mint_address")
-            
-    #         # Update launch record
-    #         self.launch_record.mint_address = self.mint_address
-    #         self.launch_record.creator_tx_hash = result.get("creator_signature")
-    #         self.launch_record.bot_buy_bundle_id = result.get("bundle_id")
-    #         self.launch_record.atomic_bundle = True
-    #         await self.db.commit()
-            
-    #         # Update bot statuses
-    #         await self._update_bot_statuses_after_atomic_launch(result)
-            
-    #         # Execute sell immediately (if configured)
-    #         await self._execute_atomic_sell(result)
-            
-    #         await self._update_status(LaunchStatus.COMPLETE, 100, "🎉 Atomic launch completed successfully!")
-            
-    #         results = {
-    #             "total_profit": result.get("estimated_profit", 0.0),
-    #             "roi": result.get("estimated_roi", 0.0),
-    #             "duration": int((datetime.utcnow() - self.launch_record.started_at).total_seconds()),
-    #             "bot_count": len(self.pre_funded_bots),
-    #             "atomic_bundle": True
-    #         }
-            
-    #         # Update final launch record
-    #         self.launch_record.success = True
-    #         self.launch_record.total_profit = results["total_profit"]
-    #         self.launch_record.roi = results["roi"]
-    #         self.launch_record.duration = results["duration"]
-    #         self.launch_record.completed_at = datetime.utcnow()
-    #         await self.db.commit()
-            
-    #         return {
-    #             "success": True,
-    #             "launch_id": self.launch_id,
-    #             "mint_address": self.mint_address,
-    #             "atomic_bundle": True,
-    #             "total_bots_used": len(self.pre_funded_bots),
-    #             "signatures": result.get("signatures", []),
-    #             "bundle_id": result.get("bundle_id"),
-    #             "results": results
-    #         }
-            
-    #     except Exception as e:
-    #         logger.error(f"Atomic launch {self.launch_id} failed: {e}", exc_info=True)
-    #         await self._update_status(LaunchStatus.FAILED, 0, f"Atomic launch failed: {str(e)}")
-            
-    #         if self.launch_record:
-    #             self.launch_record.success = False
-    #             self.launch_record.completed_at = datetime.utcnow()
-    #             self.launch_record.message = str(e)
-    #             await self.db.commit()
-            
-    #         return {
-    #             "success": False,
-    #             "launch_id": self.launch_id,
-    #             "error": str(e)
-    #         }
-        
     async def execute_atomic_launch(self) -> Dict[str, Any]:
         """Execute atomic launch - CREATE with creator buy, then bot buys"""
         try:
@@ -1734,7 +1632,7 @@ class AtomicLaunchCordinator(LaunchCoordinator):
                 if not self.metadata_for_token:
                     raise Exception("Failed to generate metadata for token creation")
             
-            # Step 1: Create token with creator buy
+            # Step 1: Create token with creator buy and then execute bot armies buys
             token_result = await self._create_token_onchain()
             
             if not token_result.get("success"):
@@ -1752,17 +1650,17 @@ class AtomicLaunchCordinator(LaunchCoordinator):
             logger.info(f"✅ Token created with creator buy: {self.mint_address}")
             
             # Step 2: Execute bot buys (if we have pre-funded bots)
-            if self.pre_funded_bots:
-                await self._update_status(LaunchStatus.BUYING, 60, "Executing bot buys...")
+            # if self.pre_funded_bots:
+            #     await self._update_status(LaunchStatus.BUYING, 60, "Executing bot buys...")
                 
-                bot_buy_result = await self._execute_bot_buys()
+            #     bot_buy_result = await self._execute_bot_buys()
                 
-                if not bot_buy_result.get("success"):
-                    logger.warning(f"Bot buys partially failed: {bot_buy_result.get('error')}")
-                    # Continue anyway - partial success is okay
-                else:
-                    self.launch_record.bot_buy_bundle_id = bot_buy_result.get("bundle_id")
-                    await self.db.commit()
+            #     if not bot_buy_result.get("success"):
+            #         logger.warning(f"Bot buys partially failed: {bot_buy_result.get('error')}")
+            #         # Continue anyway - partial success is okay
+            #     else:
+            #         self.launch_record.bot_buy_bundle_id = bot_buy_result.get("bundle_id")
+            #         await self.db.commit()
             
             # Step 3: Execute sells based on strategy
             await self._update_status(LaunchStatus.MONITORING, 80, "Monitoring performance...")
@@ -1810,43 +1708,7 @@ class AtomicLaunchCordinator(LaunchCoordinator):
                 "launch_id": self.launch_id,
                 "error": str(e)
             }
-            
-    # async def _ensure_metadata(self):
-    #     """Ensure metadata exists, generate if not"""
-    #     if not self.metadata_for_token:
-    #         logger.info(f"No metadata found for launch {self.launch_id}, generating...")
-            
-    #         if self.launch_config:
-    #             # Try to get from custom_metadata
-    #             custom_metadata = self.launch_config.get("custom_metadata")
-    #             if custom_metadata:
-    #                 self.metadata_for_token = custom_metadata
-    #                 logger.info(f"Using custom metadata from config")
-    #             else:
-    #                 # Try to generate metadata if not exists
-    #                 try:
-    #                     # Create a config object for metadata generation
-    #                     config_for_metadata = LaunchConfigCreate(**self.launch_config) if isinstance(self.launch_config, dict) else self.launch_config
-    #                     await self._get_metadata(config_for_metadata)
-    #                     logger.info(f"Generated metadata via _get_metadata")
-    #                 except Exception as e:
-    #                     logger.error(f"Failed to generate metadata: {e}")
-                        
-    #         # Fallback if still None
-    #         if not self.metadata_for_token:
-    #             timestamp = int(datetime.utcnow().timestamp())
-    #             self.metadata_for_token = {
-    #                 "name": f"Token_{timestamp}",
-    #                 "symbol": f"TKN{timestamp % 10000:04d}",
-    #                 "image": "https://placehold.co/600x400",
-    #                 "description": "Token created via Flash Sniper",
-    #                 "attributes": [
-    #                     {"trait_type": "Platform", "value": "Flash Sniper"},
-    #                     {"trait_type": "Created", "value": datetime.utcnow().strftime("%Y-%m-%d")},
-    #                 ]
-    #             }
-    #             logger.info(f"Created fallback metadata: {self.metadata_for_token['name']}")
-          
+               
     async def _ensure_metadata(self):
         """Ensure metadata exists with proper URI"""
         if not self.metadata_for_token:
@@ -1886,27 +1748,6 @@ class AtomicLaunchCordinator(LaunchCoordinator):
             logger.error(f"❌ Missing required metadata fields: {missing}")
             logger.error(f"Available fields: {self.metadata_for_token}")
             raise Exception(f"Missing required metadata fields: {missing}")
-        
-            
-                 
-    # async def _execute_atomic_create_and_buy(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-    #     """Execute atomic create + buy bundle"""
-    #     try:
-    #         async with httpx.AsyncClient(timeout=60.0) as client:
-    #             response = await client.post(
-    #                 f"{settings.ONCHAIN_CLIENT_URL}/api/onchain/atomic-create-and-buy",
-    #                 json=payload,
-    #                 headers={"X-API-Key": settings.ONCHAIN_API_KEY}
-    #             )
-                
-    #             if response.status_code != 200:
-    #                 return {"success": False, "error": f"HTTP {response.status_code}: {response.text}"}
-                
-    #             return response.json()
-                
-    #     except Exception as e:
-    #         logger.error(f"Atomic create+buy failed: {e}")
-    #         return {"success": False, "error": str(e)}
         
     async def _execute_atomic_create_and_buy(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Execute atomic create + buy bundle using new endpoint"""
@@ -2035,7 +1876,7 @@ class AtomicLaunchCordinator(LaunchCoordinator):
             for bot in self.pre_funded_bots:
                 bot_configs.append({
                     "public_key": bot.public_key,
-                    "buy_amount": bot.funded_amount or self.launch_config["bot_buy_amount"]
+                    "buy_amount": bot.funded_amount or self.launch_config["buy_amount"]
                 })
                 
                 # Call on-chain service for atomic execution
@@ -2094,83 +1935,6 @@ class AtomicLaunchCordinator(LaunchCoordinator):
 # ====================================
 # API ENDPOINTS
 # ====================================
-# @router.post("/atomic-create-and-buy", response_model=Dict[str, Any])
-# async def atomic_create_and_buy(
-#     request: Dict[str, Any],
-#     background_tasks: BackgroundTasks,
-#     current_user: User = Depends(get_current_user),
-#     db: AsyncSession = Depends(get_db)
-# ):
-#     """
-#     Execute atomic token creation and buy bundle
-#     """
-#     try:
-#         # Generate launch ID
-#         launch_id = f"atomic_{int(datetime.utcnow().timestamp())}_{uuid.uuid4().hex[:8]}"
-        
-#         # Get metadata from request (this is the key fix)
-#         metadata_from_request = request.get("metadata", {})
-        
-#         # Create launch config using the provided metadata
-#         launch_config = LaunchConfigCreate(
-#             use_ai_metadata=False,
-#             custom_metadata={
-#                 "name": metadata_from_request.get("name", f"Atomic_Token_{int(datetime.utcnow().timestamp())}"),
-#                 "symbol": metadata_from_request.get("symbol", "ATOMIC"),
-#                 "description": metadata_from_request.get("description", "Token created via atomic launch"),
-#                 "image": metadata_from_request.get("image", "https://placehold.co/600x400")
-#             },
-#             bot_count=len(request.get("bot_wallets", [])),
-#             creator_buy_amount=request.get("creator_buy_amount", 0.001),
-#             bot_buy_amount=request.get("bot_wallets", [{}])[0].get("buy_amount", 0.0001) if request.get("bot_wallets") else 0.0001,
-#             sell_strategy_type=request.get("sell_strategy", {}).get("type", "volume_based"),
-#             sell_volume_target=request.get("sell_strategy", {}).get("volume_target", 5.0),
-#             sell_time_minutes=request.get("sell_strategy", {}).get("time_minutes", 5),
-#             sell_price_target=request.get("sell_strategy", {}).get("price_target", 2.0),
-#             use_jito_bundle=request.get("use_jito", True),
-#             priority=10
-#         )
-        
-#         # Create atomic coordinator
-#         coordinator = AtomicLaunchCordinator(launch_id, current_user, db)
-        
-#         # Set the pre-funded bots from the request
-#         coordinator.pre_funded_bots = []
-#         for bot_data in request.get("bot_wallets", []):
-#             # Find or create bot wallet record
-#             bot_result = await db.execute(
-#                 select(BotWallet).where(
-#                     BotWallet.public_key == bot_data["public_key"],
-#                     BotWallet.user_wallet_address == current_user.wallet_address
-#                 )
-#             )
-#             bot = bot_result.scalar_one_or_none()
-            
-#             if bot:
-#                 coordinator.pre_funded_bots.append(bot)
-        
-#         # CRITICAL FIX: Set metadata on coordinator BEFORE creating launch record
-#         coordinator.metadata_for_token = launch_config.custom_metadata
-#         coordinator.launch_config = launch_config.model_dump()
-        
-#         # Create launch record
-#         await coordinator._create_launch_record()
-#         await coordinator._update_launch_with_metadata()
-        
-#         # Execute atomic launch in background
-#         background_tasks.add_task(coordinator.execute_atomic_launch)
-        
-#         return {
-#             "success": True,
-#             "launch_id": launch_id,
-#             "message": "Atomic create+buy launched successfully",
-#             "atomic_bundle": True
-#         }
-        
-#     except Exception as e:
-#         logger.error(f"Atomic create+buy failed: {e}", exc_info=True)
-#         raise HTTPException(status_code=500, detail=f"Atomic create+buy failed: {str(e)}")
-   
 @router.post("/atomic-create-and-buy", response_model=Dict[str, Any])
 async def atomic_create_and_buy(
     request: Dict[str, Any],

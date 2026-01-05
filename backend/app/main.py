@@ -244,7 +244,7 @@ async def start_persistent_bot_for_user(wallet_address: str):
                 })
                 
                 # Use user's check interval or default
-                check_interval = user.bot_check_interval_seconds if user and user.bot_check_interval_seconds else 10
+                check_interval = user.sniper_bot_check_interval_seconds if user and user.sniper_bot_check_interval_seconds else 10
                 await asyncio.sleep(check_interval)
                 
             except asyncio.CancelledError:
@@ -265,23 +265,54 @@ async def start_persistent_bot_for_user(wallet_address: str):
     await save_bot_state(wallet_address, True)
     
 # Add this to lifespan startup to restore persistent bots
+# async def restore_persistent_bots():
+#     """Restore all persistent bots on startup"""
+#     try:
+#         # Get all wallet addresses with active bots
+#         keys = await redis_client.keys("bot_state:*")
+#         for key in keys:
+#             state_data = await redis_client.get(key)
+#             if state_data:
+#                 state = json.loads(state_data)
+#                 if state.get("is_running", False):
+#                     wallet_address = key.decode().replace("bot_state:", "")
+#                     # Wait a bit before starting to avoid overload
+#                     await asyncio.sleep(1)
+#                     asyncio.create_task(start_persistent_bot_for_user(wallet_address))
+#                     logger.info(f"Restored persistent bot for {wallet_address}")
+#     except Exception as e:
+#         logger.error(f"Error restoring persistent bots: {e}")
+
 async def restore_persistent_bots():
     """Restore all persistent bots on startup"""
     try:
         # Get all wallet addresses with active bots
         keys = await redis_client.keys("bot_state:*")
         for key in keys:
-            state_data = await redis_client.get(key)
+            # Redis returns strings when decode_responses=True
+            # No need to decode!
+            key_str = key  # Already a string
+            
+            state_data = await redis_client.get(key_str)
             if state_data:
-                state = json.loads(state_data)
-                if state.get("is_running", False):
-                    wallet_address = key.decode().replace("bot_state:", "")
-                    # Wait a bit before starting to avoid overload
-                    await asyncio.sleep(1)
-                    asyncio.create_task(start_persistent_bot_for_user(wallet_address))
-                    logger.info(f"Restored persistent bot for {wallet_address}")
+                # state_data is already a string (JSON)
+                try:
+                    state = json.loads(state_data)
+                    if state.get("is_running", False):
+                        wallet_address = key_str.replace("bot_state:", "")
+                        # Wait a bit before starting to avoid overload
+                        await asyncio.sleep(1)
+                        asyncio.create_task(start_persistent_bot_for_user(wallet_address))
+                        logger.info(f"Restored persistent bot for {wallet_address}")
+                except json.JSONDecodeError as e:
+                    logger.error(f"Invalid JSON in bot state for key {key_str}: {e}")
+                    # Delete corrupted state
+                    await redis_client.delete(key_str)
+                    
     except Exception as e:
         logger.error(f"Error restoring persistent bots: {e}")
+
+
 
 # ===================================================================
 # LIFESPAN — Start all core services
@@ -519,7 +550,7 @@ async def run_user_specific_bot_loop(user_wallet_address: str):
                         token.profitability_confidence >= 70)
                 ]
                 await asyncio.gather(*tasks)
-                await asyncio.sleep(user.bot_check_interval_seconds or 10)
+                await asyncio.sleep(user.sniper_bot_check_interval_seconds or 10)
     except asyncio.CancelledError:
         logger.info(f"Bot task for {user_wallet_address} cancelled.")
     except Exception as e:
@@ -998,25 +1029,55 @@ async def process_user_specific_tokens(user: User, db: AsyncSession):
     except Exception as e:
         logger.error(f"Error in process_user_specific_tokens for {user.wallet_address}: {e}")
                 
-# Add this to lifespan startup to restore persistent bots
+# # Add this to lifespan startup to restore persistent bots
+# async def restore_persistent_bots():
+#     """Restore all persistent bots on startup"""
+#     try:
+#         # Get all wallet addresses with active bots
+#         keys = await redis_client.keys("bot_state:*")
+#         for key in keys:
+#             state_data = await redis_client.get(key)
+#             if state_data:
+#                 state = json.loads(state_data)
+#                 if state.get("is_running", False):
+#                     wallet_address = key.decode().replace("bot_state:", "")
+#                     # Wait a bit before starting to avoid overload
+#                     await asyncio.sleep(1)
+#                     asyncio.create_task(start_persistent_bot_for_user(wallet_address))
+#                     logger.info(f"Restored persistent bot for {wallet_address}")
+#     except Exception as e:
+#         logger.error(f"Error restoring persistent bots: {e}")
+        
 async def restore_persistent_bots():
     """Restore all persistent bots on startup"""
     try:
         # Get all wallet addresses with active bots
         keys = await redis_client.keys("bot_state:*")
         for key in keys:
-            state_data = await redis_client.get(key)
+            # Handle both string and bytes
+            if isinstance(key, bytes):
+                key_str = key.decode('utf-8')
+            else:
+                key_str = str(key)
+            
+            state_data = await redis_client.get(key_str)
             if state_data:
-                state = json.loads(state_data)
-                if state.get("is_running", False):
-                    wallet_address = key.decode().replace("bot_state:", "")
-                    # Wait a bit before starting to avoid overload
-                    await asyncio.sleep(1)
-                    asyncio.create_task(start_persistent_bot_for_user(wallet_address))
-                    logger.info(f"Restored persistent bot for {wallet_address}")
+                # Handle state data type
+                if isinstance(state_data, bytes):
+                    state_data = state_data.decode('utf-8')
+                
+                try:
+                    state = json.loads(state_data)
+                    if state.get("is_running", False):
+                        wallet_address = key_str.replace("bot_state:", "")
+                        # Wait a bit before starting to avoid overload
+                        await asyncio.sleep(1)
+                        asyncio.create_task(start_persistent_bot_for_user(wallet_address))
+                        logger.info(f"Restored persistent bot for {wallet_address}")
+                except json.JSONDecodeError as e:
+                    logger.error(f"Invalid JSON in bot state: {e}")
     except Exception as e:
         logger.error(f"Error restoring persistent bots: {e}")
-        
 
 # ===================================================================
 # 4. ALL MAIN ENDPOINTS STARTS HERE

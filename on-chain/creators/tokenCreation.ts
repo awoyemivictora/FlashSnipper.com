@@ -423,7 +423,7 @@ import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, TransactionInstructio
 import bs58 from 'bs58';
 import { BondingCurveMath, PumpFunInstructionBuilder, PumpFunPda, TOKEN_2022_PROGRAM_ID, TokenCreationManager } from '../pumpfun/pumpfun-idl-client';
 import { BuyRequest, CreateTokenRequest } from '../types/api';
-import { jitoBundleSender } from '../jito_bundles/jito-integration';
+import { createJitoBundleSender } from '../jito_bundles/jito-integration';
 import axios from 'axios';
 import * as crypto from 'crypto';
 

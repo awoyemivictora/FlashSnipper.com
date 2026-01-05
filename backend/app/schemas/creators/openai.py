@@ -2,8 +2,6 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
-
-
 # =========== AI ===========
 class MetadataRequest(BaseModel):
     """Request model for metadata generation"""
@@ -70,14 +68,6 @@ class TokenMetadata(BaseModel):
             "website": self.website,
             "attributes": [attr.dict() for attr in self.attributes]
         }
-        
-# class MetadataResponse(BaseModel):
-#     "API response wrapper"
-#     success: bool = Field(default=True)
-#     metadata_for_token: TokenMetadata = Field(description="Generated metadata")
-#     request_id: Optional[str] = Field(default=None, description="OpenAI request ID")
-#     generation_time_ms: Optional[int] = Field(default=None, description="Time taken for generation")
-    
 
 class SimpleMetadataResponse(BaseModel):
     """Simplified metadata response with just what we need for on-chain"""
@@ -89,7 +79,6 @@ class SimpleMetadataResponse(BaseModel):
     description: Optional[str] = Field(default=None, description="Token description")
     request_id: Optional[str] = Field(default=None, description="OpenAI request ID")
     generation_time_ms: Optional[int] = Field(default=None, description="Time taken for generation")
-
 
 class BatchMetadataRequest(BaseModel):
     """Request for batch metadata generation"""

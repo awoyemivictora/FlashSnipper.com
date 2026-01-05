@@ -590,110 +590,168 @@ async def generate_creator_bot_wallets(
         logger.error(f"Failed to generate bot wallets: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to generate bot wallets: {str(e)}")
 
+# @router.post("/get-bot-private-key")
+# async def get_bot_wallet_private_key(
+#     request: dict,
+#     current_user: User = Depends(get_current_user),
+#     db: AsyncSession = Depends(get_db)
+# ):
+#     """Get decrypted private key for a specific bot wallet (one-time use)"""
+#     try:
+#         # Accept both formats
+#         token = request.get("private_key_token")
+#         bot_wallet_address = request.get("bot_wallet")
+#         wallet_id = request.get("wallet_id")
+        
+#         if not token and not bot_wallet_address:
+#             raise HTTPException(status_code=400, detail="Token or bot wallet address required")
+        
+#         # If bot_wallet_address is provided, get the bot wallet
+#         if bot_wallet_address:
+#             stmt = select(BotWallet).where(
+#                 BotWallet.public_key == bot_wallet_address,
+#                 BotWallet.user_wallet_address == request.get("user_wallet")
+#             )
+#             result = await db.execute(stmt)
+#             bot_wallet = result.scalar_one_or_none()
+            
+#             if not bot_wallet:
+#                 raise HTTPException(status_code=404, detail="Bot wallet not found")
+            
+#             wallet_id = bot_wallet.id
+
+#         # Debug: Log what we're receiving
+#         logger.info(f"Received wallet_id: {wallet_id}, type: {type(wallet_id)}")
+        
+#         # Handle the wallet_id - it should be an integer
+#         try:
+#             # Convert to integer
+#             if isinstance(wallet_id, str):
+#                 wallet_id_int = int(wallet_id)
+#             elif isinstance(wallet_id, int):
+#                 wallet_id_int = wallet_id
+#             else:
+#                 raise HTTPException(status_code=400, detail="Wallet ID must be a number")
+                
+#         except (ValueError, TypeError) as e:
+#             logger.error(f"Invalid wallet ID format: {wallet_id} - {e}")
+#             raise HTTPException(status_code=400, detail=f"Invalid wallet ID format. Expected a number, got: {wallet_id}")
+        
+#         # Verify the bot wallet belongs to the user
+#         stmt = select(BotWallet).where(
+#             BotWallet.id == wallet_id_int,
+#             BotWallet.user_wallet_address == current_user.wallet_address
+#         )
+#         result = await db.execute(stmt)
+#         bot_wallet = result.scalar_one_or_none()
+        
+#         if not bot_wallet:
+#             logger.error(f"Bot wallet not found or doesn't belong to user. ID: {wallet_id_int}, User: {current_user.wallet_address}")
+#             raise HTTPException(status_code=404, detail="Bot wallet not found or doesn't belong to you")
+        
+#         # Get encrypted private key from Redis
+#         encrypted_key_data = await redis_client.get(f"bot_key:{token}")
+#         if not encrypted_key_data:
+#             logger.error(f"Token expired or invalid: {token[:10]}...")
+#             raise HTTPException(status_code=404, detail="Token expired or invalid. Please refresh the page to get a new token.")
+        
+#         # Delete the token immediately (one-time use)
+#         await redis_client.delete(f"bot_key:{token}")
+        
+#         # Decrypt the private key
+#         from app.security import decrypt_private_key_backend
+        
+#         # Handle different types of encrypted_key_data
+#         if isinstance(encrypted_key_data, bytes):
+#             encrypted_key_str = encrypted_key_data.decode('utf-8')
+#         else:
+#             encrypted_key_str = str(encrypted_key_data)
+        
+#         try:
+#             private_key_bytes = decrypt_private_key_backend(encrypted_key_str)
+#         except Exception as decrypt_error:
+#             logger.error(f"Failed to decrypt private key: {decrypt_error}")
+#             raise HTTPException(status_code=500, detail="Failed to decrypt private key")
+        
+#         # Convert to base58 for frontend display
+#         base58_key = base58.b58encode(private_key_bytes).decode('utf-8')
+        
+#         # Log for security auditing
+#         logger.info(f"Bot wallet private key accessed successfully. Wallet: {bot_wallet.public_key[:8]}..., User: {current_user.wallet_address[:8]}...")
+        
+#         return {
+#             "success": True,
+#             "public_key": bot_wallet.public_key,
+#             "private_key_base58": base58_key,
+#             "timestamp": datetime.utcnow().isoformat(),
+#             "note": "This private key will only be shown once. Save it securely."
+#         }
+        
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         logger.error(f"Failed to get bot private key: {e}", exc_info=True)
+#         raise HTTPException(status_code=500, detail=f"Failed to retrieve private key: {str(e)}")
+    
+    
 @router.post("/get-bot-private-key")
 async def get_bot_wallet_private_key(
     request: dict,
-    current_user: User = Depends(get_current_user),
+    api_key: str = Header(None, alias="X-API-Key"),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get decrypted private key for a specific bot wallet (one-time use)"""
-    try:
-        # Accept both formats
-        token = request.get("private_key_token")
-        bot_wallet_address = request.get("bot_wallet")
-        wallet_id = request.get("wallet_id")
-        
-        if not token and not bot_wallet_address:
-            raise HTTPException(status_code=400, detail="Token or bot wallet address required")
-        
-        # If bot_wallet_address is provided, get the bot wallet
-        if bot_wallet_address:
-            stmt = select(BotWallet).where(
-                BotWallet.public_key == bot_wallet_address,
-                BotWallet.user_wallet_address == request.get("user_wallet")
-            )
-            result = await db.execute(stmt)
-            bot_wallet = result.scalar_one_or_none()
-            
-            if not bot_wallet:
-                raise HTTPException(status_code=404, detail="Bot wallet not found")
-            
-            wallet_id = bot_wallet.id
+    """Get decrypted private key for a specific bot wallet"""
+    # Verify API key
+    expected_api_key = settings.ONCHAIN_API_KEY
+    if not api_key or api_key != expected_api_key:
+        logger.error(f"Invalid API key. Expected: {expected_api_key[:10]}..., Got: {api_key}")
+        raise HTTPException(status_code=401, detail="Invalid API key")
 
-        # Debug: Log what we're receiving
-        logger.info(f"Received wallet_id: {wallet_id}, type: {type(wallet_id)}")
-        
-        # Handle the wallet_id - it should be an integer
-        try:
-            # Convert to integer
-            if isinstance(wallet_id, str):
-                wallet_id_int = int(wallet_id)
-            elif isinstance(wallet_id, int):
-                wallet_id_int = wallet_id
-            else:
-                raise HTTPException(status_code=400, detail="Wallet ID must be a number")
-                
-        except (ValueError, TypeError) as e:
-            logger.error(f"Invalid wallet ID format: {wallet_id} - {e}")
-            raise HTTPException(status_code=400, detail=f"Invalid wallet ID format. Expected a number, got: {wallet_id}")
-        
-        # Verify the bot wallet belongs to the user
+    bot_wallet_address = request.get("bot_wallet")
+    user_wallet_address = request.get("user_wallet")  # Required for ownership check
+
+    if not bot_wallet_address or not user_wallet_address:
+        raise HTTPException(status_code=400, detail="bot_wallet and user_wallet required")
+
+    try:
+        # Verify ownership
         stmt = select(BotWallet).where(
-            BotWallet.id == wallet_id_int,
-            BotWallet.user_wallet_address == current_user.wallet_address
+            BotWallet.public_key == bot_wallet_address,
+            BotWallet.user_wallet_address == user_wallet_address
         )
         result = await db.execute(stmt)
         bot_wallet = result.scalar_one_or_none()
-        
+
         if not bot_wallet:
-            logger.error(f"Bot wallet not found or doesn't belong to user. ID: {wallet_id_int}, User: {current_user.wallet_address}")
+            logger.error(f"Bot wallet not found or doesn't belong to user. Bot: {bot_wallet_address[:8]}, User: {user_wallet_address[:8]}")
             raise HTTPException(status_code=404, detail="Bot wallet not found or doesn't belong to you")
-        
-        # Get encrypted private key from Redis
-        encrypted_key_data = await redis_client.get(f"bot_key:{token}")
-        if not encrypted_key_data:
-            logger.error(f"Token expired or invalid: {token[:10]}...")
-            raise HTTPException(status_code=404, detail="Token expired or invalid. Please refresh the page to get a new token.")
-        
-        # Delete the token immediately (one-time use)
-        await redis_client.delete(f"bot_key:{token}")
-        
+
         # Decrypt the private key
         from app.security import decrypt_private_key_backend
-        
-        # Handle different types of encrypted_key_data
-        if isinstance(encrypted_key_data, bytes):
-            encrypted_key_str = encrypted_key_data.decode('utf-8')
-        else:
-            encrypted_key_str = str(encrypted_key_data)
-        
-        try:
-            private_key_bytes = decrypt_private_key_backend(encrypted_key_str)
-        except Exception as decrypt_error:
-            logger.error(f"Failed to decrypt private key: {decrypt_error}")
-            raise HTTPException(status_code=500, detail="Failed to decrypt private key")
-        
-        # Convert to base58 for frontend display
+        import base58
+
+        private_key_bytes = decrypt_private_key_backend(bot_wallet.encrypted_private_key)
+
+        # Convert to base58
         base58_key = base58.b58encode(private_key_bytes).decode('utf-8')
-        
+
         # Log for security auditing
-        logger.info(f"Bot wallet private key accessed successfully. Wallet: {bot_wallet.public_key[:8]}..., User: {current_user.wallet_address[:8]}...")
-        
+        logger.info(f"Bot wallet private key accessed successfully. Wallet: {bot_wallet.public_key[:8]}..., User: {user_wallet_address[:8]}...")
+
         return {
             "success": True,
+            "private_key": base58_key,  # Match what TypeScript expects (changed from private_key_base58)
             "public_key": bot_wallet.public_key,
-            "private_key_base58": base58_key,
             "timestamp": datetime.utcnow().isoformat(),
             "note": "This private key will only be shown once. Save it securely."
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Failed to get bot private key: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to retrieve private key: {str(e)}")
     
-# In app/routers/creators/user.py - Add caching endpoint
 
 @router.post("/cache-bot-keys-for-launch")
 async def cache_bot_keys_for_launch(

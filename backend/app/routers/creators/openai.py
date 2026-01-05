@@ -98,37 +98,6 @@ def _get_example_attributes(category: str) -> List[Dict[str, str]]:
     
     return base_attributes + category_attributes.get(category, [])
 
-# def _generate_image_prompt(metadata_dict: Dict[str, Any]) -> str:
-#     """Generate DALL-E prompt from metadata"""
-#     name = metadata_dict.get("name", "Crypto Token")
-#     description = metadata_dict.get("description", "")
-#     category = metadata_dict.get("category", "meme")
-    
-#     prompts = {
-#         "meme": (
-#             f"Logo for {name} meme token. {description} "
-#             "Vibrant colors, cartoon style, funny mascot, trending on social media, "
-#             "professional crypto token logo design, simple, recognizable, on white background"
-#         ),
-#         "professional": (
-#             f"Professional logo for {name} token. {description} "
-#             "Clean, modern, geometric design, corporate colors, minimalist, "
-#             "cryptocurrency symbol, professional branding, on gradient background"
-#         ),
-#         "community": (
-#             f"Community logo for {name} token. {description} "
-#             "Hands together, interconnected nodes, people silhouette, inclusive design, "
-#             "warm colors, collaborative imagery, DAO symbol, on soft background"
-#         ),
-#         "gaming": (
-#             f"Gaming logo for {name} token. {description} "
-#             "Pixel art, game controller elements, fantasy elements, dynamic action, "
-#             "bold colors, retro gaming style, play-to-earn symbol, on dark background"
-#         ),
-#     }
-    
-#     return prompts.get(category, prompts["meme"])
-
 def _generate_image_prompt(metadata_dict: Dict[str, Any]) -> str:
     """Generate DALL-E prompt from metadata - SAFE VERSION"""
     name = metadata_dict.get("name", "Crypto Token")
@@ -726,12 +695,7 @@ async def generate_metadata(request: MetadataRequest):
             status_code=500, 
             detail=f"AI metadata generation failed: {str(e)}"
         )
-      
-      
-      
-      
-      
-        
+              
 # ✅ Working    
 @router.post("/generate-metadata-batch", response_model=BatchMetadataResponse)
 async def generate_metadata_batch(request: BatchMetadataRequest) -> BatchMetadataResponse:

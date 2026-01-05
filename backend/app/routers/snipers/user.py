@@ -351,8 +351,8 @@ async def get_active_users(
                         
                     active_users.append({
                         "wallet_address": user.wallet_address,
-                        "buy_amount_sol": user.buy_amount_sol,
-                        "buy_slippage_bps": user.buy_slippage_bps,
+                        "buy_amount_sol": user.sniper_buy_amount_sol,
+                        "buy_slippage_bps": user.sniper_buy_slippage_bps,
                         "is_premium": user.is_premium,
                         "encrypted_private_key": base58_key,  # <-- Now, sending base58
                         "sol_balance": sol_balance,
@@ -365,10 +365,10 @@ async def get_active_users(
                         "filter_safety_check_period_seconds": user.filter_safety_check_period_seconds,
                         
                         # Bot settings
-                        "bot_check_interval_seconds": user.bot_check_interval_seconds,
-                        "partial_sell_pct": user.partial_sell_pct,
-                        "trailing_sl_pct": user.trailing_sl_pct,
-                        "rug_liquidity_drop_pct": user.rug_liquidity_drop_pct,
+                        "bot_check_interval_seconds": user.sniper_bot_check_interval_seconds,
+                        "partial_sell_pct": user.sniper_partial_sell_pct,
+                        "trailing_sl_pct": user.sniper_trailing_sl_pct,
+                        "rug_liquidity_drop_pct": user.sniper_rug_liquidity_drop_pct,
                         
                         # Activity status
                         "has_ws_connection": has_ws_connection,
@@ -475,7 +475,7 @@ async def check_user_active(
                 async with AsyncClient(setting_api.SOLANA_RPC_URL) as client:
                     balance_response = await client.get_balance(Pubkey.from_string(wallet_address))
                     sol_balance = balance_response.value / 1_000_000_000
-                    has_sufficient_balance = sol_balance >= (user.buy_amount_sol or 0.1)
+                    has_sufficient_balance = sol_balance >= (user.sniper_buy_amount_sol or 0.1)
             except:
                 pass 
         
@@ -535,7 +535,7 @@ async def bulk_check_active_users(
                     async with AsyncClient(setting_api.SOLANA_RPC_URL) as client:
                         balance_response = await client.get_balance(Pubkey.from_string(wallet_address))
                         sol_balance = balance_response.value / 1_000_000_000
-                        has_balance = sol_balance >= (user.buy_amount_sol or 0.1)
+                        has_balance = sol_balance >= (user.sniper_buy_amount_sol or 0.1)
                 
                 except:
                     has_balance = False 

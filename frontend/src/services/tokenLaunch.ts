@@ -438,18 +438,40 @@ class TokenLaunchService {
   }
 
   // Add this method to your tokenLaunch.ts TokenLaunchService class
-  async getBotPrivateKey(walletId: string | number, token: string) {
-    // Ensure walletId is sent as a number (integer)
-    const walletIdNum = typeof walletId === 'string' ? parseInt(walletId, 10) : walletId;
+  // async getBotPrivateKey(walletId: string | number, token: string) {
+  //   // Ensure walletId is sent as a number (integer)
+  //   const walletIdNum = typeof walletId === 'string' ? parseInt(walletId, 10) : walletId;
     
+  //   return await apiService.request('/creators/user/get-bot-private-key', {
+  //     method: 'POST',
+  //     body: JSON.stringify({
+  //       wallet_id: walletIdNum,  // Send as number
+  //       private_key_token: token
+  //     }),
+  //   });
+  // }
+
+  async getBotPrivateKey(botWalletAddress: string, userWalletAddress: string) {
+    // For Vite, use import.meta.env instead of process.env
+    const apiKey = import.meta.env.VITE_ONCHAIN_API_KEY;
+    
+    if (!apiKey) {
+      console.error('VITE_ONCHAIN_API_KEY is not configured');
+      throw new Error('API key not configured for bot private key access');
+    }
+
     return await apiService.request('/creators/user/get-bot-private-key', {
       method: 'POST',
       body: JSON.stringify({
-        wallet_id: walletIdNum,  // Send as number
-        private_key_token: token
+        bot_wallet: botWalletAddress,
+        user_wallet: userWalletAddress
       }),
+      headers: {
+        'X-API-Key': apiKey
+      }
     });
   }
+
 
   // Add to TokenLaunchService class
   async updateUserSettings(settings: {
@@ -554,7 +576,7 @@ class TokenLaunchService {
     creator_buy_amount: number;
     bot_wallets: Array<{
       public_key: string;
-      buy_amount: number;
+      amount_sol: number;
     }>;
     use_jito: boolean;
     atomic_bundle: boolean;

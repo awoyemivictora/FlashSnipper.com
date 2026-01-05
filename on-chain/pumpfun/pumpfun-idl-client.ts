@@ -369,81 +369,81 @@ export class PumpFunInstructionBuilder {
     }
 
     static buildBuyExactSolIn(
-    user: PublicKey,
-    mint: PublicKey,
-    userAta: PublicKey,
-    creator: PublicKey,
-    solIn: bigint,
-    minTokensOut: bigint
-): TransactionInstruction {
+        user: PublicKey,
+        mint: PublicKey,
+        userAta: PublicKey,
+        creator: PublicKey,
+        solIn: bigint,
+        minTokensOut: bigint
+    ): TransactionInstruction {
 
-    console.log(`🔧 Building BUY instruction (using buy instructions format according to pump.fun program IDL!)`);
+        console.log(`🔧 Building BUY instruction (using buy instructions format according to pump.fun program IDL!)`);
 
-    // Get all PDAs
-    const global = PumpFunPda.getGlobal();
-    const bondingCurve = PumpFunPda.getBondingCurve(mint);
-    const associatedBondingCurve = PumpFunPda.getAssociatedBondingCurve(bondingCurve, mint);
-    const creatorVault = PumpFunPda.getCreatorVault(creator);
-    const eventAuthority = PumpFunPda.getEventAuthority();
-    const feeConfig = PumpFunPda.getFeeConfig();
+        // Get all PDAs
+        const global = PumpFunPda.getGlobal();
+        const bondingCurve = PumpFunPda.getBondingCurve(mint);
+        const associatedBondingCurve = PumpFunPda.getAssociatedBondingCurve(bondingCurve, mint);
+        const creatorVault = PumpFunPda.getCreatorVault(creator);
+        const eventAuthority = PumpFunPda.getEventAuthority();
+        const feeConfig = PumpFunPda.getFeeConfig();
 
-    // Volume accumulators - check if they exist
-    const globalVolumeAccumulator = PumpFunPda.getGlobalVolumeAccumulator();
-    const userVolumeAccumulator = PumpFunPda.getUserVolumeAccumulator(user);
+        // Volume accumulators - check if they exist
+        const globalVolumeAccumulator = PumpFunPda.getGlobalVolumeAccumulator();
+        const userVolumeAccumulator = PumpFunPda.getUserVolumeAccumulator(user);
 
-    console.log(`📊 Volume accounts:`);
-    console.log(`   Global: ${globalVolumeAccumulator.toBase58().slice(0, 8)}...`);
-    console.log(`   User: ${userVolumeAccumulator.toBase58().slice(0, 8)}...`);
+        console.log(`📊 Volume accounts:`);
+        console.log(`   Global: ${globalVolumeAccumulator.toBase58().slice(0, 8)}...`);
+        console.log(`   User: ${userVolumeAccumulator.toBase58().slice(0, 8)}...`);
 
-    // CRITICAL FIX: SOL ATA uses regular Token Program, NOT Token-2022!
-    // const feeRecipient = getAssociatedTokenAddressSync(
-    //     SOL_MINT,
-    //     feeConfig,
-    //     true,
-    //     TOKEN_PROGRAM_ID  // SOL is regular SPL token, not Token-2022
-    // );
+        // CRITICAL FIX: SOL ATA uses regular Token Program, NOT Token-2022!
+        // const feeRecipient = getAssociatedTokenAddressSync(
+        //     SOL_MINT,
+        //     feeConfig,
+        //     true,
+        //     TOKEN_PROGRAM_ID  // SOL is regular SPL token, not Token-2022
+        // );
 
-    // EXACT 16 accounts as per IDL
-    return new TransactionInstruction({
-        programId: PUMP_FUN_PROGRAM_ID,
-        keys: [
-            // 0: global
-            { pubkey: global, isSigner: false, isWritable: false },
-            // 1: fee_recipient
-            { pubkey: PROTOCOL_FEE_RECIPIENT, isSigner: false, isWritable: true },
-            // 2: mint
-            { pubkey: mint, isSigner: false, isWritable: false },
-            // 3: bonding_curve
-            { pubkey: bondingCurve, isSigner: false, isWritable: true },
-            // 4: associated_bonding_curve
-            { pubkey: associatedBondingCurve, isSigner: false, isWritable: true },
-            // 5: associated_user
-            { pubkey: userAta, isSigner: false, isWritable: true },
-            // 6: user
-            { pubkey: user, isSigner: true, isWritable: true },
-            // 7: system_program
-            { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-            // 8: token_program
-            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
-            // 9: creator_vault
-            { pubkey: creatorVault, isSigner: false, isWritable: true },
-            // 10: event_authority
-            { pubkey: eventAuthority, isSigner: false, isWritable: false },
-            // 11: program
-            { pubkey: PUMP_FUN_PROGRAM_ID, isSigner: false, isWritable: false },
-            // 12: global_volume_accumulator
-            { pubkey: globalVolumeAccumulator, isSigner: false, isWritable: true },
-            // 13: user_volume_accumulator
-            { pubkey: userVolumeAccumulator, isSigner: false, isWritable: true },
-            // 14: fee_config
-            { pubkey: feeConfig, isSigner: false, isWritable: false },
-            // 15: fee_program
-            { pubkey: FEE_PROGRAM_ID, isSigner: false, isWritable: false },
-        ],
-        // data: PumpFunInstructionBuilder.encodeBuy(tokensOut, maxSolCost),
-        data: PumpFunInstructionBuilder.encodeBuyExactSolIn(solIn, minTokensOut),
-    });
-}
+        // EXACT 16 accounts as per IDL
+        return new TransactionInstruction({
+            programId: PUMP_FUN_PROGRAM_ID,
+            keys: [
+                // 0: global
+                { pubkey: global, isSigner: false, isWritable: false },
+                // 1: fee_recipient
+                { pubkey: PROTOCOL_FEE_RECIPIENT, isSigner: false, isWritable: true },
+                // 2: mint
+                { pubkey: mint, isSigner: false, isWritable: false },
+                // 3: bonding_curve
+                { pubkey: bondingCurve, isSigner: false, isWritable: true },
+                // 4: associated_bonding_curve
+                { pubkey: associatedBondingCurve, isSigner: false, isWritable: true },
+                // 5: associated_user
+                { pubkey: userAta, isSigner: false, isWritable: true },
+                // 6: user
+                { pubkey: user, isSigner: true, isWritable: true },
+                // 7: system_program
+                { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+                // 8: token_program
+                { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+                // 9: creator_vault
+                { pubkey: creatorVault, isSigner: false, isWritable: true },
+                // 10: event_authority
+                { pubkey: eventAuthority, isSigner: false, isWritable: false },
+                // 11: program
+                { pubkey: PUMP_FUN_PROGRAM_ID, isSigner: false, isWritable: false },
+                // 12: global_volume_accumulator
+                { pubkey: globalVolumeAccumulator, isSigner: false, isWritable: true },
+                // 13: user_volume_accumulator
+                { pubkey: userVolumeAccumulator, isSigner: false, isWritable: true },
+                // 14: fee_config
+                { pubkey: feeConfig, isSigner: false, isWritable: false },
+                // 15: fee_program
+                { pubkey: FEE_PROGRAM_ID, isSigner: false, isWritable: false },
+            ],
+            // data: PumpFunInstructionBuilder.encodeBuy(tokensOut, maxSolCost),
+            data: PumpFunInstructionBuilder.encodeBuyExactSolIn(solIn, minTokensOut),
+        });
+    }
 
     static buildSell(
         user: PublicKey,
@@ -1017,6 +1017,59 @@ export class PumpFunInstructionBuilder {
         });
     }
 
+    private static encodeBuy(tokensOut: bigint, maxSolCost: bigint): Buffer {
+        const args = Buffer.alloc(16);
+        args.writeBigUInt64LE(tokensOut, 0);
+        args.writeBigUInt64LE(maxSolCost, 8);
+        return Buffer.concat([this.BUY_DISCRIMINATOR, args]);
+    }
+
+    static buildBuy(
+        user: PublicKey,
+        mint: PublicKey,
+        userAta: PublicKey,
+        creator: PublicKey,
+        tokensOut: bigint,      // expected tokens (from calc)
+        maxSolCost: bigint      // solIn * (1 + slippage/10000)
+        ): TransactionInstruction {
+        const global = PumpFunPda.getGlobal();
+        const bondingCurve = PumpFunPda.getBondingCurve(mint);
+        const associatedBondingCurve = PumpFunPda.getAssociatedBondingCurve(bondingCurve, mint);
+        const creatorVault = PumpFunPda.getCreatorVault(creator);
+        const eventAuthority = PumpFunPda.getEventAuthority();
+        const feeConfig = PumpFunPda.getFeeConfig();
+        const globalVolumeAccumulator = PumpFunPda.getGlobalVolumeAccumulator();
+        const userVolumeAccumulator = PumpFunPda.getUserVolumeAccumulator(user);
+
+        console.log(`📊 Standard BUY parameters:`);
+        console.log(`   • Token amount: ${tokensOut}`);
+        console.log(`   • Max SOL cost: ${maxSolCost}`);
+        console.log(`   • Mint: ${mint.toBase58().slice(0, 8)}...`);
+        console.log(`   • Creator: ${creator.toBase58().slice(0, 8)}...`);
+
+        return new TransactionInstruction({
+            programId: PUMP_FUN_PROGRAM_ID,
+            keys: [  // Same 16 accounts as buy_exact_sol_in
+            { pubkey: global, isSigner: false, isWritable: false },
+            { pubkey: PROTOCOL_FEE_RECIPIENT, isSigner: false, isWritable: true },
+            { pubkey: mint, isSigner: false, isWritable: false },
+            { pubkey: bondingCurve, isSigner: false, isWritable: true },
+            { pubkey: associatedBondingCurve, isSigner: false, isWritable: true },
+            { pubkey: userAta, isSigner: false, isWritable: true },
+            { pubkey: user, isSigner: true, isWritable: true },
+            { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: creatorVault, isSigner: false, isWritable: true },
+            { pubkey: eventAuthority, isSigner: false, isWritable: false },
+            { pubkey: PUMP_FUN_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: globalVolumeAccumulator, isSigner: false, isWritable: true },
+            { pubkey: userVolumeAccumulator, isSigner: false, isWritable: true },
+            { pubkey: feeConfig, isSigner: false, isWritable: false },
+            { pubkey: FEE_PROGRAM_ID, isSigner: false, isWritable: false },
+            ],
+            data: PumpFunInstructionBuilder.encodeBuy(tokensOut, maxSolCost),
+        });
+    }
 
 
 

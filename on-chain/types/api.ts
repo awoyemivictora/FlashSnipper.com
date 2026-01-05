@@ -1,3 +1,5 @@
+import { VersionedTransaction } from "@solana/web3.js";
+
 export interface CreateTokenRequest {
     metadata: {
         name: string;
@@ -79,7 +81,8 @@ export interface ExecuteBotBuysRequest {
     user_wallet: string;
     bot_wallets: Array<{
         public_key: string;
-        buy_amount: number;
+        buy_amount?: number;  // Make optional
+        amount_sol?: number;  // Add amount_sol
     }>;
     use_jito: boolean;
     slippage_bps?: number;
@@ -123,6 +126,33 @@ export interface APIResponse {
 
 
 
+
+export interface FundBotsResponse {
+  success: boolean;
+  bundle_id?: string;
+  signatures?: string[];
+  error?: string;
+  estimated_cost?: number;
+  endpointUsed?: string;
+}
+
+
+export interface ExecuteBotBuysResponse {
+  success: boolean;
+  bundle_id?: string;
+  signatures?: string[];
+  mint_address?: string;
+  error?: string;
+  estimated_cost?: number;
+  transaction?: VersionedTransaction;
+  endpointUsed?: string;
+  stats?: {
+    total_bots: number;
+    bots_with_balance: number;
+    bots_without_balance: number;
+    total_sol_spent: number;
+  };
+}
 
 
 

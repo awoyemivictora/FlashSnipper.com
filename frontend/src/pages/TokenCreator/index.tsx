@@ -16,11 +16,6 @@ import { convertIpfsToHttpUrl, isIpfsUrl } from '@/utils/ipfs';
 const MIN_SOL_FOR_CREATOR_MODE = 0.0001;
 
 // ============================================
-// INTERFACES
-// ============================================
-
-
-// ============================================
 // MAIN COMPONENT
 // ============================================
 const TokenCreator: React.FC = () => {
@@ -548,84 +543,6 @@ const TokenCreator: React.FC = () => {
   // AI METADATA GENERATION
   // ============================================
 
-  // const generateAIMetadata = useCallback(async () => {
-  //   if (!launchConfig.useAIForMetadata) return;
-    
-  //   setAiGenerating(true);
-  //   setLaunchStatus(prev => ({
-  //     ...prev,
-  //     message: 'Generating AI metadata...',
-  //     currentStep: 'AI Generation'
-  //   }));
-    
-  //   try {
-  //     const response = await apiService.request('/ai/generate-metadata', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({
-  //         style: launchConfig.metadataStyle,
-  //         keywords: launchConfig.metadataKeywords,
-  //         category: 'meme',
-  //         use_dalle: launchConfig.useDalle
-  //       })
-  //     });
-
-  //     // console.log('🔍 Backend response:', response);
-      
-  //     if (response.success) {
-  //       const metadata: TokenMetadata = response.metadata_for_token;
-  //       setGeneratedMetadata(metadata);
-        
-  //       // Convert IPFS URL to HTTP for display
-  //       const displayImageUrl = convertIpfsToHttpUrl(metadata.image);
-
-  //       // console.log('🔍 Image URL from backend:', metadata.image);
-  //       // console.log('🔍 Display Image URL:', displayImageUrl);
-  //       // console.log('🔍 Is IPFS URL?', isIpfsUrl(metadata.image));
-          
-  //       setLaunchConfig(prev => ({
-  //         ...prev,
-  //         tokenName: metadata.name,
-  //         tokenSymbol: metadata.symbol,
-  //         tokenDescription: metadata.description,
-  //         imageUrl: displayImageUrl // Use HTTP URL for display
-  //       }));
-
-  //       // Set metadata generated flag to true
-  //       setMetadataGenerated(true);
-        
-  //       setLaunchStatus(prev => ({
-  //         ...prev,
-  //         phase: 'metadata',
-  //         message: '✅ AI metadata generated successfully',
-  //         progress: 20
-  //       }));
-        
-  //       setShowPreview(true);
-        
-  //       // Log IPFS info if available
-  //       if (metadata.ipfs_cid) {
-  //         console.log('📦 IPFS Metadata:', {
-  //           cid: metadata.ipfs_cid,
-  //           uri: metadata.ipfs_uri,
-  //           imageUrl: metadata.image
-  //         });
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error('AI metadata generation failed:', error);
-  //     setLaunchStatus(prev => ({
-  //       ...prev,
-  //       message: '❌ AI generation failed, using defaults',
-  //       progress: 10
-  //     }));
-  //     generateDefaultMetadata();
-  //   } finally {
-  //     setAiGenerating(false);
-  //   }
-  // }, [launchConfig]);
-
-
   const generateAIMetadata = useCallback(async () => {
     if (!launchConfig.useAIForMetadata) return;
     
@@ -813,91 +730,7 @@ const TokenCreator: React.FC = () => {
     }));
   }, []);
   
-  // const handleQuickLaunch = async (preset: 'meme' | 'professional' | 'micro') => {
-  //   if (!userWallet) {
-  //     alert('Please connect wallet first');
-  //     return;
-  //   }
-    
-  //   // Check if creator mode is enabled
-  //   if (!creatorStats?.user?.creator_enabled) {
-  //     const enable = window.confirm('Creator mode is not enabled. Enable it now?');
-  //     if (enable) {
-  //       await tokenLaunchService.enableCreatorMode();
-  //       alert('Creator mode enabled! Please try again.');
-  //       return;
-  //     }
-  //     return;
-  //   }
-    
-  //   setIsLoading(true);
-    
-  //   const presets = {
-  //     meme: {
-  //       botCount: 10,
-  //       creatorBuyAmount: 0.001,
-  //       botBuyAmount: 0.0001,
-  //       style: 'meme',
-  //       keywords: 'meme, viral, community, solana, crypto',
-  //       useDalle: false,
-  //       sellStrategyType: 'volume_based' as const,  // CHANGED: UPPERCASE
-  //       sellVolumeTarget: 5.0,
-  //       sellTimeMinutes: 1,  // ADDED: required field
-  //       sellPriceTarget: 1.1   // ADDED: required field
-  //     },
-  //     professional: {
-  //       botCount: 20,
-  //       creatorBuyAmount: 0.01,
-  //       botBuyAmount: 0.001,
-  //       style: 'professional',
-  //       keywords: 'utility, defi, solana, blockchain, technology',
-  //       useDalle: true,
-  //       sellStrategyType: 'time_based' as const,  // CHANGED: UPPERCASE
-  //       sellTimeMinutes: 5,   // ADDED: must be >= 1
-  //       sellVolumeTarget: 0,  // ADDED: required field
-  //       sellPriceTarget: 1.1    // ADDED: required field
-  //     },
-  //     micro: {
-  //       botCount: 5,
-  //       creatorBuyAmount: 0.01,
-  //       botBuyAmount: 0.005,
-  //       style: 'ai-generated',
-  //       keywords: 'micro, test, solana, experimental',
-  //       useDalle: false,
-  //       sellStrategyType: 'price_target' as const,  // CHANGED: UPPERCASE
-  //       sellPriceTarget: 50,   // ADDED: must be >= 1.1
-  //       sellTimeMinutes: 1,    // ADDED: required field
-  //       sellVolumeTarget: 0    // ADDED: required field
-  //     }
-  //   };
-    
-  //   try {
-  //     const response = await tokenLaunchService.quickLaunch(presets[preset]);
-      
-  //     if (response.success) {
-  //       // ... rest of your existing success handling code
-  //     } else {
-  //       throw new Error(response.error || 'Failed to start launch');
-  //     }
-  //   } catch (error: any) {
-  //     console.error('Quick launch failed:', error);
-  //     setLaunchStatus({
-  //       phase: 'failed',
-  //       progress: 0,
-  //       message: `❌ Quick launch failed: ${error.message}`,
-  //       currentStep: 'Failed',
-  //       estimatedTimeRemaining: 0
-  //     });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
-
-  // ============================================
-  // LAUNCH ORCHESTRATION
-  // ============================================
-  
   const handleQuickLaunch = async (preset: 'meme' | 'professional' | 'micro') => {
     if (!userWallet) {
       alert('Please connect wallet first');
@@ -1126,163 +959,6 @@ const TokenCreator: React.FC = () => {
   // ============================================
   // REGULAR LAUNCH (Existing code moved here)
   // ============================================
-  // const executeRegularLaunch = async () => {
-  //   setIsLoading(true);
-    
-  //   setLaunchStatus({
-  //     phase: 'setup',
-  //     progress: 0,
-  //     message: 'Starting regular launch...',
-  //     currentStep: 'Initialization',
-  //     estimatedTimeRemaining: 180
-  //   });
-    
-  //   const bots = generateBotArmy(launchConfig.botCount);
-  //   setBotArmy(bots);
-    
-  //   try {
-  //     // Generate or use existing metadata
-  //     let metadata = generatedMetadata;
-  //     if (launchConfig.useAIForMetadata && !metadata) {
-  //       await generateAIMetadata();
-  //       metadata = generatedMetadata;
-  //     }
-      
-  //     // Prepare launch config for backend
-  //     const backendConfig: Partial<LaunchConfig> = {
-  //       tokenName: launchConfig.tokenName,
-  //       tokenSymbol: launchConfig.tokenSymbol,
-  //       tokenDescription: launchConfig.tokenDescription,
-  //       imageUrl: launchConfig.imageUrl,
-  //       creatorWallet: launchConfig.creatorWallet || (userWallet ? userWallet.publicKey.toBase58() : ''),
-  //       botCount: launchConfig.botCount,
-  //       creatorBuyAmount: launchConfig.creatorBuyAmount,
-  //       botWalletBuyAmount: launchConfig.botWalletBuyAmount,
-  //       targetProfitPercentage: launchConfig.targetProfitPercentage,
-        
-  //       // Use the existing sellTiming property (already has correct format)
-  //       sellTiming: launchConfig.sellTiming, // This should already be 'volume_based', 'time_based', or 'price_target'
-        
-  //       // These are the correct property names based on your LaunchConfig interface
-  //       sellVolumeTrigger: launchConfig.sellTiming === 'volume_based' ? launchConfig.sellVolumeTrigger : 0,
-  //       sellTimeTrigger: launchConfig.sellTiming === 'time_based' ? Math.max(launchConfig.sellTimeTrigger, 1) : 1, // Minimum 1
-  //       sellPriceTarget: launchConfig.sellTiming === 'price_target' ? Math.max(launchConfig.sellPriceTarget, 1.1) : 1.1, // Minimum 1.1
-        
-  //       useAIForMetadata: launchConfig.useAIForMetadata,
-  //       metadataStyle: launchConfig.metadataStyle,
-  //       metadataKeywords: launchConfig.metadataKeywords,
-  //       useDalle: launchConfig.useDalle,
-  //       useJitoBundle: launchConfig.useJitoBundle !== false,
-  //       priority: launchConfig.priority || 10,
-  //       botSpread: launchConfig.botSpread || 'random',
-  //     };
-      
-  //     if (metadata) {
-  //       backendConfig.customMetadata = {
-  //         name: metadata.name,
-  //         symbol: metadata.symbol,
-  //         description: metadata.description,
-  //         image: metadata.image,
-  //         attributes: metadata.attributes
-  //       };
-  //     }
-      
-  //     console.log('Sending launch config:', backendConfig);
-      
-  //     // Call backend to create launch
-  //     const response = await tokenLaunchService.createLaunch(backendConfig);
-      
-  //     console.log('Launch response:', response);
-      
-  //     if (response.success) {
-  //       const launchId = response.launch_id;
-  //       setActiveLaunchId(launchId);
-        
-  //       // Setup WebSocket connection for real-time updates
-  //       launchWebSocket.connect(launchId);
-        
-  //       launchWebSocket.on('update', (data: LaunchStatus) => {
-  //         setLaunchStatus({
-  //           phase: data.status.toLowerCase().replace(/_/g, '-') as any,
-  //           progress: data.progress,
-  //           message: data.message,
-  //           currentStep: data.current_step,
-  //           estimatedTimeRemaining: data.estimated_time_remaining
-  //         });
-  //       });
-        
-  //       launchWebSocket.on('complete', (data: any) => {
-  //         setLaunchStatus({
-  //           phase: 'complete',
-  //           progress: 100,
-  //           message: '🎉 Launch completed successfully!',
-  //           currentStep: 'Complete',
-  //           estimatedTimeRemaining: 0
-  //         });
-          
-  //         // Add to results
-  //         setLaunchResults(prev => [...prev, {
-  //           success: data.success || true,
-  //           mintAddress: data.mint_address,
-  //           creatorTransaction: data.creator_tx_hash,
-  //           botBuyBundleId: data.bot_buy_bundle_id,
-  //           botSellBundleId: data.bot_sell_bundle_id,
-  //           totalProfit: data.total_profit || 0,
-  //           roi: data.roi || 0,
-  //           duration: data.duration || 0
-  //         }]);
-  //       });
-        
-  //       launchWebSocket.on('failed', (data: any) => {
-  //         setLaunchStatus({
-  //           phase: 'failed',
-  //           progress: 0,
-  //           message: `❌ Launch failed: ${data.error || 'Unknown error'}`,
-  //           currentStep: 'Failed',
-  //           estimatedTimeRemaining: 0
-  //         });
-  //       });
-        
-  //       // Also poll for status updates (fallback)
-  //       const pollStatus = async () => {
-  //         try {
-  //           const status = await tokenLaunchService.getLaunchStatus(launchId);
-  //           setLaunchStatus({
-  //             phase: status.status.toLowerCase().replace(/_/g, '-') as any,
-  //             progress: status.progress,
-  //             message: status.message,
-  //             currentStep: status.current_step,
-  //             estimatedTimeRemaining: status.estimated_time_remaining
-  //           });
-            
-  //           if (status.status !== 'COMPLETE' && status.status !== 'FAILED') {
-  //             setTimeout(pollStatus, 2000);
-  //           }
-  //         } catch (error) {
-  //           console.error('Polling failed:', error);
-  //         }
-  //       };
-        
-  //       pollStatus();
-        
-  //     } else {
-  //       throw new Error(response.error || 'Failed to start launch');
-  //     }
-      
-  //   } catch (error: any) {
-  //     console.error('Launch failed:', error);
-  //     setLaunchStatus({
-  //       phase: 'failed',
-  //       progress: 0,
-  //       message: `❌ Regular launch failed: ${error.message}`,
-  //       currentStep: 'Failed',
-  //       estimatedTimeRemaining: 0
-  //     });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
   const executeRegularLaunch = async () => {
     setIsLoading(true);
     
@@ -1315,10 +991,6 @@ const TokenCreator: React.FC = () => {
         targetProfitPercentage: launchConfig.targetProfitPercentage,
         sellTiming: launchConfig.sellTiming,
 
-        // sellVolumeTrigger: launchConfig.sellTiming === 'volume_based' ? launchConfig.sellVolumeTrigger : 0,
-        // sellTimeTrigger: launchConfig.sellTiming === 'time_based' ? Math.max(launchConfig.sellTimeTrigger, 1) : 1,
-        // sellPriceTarget: launchConfig.sellTiming === 'price_target' ? Math.max(launchConfig.sellPriceTarget, 1.1) : 1.1,
-
         // Ensure minimum values even for 'immediate' strategy
         sellVolumeTrigger: launchConfig.sellTiming === 'volume_based' ? 
           Math.max(launchConfig.sellVolumeTrigger, 5.0) : 5.0,
@@ -1338,18 +1010,6 @@ const TokenCreator: React.FC = () => {
         botSpread: launchConfig.botSpread || 'random',
       };
       
-      // ✅ If we have AI-generated metadata, use the metadata_uri
-      // if (metadata && metadata.metadata_uri) {
-      //   console.log('✅ Using AI-generated metadata URI:', metadata.metadata_uri);
-      //   backendConfig.customMetadata = {
-      //     name: metadata.name,
-      //     symbol: metadata.symbol,
-      //     description: metadata.description,
-      //     uri: metadata.metadata_uri, // ✅ This is the key field!
-      //     image: metadata.image
-      //   };
-      // } 
-
       // ✅ If we have AI-generated metadata, use the metadata_uri
       if (metadata && metadata.metadata_uri) {
         console.log('✅ Using AI-generated metadata URI:', metadata.metadata_uri);
@@ -1483,201 +1143,6 @@ const TokenCreator: React.FC = () => {
   // ============================================
   // ATOMIC LAUNCH (New function)
   // ============================================
-  // const executeAtomicLaunch = async () => {
-  //   setIsLoading(true);
-    
-  //   setLaunchStatus({
-  //     phase: 'setup',
-  //     progress: 0,
-  //     message: 'Starting atomic launch with pre-funded bots...',
-  //     currentStep: 'Atomic Launch Setup',
-  //     estimatedTimeRemaining: 120
-  //   });
-
-  //   try {
-  //     // Check pre-funded bot availability
-  //     const preFundStatus = await tokenLaunchService.checkPreFundedStatus();
-      
-  //     if (!preFundStatus.has_pre_funded || preFundStatus.count < launchConfig.botCount) {
-  //       const confirm = window.confirm(
-  //         `Need ${launchConfig.botCount} pre-funded bots but only have ${preFundStatus.count}. ` +
-  //         `Would you like to pre-fund ${launchConfig.botCount - preFundStatus.count} more bots first?`
-  //       );
-        
-  //       if (confirm) {
-  //         setShowPreFundingPanel(true);
-  //         setIsLoading(false);
-  //         return;
-  //       }
-  //     }
-
-  //     // Generate or use existing metadata - FIX: Use generatedMetadata instead of launchConfig values
-  //     let metadata = generatedMetadata;
-  //     if (launchConfig.useAIForMetadata && !metadata) {
-  //       await generateAIMetadata();
-  //       metadata = generatedMetadata;
-  //     }
-      
-  //     // CRITICAL FIX: Use the AI-generated metadata or fallback to manually entered values
-  //     let tokenMetadata;
-  //     if (metadata) {
-  //       // Use AI-generated metadata
-  //       tokenMetadata = {
-  //         name: metadata.name,
-  //         symbol: metadata.symbol,
-  //         description: metadata.description,
-  //         image: metadata.image
-  //       };
-  //     } else {
-  //       // Fallback to manually entered values (but warn user)
-  //       console.warn('No AI metadata generated, using manual inputs');
-  //       tokenMetadata = {
-  //         name: launchConfig.tokenName || `Token_${Date.now()}`,
-  //         symbol: launchConfig.tokenSymbol || 'TKN',
-  //         description: launchConfig.tokenDescription || 'Token created via Flash Sniper',
-  //         image: launchConfig.imageUrl || 'https://placehold.co/600x400'
-  //       };
-  //     }
-
-  //     // Prepare atomic payload for the new backend endpoint
-  //     const atomicPayload = {
-  //       user_wallet: launchConfig.creatorWallet,
-  //       metadata: tokenMetadata, // Use the processed metadata
-  //       creator_buy_amount: launchConfig.creatorBuyAmount,
-  //       bot_wallets: botWallets.slice(0, launchConfig.botCount).map(bot => ({
-  //         public_key: bot.public_key,
-  //         buy_amount: launchConfig.botWalletBuyAmount
-  //       })),
-  //       use_jito: true,
-  //       atomic_bundle: true,
-  //       sell_strategy: {
-  //         type: launchConfig.sellTiming,
-  //         volume_target: launchConfig.sellVolumeTrigger,
-  //         time_minutes: launchConfig.sellTimeTrigger,
-  //         price_target: launchConfig.sellPriceTarget
-  //       }
-  //     };
-
-  //     console.log('Sending atomic payload to backend:', atomicPayload);
-  //     console.log('Metadata being sent:', tokenMetadata);
-      
-  //     // Call the new atomic create+buy endpoint in YOUR backend (not on-chain service directly)
-  //     const response = await tokenLaunchService.executeAtomicCreateAndBuy(atomicPayload);
-      
-  //     console.log('Atomic launch response:', response);
-      
-  //     if (response.success) {
-  //       const launchId = response.launch_id;
-  //       setActiveLaunchId(launchId);
-        
-  //       // Setup WebSocket connection for atomic launch
-  //       launchWebSocket.connect(launchId);
-        
-  //       launchWebSocket.on('update', (data: LaunchStatus) => {
-  //         setLaunchStatus({
-  //           phase: data.status.toLowerCase().replace(/_/g, '-') as any,
-  //           progress: data.progress,
-  //           message: data.message,
-  //           currentStep: data.current_step,
-  //           estimatedTimeRemaining: data.estimated_time_remaining
-  //         });
-  //       });
-        
-  //       // Add atomic-specific events
-  //       launchWebSocket.on('atomic_launch_start', (data: any) => {
-  //         setLaunchStatus({
-  //           phase: 'launching',
-  //           progress: 70,
-  //           message: 'Building atomic bundle with pre-funded bots...',
-  //           currentStep: 'Atomic Bundle',
-  //           estimatedTimeRemaining: 60
-  //         });
-  //       });
-        
-  //       launchWebSocket.on('complete', (data: any) => {
-  //         setLaunchStatus({
-  //           phase: 'complete',
-  //           progress: 100,
-  //           message: '🎉 Atomic launch completed successfully!',
-  //           currentStep: 'Complete',
-  //           estimatedTimeRemaining: 0
-  //         });
-          
-  //         // Add to results
-  //         setLaunchResults(prev => [...prev, {
-  //           success: data.success || true,
-  //           mintAddress: data.mint_address,
-  //           creatorTransaction: data.creator_tx_hash,
-  //           botBuyBundleId: data.bot_buy_bundle_id,
-  //           botSellBundleId: data.bot_sell_bundle_id,
-  //           totalProfit: data.total_profit || 0,
-  //           roi: data.roi || 0,
-  //           duration: data.duration || 0,
-  //           atomic_bundle: true
-  //         }]);
-  //       });
-        
-  //       launchWebSocket.on('failed', (data: any) => {
-  //         setLaunchStatus({
-  //           phase: 'failed',
-  //           progress: 0,
-  //           message: `❌ Atomic launch failed: ${data.error || 'Unknown error'}`,
-  //           currentStep: 'Failed',
-  //           estimatedTimeRemaining: 0
-  //         });
-  //       });
-        
-  //       // Also poll for status updates (fallback)
-  //       const pollStatus = async () => {
-  //         try {
-  //           const status = await tokenLaunchService.getLaunchStatus(launchId);
-  //           setLaunchStatus({
-  //             phase: status.status.toLowerCase().replace(/_/g, '-') as any,
-  //             progress: status.progress,
-  //             message: status.message,
-  //             currentStep: status.current_step,
-  //             estimatedTimeRemaining: status.estimated_time_remaining
-  //           });
-            
-  //           if (status.status !== 'COMPLETE' && status.status !== 'FAILED') {
-  //             setTimeout(pollStatus, 2000);
-  //           } else if (status.status === 'COMPLETE') {
-  //             // Update results
-  //             setLaunchResults(prev => [...prev, {
-  //               success: true,
-  //               mintAddress: status.mint_address || '',
-  //               creatorTransaction: status.creator_tx_hash || '',
-  //               botBuyBundleId: status.bot_buy_bundle_id,
-  //               botSellBundleId: status.bot_sell_bundle_id,
-  //               totalProfit: status.total_profit || 0,
-  //               roi: status.roi || 0,
-  //               duration: status.duration || 0,
-  //               atomic_bundle: true
-  //             }]);
-  //           }
-  //         } catch (error) {
-  //           console.error('Polling failed:', error);
-  //         }
-  //       };
-        
-  //       pollStatus();
-  //     } else {
-  //       throw new Error(response.error || 'Atomic launch failed');
-  //     }
-  //   } catch (error: any) {
-  //     console.error('Atomic launch failed:', error);
-  //     setLaunchStatus({
-  //       phase: 'failed',
-  //       progress: 0,
-  //       message: `❌ Atomic launch failed: ${error.message}`,
-  //       currentStep: 'Failed',
-  //       estimatedTimeRemaining: 0
-  //     });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
   const executeAtomicLaunch = async () => {
     setIsLoading(true);
     
@@ -1759,7 +1224,7 @@ const TokenCreator: React.FC = () => {
         creator_buy_amount: launchConfig.creatorBuyAmount,
         bot_wallets: usableBots.map((bot: BotWallet) => ({
           public_key: bot.public_key,
-          buy_amount: launchConfig.botWalletBuyAmount
+          amount_sol: launchConfig.botWalletBuyAmount
         })),
         use_jito: true,
         atomic_bundle: true,
@@ -2508,125 +1973,6 @@ const TokenCreator: React.FC = () => {
     );
   };
 
-
-  // const MetadataPreview = () => {
-  //   if (!generatedMetadata || !showPreview) return null;
-    
-  //   // Convert IPFS URL to HTTP URL for display
-  //   const displayImageUrl = useMemo(() => {
-  //     if (!generatedMetadata?.image) return '';
-  //     return convertIpfsToHttpUrl(generatedMetadata.image);
-  //   }, [generatedMetadata?.image]);
-    
-  //   return (
-  //     <div className="bg-gradient-to-br from-gray-900/50 to-dark-2/50 backdrop-blur-sm rounded-2xl p-5 border border-gray-800/50 mb-6 shadow-lg">
-  //       <div className="flex justify-between items-center mb-4">
-  //         <div className="flex items-center gap-3">
-  //           <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-  //             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-  //             </svg>
-  //           </div>
-  //           <div>
-  //             <h3 className="text-white font-bold">AI Generated Metadata</h3>
-  //             <p className="text-sm text-gray-400">Preview your token details</p>
-  //           </div>
-  //         </div>
-  //         <button
-  //           onClick={() => setShowPreview(false)}
-  //           className="text-gray-400 hover:text-white transition-colors"
-  //         >
-  //           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  //           </svg>
-  //         </button>
-  //       </div>
-        
-  //       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-  //         <div className="md:col-span-2">
-  //           <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-800/50">
-  //             <div className="flex items-start justify-between mb-4">
-  //               <div>
-  //                 <h4 className="text-xl font-bold text-white mb-1">{generatedMetadata.name}</h4>
-  //                 <div className="text-sm text-gray-400 font-mono">${generatedMetadata.symbol}</div>
-  //               </div>
-  //               <div className="px-3 py-1 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full border border-cyan-500/30">
-  //                 <span className="text-sm font-medium text-cyan-400">AI Generated</span>
-  //               </div>
-  //             </div>
-              
-  //             <p className="text-gray-300 mb-4">{generatedMetadata.description}</p>
-              
-  //             {/* IPFS Info Badge */}
-  //             {generatedMetadata.ipfs_cid && (
-  //               <div className="mb-4 p-3 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 rounded-lg border border-purple-500/30">
-  //                 <div className="flex items-center gap-2 text-purple-400">
-  //                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-  //                   </svg>
-  //                   <span className="text-sm font-medium">IPFS Storage</span>
-  //                   <span className="text-xs bg-purple-900/30 px-2 py-1 rounded">
-  //                     CID: {generatedMetadata.ipfs_cid.slice(0, 8)}...
-  //                   </span>
-  //                 </div>
-  //               </div>
-  //             )}
-              
-  //             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-  //               {generatedMetadata.attributes.map((attr, index) => (
-  //                 <div key={index} className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
-  //                   <div className="text-xs text-gray-400 mb-1">{attr.trait_type}</div>
-  //                   <div className="text-sm text-white font-medium">{attr.value}</div>
-  //                 </div>
-  //               ))}
-  //             </div>
-  //           </div>
-  //         </div>
-          
-  //         <div>
-  //           <div className="bg-gray-900/50 rounded-xl overflow-hidden border border-gray-800/50">
-  //             <img 
-  //               src={displayImageUrl} 
-  //               alt={generatedMetadata.name}
-  //               className="w-full h-48 object-cover"
-  //               onError={(e) => {
-  //                 // Fallback if IPFS gateway fails
-  //                 e.currentTarget.src = "https://placehold.co/600x400/6366f1/ffffff?text=" + 
-  //                   encodeURIComponent(generatedMetadata.name);
-  //               }}
-  //             />
-  //             <div className="p-4">
-  //               <div className="text-sm text-gray-400 mb-2 flex items-center justify-between">
-  //                 <span>Token Image</span>
-  //                 {isIpfsUrl(generatedMetadata.image) && (
-  //                   <span className="text-xs text-purple-400 bg-purple-900/30 px-2 py-1 rounded">
-  //                     IPFS
-  //                   </span>
-  //                 )}
-  //               </div>
-  //               {generatedMetadata.image_prompt && (
-  //                 <div className="text-xs text-gray-500 italic">
-  //                   "{generatedMetadata.image_prompt.slice(0, 100)}..."
-  //                 </div>
-  //               )}
-                
-  //               {/* Show IPFS URI if available */}
-  //               {generatedMetadata.ipfs_uri && (
-  //                 <div className="mt-2">
-  //                   <div className="text-xs text-gray-500 mb-1">IPFS URI:</div>
-  //                   <div className="text-xs font-mono text-gray-400 truncate">
-  //                     {generatedMetadata.ipfs_uri}
-  //                   </div>
-  //                 </div>
-  //               )}
-  //             </div>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // };
-
   const MetadataPreview = () => {
     if (!generatedMetadata || !showPreview) return null;
     
@@ -3007,25 +2353,56 @@ const TokenCreator: React.FC = () => {
       pre_funded: preFundedCount,
     };
     
-    const copyPrivateKey = async (walletId: string | number, token: string, publicKey: string) => {
+    // const copyPrivateKey = async (walletId: string | number, token: string, publicKey: string) => {
+    //   try {
+    //     setCopyingKeys(prev => ({ ...prev, [walletId]: true }));
+        
+    //     // Convert walletId to number if it's a string
+    //     const walletIdNum = typeof walletId === 'string' ? parseInt(walletId, 10) : walletId;
+        
+    //     // Simulating API call - replace with your actual service
+    //     const response = await tokenLaunchService.getBotPrivateKey(walletIdNum, token);
+        
+    //     if (response.success) {
+    //       // Copy to clipboard
+    //       await navigator.clipboard.writeText(response.private_key_base58);
+          
+    //       // Show modal instead of alert
+    //       const wallet = botWallets.find(w => w.id === walletId);
+    //       setSelectedWallet(wallet || null);
+    //       setShowCopyModal(true);
+          
+    //       // Auto-hide modal after 3 seconds
+    //       setTimeout(() => {
+    //         setShowCopyModal(false);
+    //       }, 3000);
+    //     }
+    //   } catch (error: any) {
+    //     console.error('Failed to copy private key:', error);
+    //     alert(`Failed to copy private key: ${error.message || 'Token may have expired. Refresh the page to get a new token.'}`);
+    //   } finally {
+    //     setCopyingKeys(prev => ({ ...prev, [walletId]: false }));
+    //   }
+    // };
+    
+    // In BotWalletsTable component, update the copyPrivateKey function:
+
+    const copyPrivateKey = async (botWalletAddress: string, userWalletAddress: string) => {
       try {
-        setCopyingKeys(prev => ({ ...prev, [walletId]: true }));
-        
-        // Convert walletId to number if it's a string
-        const walletIdNum = typeof walletId === 'string' ? parseInt(walletId, 10) : walletId;
-        
-        // Simulating API call - replace with your actual service
-        const response = await tokenLaunchService.getBotPrivateKey(walletIdNum, token);
-        
+        setCopyingKeys(prev => ({ ...prev, [botWalletAddress]: true }));
+      
+        // Use the new method with wallet addresses
+        const response = await tokenLaunchService.getBotPrivateKey(botWalletAddress, userWalletAddress);
+      
         if (response.success) {
           // Copy to clipboard
-          await navigator.clipboard.writeText(response.private_key_base58);
-          
+          await navigator.clipboard.writeText(response.private_key);
+        
           // Show modal instead of alert
-          const wallet = botWallets.find(w => w.id === walletId);
+          const wallet = botWallets.find(w => w.public_key === botWalletAddress);
           setSelectedWallet(wallet || null);
           setShowCopyModal(true);
-          
+        
           // Auto-hide modal after 3 seconds
           setTimeout(() => {
             setShowCopyModal(false);
@@ -3033,12 +2410,12 @@ const TokenCreator: React.FC = () => {
         }
       } catch (error: any) {
         console.error('Failed to copy private key:', error);
-        alert(`Failed to copy private key: ${error.message || 'Token may have expired. Refresh the page to get a new token.'}`);
+        alert(`Failed to copy private key: ${error.message || 'Authentication failed'}`);
       } finally {
-        setCopyingKeys(prev => ({ ...prev, [walletId]: false }));
+        setCopyingKeys(prev => ({ ...prev, [botWalletAddress]: false }));
       }
     };
-    
+
     const handleSort = (field: 'balance' | 'profit' | 'date') => {
       if (sortBy === field) {
         setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -3152,7 +2529,11 @@ const TokenCreator: React.FC = () => {
               
               {/* Action Button */}
               <button
-                onClick={() => copyPrivateKey(wallet.id, wallet.private_key_token, wallet.public_key)}
+                // onClick={() => copyPrivateKey(wallet.id, wallet.private_key_token, wallet.public_key)}
+                onClick={() => copyPrivateKey(
+                  wallet.public_key, 
+                  launchConfig.creatorWallet // user wallet address
+                )}
                 disabled={copyingKeys[wallet.id]}
                 className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -3170,6 +2551,8 @@ const TokenCreator: React.FC = () => {
                   </>
                 )}
               </button>
+
+              
             </div>
           </div>
         );
@@ -3232,7 +2615,11 @@ const TokenCreator: React.FC = () => {
               </button>
               
               <button
-                onClick={() => copyPrivateKey(wallet.id, wallet.private_key_token, wallet.public_key)}
+                // onClick={() => copyPrivateKey(wallet.id, wallet.private_key_token, wallet.public_key)}
+                onClick={() => copyPrivateKey(
+                  wallet.public_key, 
+                  launchConfig.creatorWallet // user wallet address
+                )}
                 disabled={copyingKeys[wallet.id]}
                 className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -3316,7 +2703,11 @@ const TokenCreator: React.FC = () => {
             
             <div className="col-span-2 text-right">
               <button
-                onClick={() => copyPrivateKey(wallet.id, wallet.private_key_token, wallet.public_key)}
+                // onClick={() => copyPrivateKey(wallet.id, wallet.private_key_token, wallet.public_key)}
+                onClick={() => copyPrivateKey(
+                  wallet.public_key, 
+                  launchConfig.creatorWallet // user wallet address
+                )}
                 disabled={copyingKeys[wallet.id]}
                 className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px]"
               >

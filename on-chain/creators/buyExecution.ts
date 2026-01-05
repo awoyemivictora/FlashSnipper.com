@@ -12,7 +12,7 @@ import {
   BondingCurveFetcher,
   TOKEN_2022_PROGRAM_ID
 } from '../pumpfun/pumpfun-idl-client';
-import { jitoBundleSender } from '../jito_bundles/jito-integration';
+import { createJitoBundleSender } from '../jito_bundles/jito-integration';
 import { BuyRequest } from '../types/api';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { KeyService } from './keyService';
@@ -121,7 +121,9 @@ export async function executeBuy(
     if (request.use_jito && (request.action as string) !== 'atomic_buy' && (request.action as string) !== 'execute_bot_buys') {
       try {
         console.log('🚀 Sending via Jito bundle...');
-        const result = await jitoBundleSender.sendBundle([transaction], connection);
+    
+        const jitoSender = createJitoBundleSender(connection);
+        const result = await jitoSender.sendBundle([transaction]);
         
         if (result.success) {
           console.log(`✅ Jito bundle sent successfully`);
@@ -342,8 +344,9 @@ async function executeBuyWithKeypair(
     // Execute transaction
     if (request.use_jito) {
       try {
-        const result = await jitoBundleSender.sendBundle([transaction], connection);
-        
+        const jitoSender = createJitoBundleSender(connection);
+        const result = await jitoSender.sendBundle([transaction]);
+
         if (result.success) {
           return {
             success: true,
