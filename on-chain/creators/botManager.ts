@@ -4,13 +4,14 @@ import { createJitoBundleSender } from '../jito_bundles/jito-integration';
 import { FundBotsRequest, ExecuteBotBuysRequest, ExecuteBotBuysResponse, FundBotsResponse } from '../types/api';
 import { LAMPORTS_PER_SOL, ComputeBudgetProgram } from '@solana/web3.js';
 import axios from 'axios';
-import { BondingCurveMath, PUMP_FUN_PROGRAM_ID, PumpFunInstructionBuilder, PumpFunPda, TOKEN_2022_PROGRAM_ID } from '../pumpfun/pumpfun-idl-client';
+import { BondingCurveFetcher, BondingCurveMath, PUMP_FUN_PROGRAM_ID, PumpFunInstructionBuilder, PumpFunPda, TOKEN_2022_PROGRAM_ID } from '../pumpfun/pumpfun-idl-client';
 import { 
   ASSOCIATED_TOKEN_PROGRAM_ID,
     createAssociatedTokenAccountIdempotentInstruction,
     getAssociatedTokenAddressSync, 
     TOKEN_PROGRAM_ID
 } from '@solana/spl-token';
+import { AdvancedBotOrchestrator } from './advancedBotManager';
 
 
 async function getDecryptedPrivateKey(
@@ -84,7 +85,8 @@ export async function fundBots(
     for (let i = 0; i < request.bot_wallets.length; i++) {
       const bot = request.bot_wallets[i];
       const botWallet = new PublicKey(bot.public_key);
-      const amount = BigInt(Math.floor(bot.amount_sol * LAMPORTS_PER_SOL));
+      // const amount = BigInt(Math.floor((bot.amount_sol * 2)* LAMPORTS_PER_SOL));
+      const amount = BigInt(Math.floor((bot.amount_sol + 0.003) * LAMPORTS_PER_SOL));
       
       const transferInstruction = SystemProgram.transfer({
         fromPubkey: userPublicKey, // Use userPublicKey instead of userWallet
@@ -166,291 +168,32 @@ export async function fundBots(
   }
 }
 
-function getBotAmount(bot: any): number {
-    return bot.amount_sol || bot.buy_amount || 0.0001;
-}
-
-// export async function executeBotBuys(
-//   connection: Connection,
-//   request: ExecuteBotBuysRequest
-// ): Promise<ExecuteBotBuysResponse> {
-//   try {
-//     console.log(`🎯 Executing bot buys for token: ${request.mint_address}`);
-//     console.log(`     Bot count: ${request.bot_wallets.length}`);
-
-//     const mint = new PublicKey(request.mint_address);
-    
-//     // Step 1: Get bonding curve immediately (skip balance checks for now)
-//     console.log(`🔍 Fetching bonding curve for mint: ${mint.toBase58()}`);
-//     const { BondingCurveFetcher, PumpFunPda } = require('../pumpfun/pumpfun-idl-client');
-    
-//     let bondingCurve = null;
-//     let retries = 5;
-    
-//     // Wait for bonding curve to be available
-//     while (retries > 0 && !bondingCurve) {
-//       try {
-//         bondingCurve = await BondingCurveFetcher.fetch(connection, mint, true);
-//         if (!bondingCurve) {
-//           console.log(`   ⏳ Bonding curve not ready yet, waiting... (${retries} left)`);
-//           retries--;
-//           await new Promise(resolve => setTimeout(resolve, 1000));
-//         }
-//       } catch (error) {
-//         console.log(`   ❌ Bonding curve fetch error: ${error.message}`);
-//         retries--;
-//         await new Promise(resolve => setTimeout(resolve, 1000));
-//       }
-//     }
-    
-//     if (!bondingCurve) {
-//       throw new Error(`Bonding curve not found for token ${mint.toBase58()} after retries`);
-//     }
-    
-//     console.log(`✅ Bonding curve found:`);
-//     console.log(`   • Creator: ${bondingCurve.creator.toBase58()}`);
-//     console.log(`   • Virtual SOL: ${bondingCurve.virtual_sol_reserves}`);
-//     console.log(`   • Virtual Tokens: ${bondingCurve.virtual_token_reserves}`);
-    
-//     const bondingCurvePda = PumpFunPda.getBondingCurve(mint);
-//     console.log(`   • Bonding Curve PDA: ${bondingCurvePda.toBase58()}`);
-    
-//     // Step 2: Check which bots are funded (simplified check)
-//     const fundedBots: any[] = [];
-    
-//     for (const bot of request.bot_wallets) {
-//       try {
-//         const botPubkey = new PublicKey(bot.public_key);
-//         const balance = await connection.getBalance(botPubkey);
-//         const requiredBalance = BigInt(Math.floor((getBotAmount(bot) || 0.0001) * LAMPORTS_PER_SOL));
-        
-//         console.log(`   Bot ${bot.public_key.slice(0, 8)}: ${balance/LAMPORTS_PER_SOL} SOL, needs ${getBotAmount(bot)} SOL`);
-        
-//         if (balance >= requiredBalance) {
-//           fundedBots.push(bot);
-//         }
-//       } catch (error) {
-//         console.error(`   Failed to check balance: ${error.message}`);
-//       }
-//     }
-    
-//     if (fundedBots.length === 0) {
-//       throw new Error('No funded bots found');
-//     }
-    
-//     console.log(`✅ ${fundedBots.length} bots are funded`);
-    
-//     // Step 3: Get blockhash and prepare transactions
-//     const { blockhash } = await connection.getLatestBlockhash('confirmed');
-//     const transactions: VersionedTransaction[] = [];
-//     const signatures: string[] = [];
-    
-//     // Process each funded bot
-//     for (const bot of fundedBots) {
-//       try {
-//         console.log(`\n🤖 Building transaction for bot: ${bot.public_key.slice(0, 8)}...`);
-        
-//         // Get bot private key
-//         const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
-//         const botResponse = await axios.post(
-//           `${backendUrl}/creators/user/get-bot-private-key`,
-//           {
-//             bot_wallet: bot.public_key,
-//             user_wallet: request.user_wallet
-//           },
-//           {
-//             headers: {
-//               'X-API-Key': process.env.ONCHAIN_API_KEY,
-//               'Content-Type': 'application/json'
-//             },
-//             timeout: 5000
-//           }
-//         );
-        
-//         if (!botResponse.data.success || !botResponse.data.private_key) {
-//           console.error(`❌ Failed to get bot private key`);
-//           continue;
-//         }
-        
-//         const botSecretKey = bs58.decode(botResponse.data.private_key);
-//         const botKeypair = Keypair.fromSecretKey(botSecretKey);
-        
-//         // Verify public key matches
-//         if (botKeypair.publicKey.toBase58() !== bot.public_key) {
-//           console.error(`❌ Bot key mismatch`);
-//           continue;
-//         }
-        
-//         // Calculate buy parameters (MUST match sniper-engine logic)
-//         const solIn = BigInt(Math.floor(getBotAmount(bot) * LAMPORTS_PER_SOL));
-        
-//         // Use bonding curve reserves to calculate expected tokens
-//         const expectedTokens = BondingCurveMath.calculateTokensForSol(
-//           bondingCurve.virtual_sol_reserves,
-//           bondingCurve.virtual_token_reserves,
-//           solIn
-//         );
-        
-//         const minTokenOut = BondingCurveMath.applySlippage(expectedTokens, request.slippage_bps || 1000);
-        
-//         console.log(`   • Buying ${getBotAmount(bot)} SOL`);
-//         console.log(`   • Expected tokens: ${expectedTokens}`);
-//         console.log(`   • Min tokens out: ${minTokenOut}`);
-        
-//         // Create bot's token account
-//         const botAta = getAssociatedTokenAddressSync(
-//           mint,
-//           botKeypair.publicKey,
-//           false,
-//           TOKEN_2022_PROGRAM_ID
-//         );
-        
-//         console.log(`   • Bot ATA: ${botAta.toBase58()}`);
-
-//         console.log(`Fetched creator from curve: ${bondingCurve.creator.toBase58()}`);
-
-//         const creatorVaultManual = PublicKey.findProgramAddressSync(
-//           [Buffer.from("creator-vault"), bondingCurve.creator.toBuffer()],
-//           PUMP_FUN_PROGRAM_ID
-//         )[0];
-//         console.log(`Computed creator_vault: ${creatorVaultManual.toBase58()}`);
-
-        
-                
-//         // ========== CRITICAL FIX ==========
-//         // Use the SAME pattern as sniper-engine.ts
-//         // The seller is the bonding curve PDA, NOT the creator
-//         const buyInstruction = PumpFunInstructionBuilder.buildBuyExactSolIn(
-//           botKeypair.publicKey,   // payer (bot)
-//           mint,                   // mint
-//           botAta,                 // destination ATA (bot's token account)
-//           bondingCurve.creator,        // Use actual creator pubkey here
-//           solIn,                  // amount in
-//           minTokenOut,            // min tokens out
-//         );
-        
-//         // Build transaction with compute budget
-//         const instructions: TransactionInstruction[] = [];
-        
-//         // Add compute budget
-//         instructions.push(
-//           ComputeBudgetProgram.setComputeUnitLimit({ units: 200000 })
-//         );
-//         instructions.push(
-//           ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 })
-//         );
-        
-//         // Check/create ATA
-//         try {
-//           const ataInfo = await connection.getAccountInfo(botAta);
-//           if (!ataInfo) {
-//             const createAtaIx = createAssociatedTokenAccountIdempotentInstruction(
-//               botKeypair.publicKey,
-//               botAta,
-//               botKeypair.publicKey,
-//               mint,
-//               TOKEN_2022_PROGRAM_ID
-//             );
-//             instructions.push(createAtaIx);
-//           }
-//         } catch {
-//           // Create ATA anyway
-//           const createAtaIx = createAssociatedTokenAccountIdempotentInstruction(
-//             botKeypair.publicKey,
-//             botAta,
-//             botKeypair.publicKey,
-//             mint,
-//             TOKEN_2022_PROGRAM_ID
-//           );
-//           instructions.push(createAtaIx);
-//         }
-        
-//         instructions.push(buyInstruction);
-        
-//         // Build transaction
-//         const messageV0 = new TransactionMessage({
-//           payerKey: botKeypair.publicKey,
-//           recentBlockhash: blockhash,
-//           instructions
-//         }).compileToV0Message();
-        
-//         const transaction = new VersionedTransaction(messageV0);
-//         transaction.sign([botKeypair]);
-//         transactions.push(transaction);
-        
-//         console.log(`   ✅ Transaction prepared`);
-        
-//       } catch (error: any) {
-//         console.error(`   ❌ Failed to prepare bot transaction: ${error.message}`);
-//       }
-//     }
-    
-//     if (transactions.length === 0) {
-//       throw new Error('No valid transactions prepared');
-//     }
-    
-//     console.log(`\n✅ Prepared ${transactions.length} transactions`);
-    
-//     // Execute transactions via RPC
-//     console.log(`📤 Executing ${transactions.length} transactions via RPC...`);
-    
-//     for (const transaction of transactions) {
-//       try {
-//         // Simulate first
-//         const simulation = await connection.simulateTransaction(transaction, {
-//           commitment: 'processed'
-//         });
-        
-//         if (simulation.value.err) {
-//           console.error(`   ❌ Simulation failed:`, simulation.value.err);
-//           continue;
-//         }
-        
-//         // Send transaction
-//         const signature = await connection.sendTransaction(transaction, {
-//           skipPreflight: false,
-//           maxRetries: 3,
-//           preflightCommitment: 'confirmed'
-//         });
-        
-//         signatures.push(signature);
-//         console.log(`   ✅ Sent: ${signature.slice(0, 16)}...`);
-        
-//         await new Promise(resolve => setTimeout(resolve, 500)); // Small delay
-        
-//       } catch (error: any) {
-//         console.error(`   ❌ Transaction failed: ${error.message}`);
-//       }
-//     }
-    
-//     if (signatures.length === 0) {
-//       throw new Error('All transactions failed');
-//     }
-    
-//     const totalCost = fundedBots.reduce((sum, bot) => sum + getBotAmount(bot), 0);
-    
-//     return {
-//       success: true,
-//       signatures,
-//       mint_address: request.mint_address,
-//       estimated_cost: totalCost,
-//       stats: {
-//         total_bots: request.bot_wallets.length,
-//         bots_with_balance: fundedBots.length,
-//         bots_without_balance: request.bot_wallets.length - fundedBots.length,
-//         total_sol_spent: totalCost
-//       }
-//     };
-    
-//   } catch (error: any) {
-//     console.error(`\n❌ Execute bot buys failed:`, error.message);
-//     return {
-//       success: false,
-//       error: error.message
-//     };
-//   }
+// function getBotAmount(bot: any): number {
+//     return bot.amount_sol || bot.buy_amount || 0.0001;
 // }
 
+// In botManager.ts, update the getBotAmount function:
+function getBotAmount(bot: any): number {
+    // ✅ Prioritize amount_sol (dynamic amount)
+    if (bot.amount_sol !== undefined) {
+        console.log(`📊 Using dynamic amount_sol: ${bot.amount_sol} SOL`);
+        return bot.amount_sol;
+    }
+    
+    // Fallback to other field names
+    if (bot.buy_amount !== undefined) {
+        console.log(`📊 Using buy_amount: ${bot.buy_amount} SOL`);
+        return bot.buy_amount;
+    }
+    
+    if (bot.amount !== undefined) {
+        console.log(`📊 Using amount: ${bot.amount} SOL`);
+        return bot.amount;
+    }
+    
+    console.log(`⚠️ No amount found for bot, using default 0.0001 SOL`);
+    return 0.0001;
+}
 
 export async function executeBotBuys(
   connection: Connection,
@@ -496,31 +239,15 @@ export async function executeBotBuys(
     
     const bondingCurvePda = PumpFunPda.getBondingCurve(mint);
     console.log(`   • Bonding Curve PDA: ${bondingCurvePda.toBase58()}`);
+
+    // Step 2: All bot wallets should have been funded already from backend (so no need to fund again or recheck)
+    console.log(`🎯 Executing bot buys for token: ${request.mint_address}`);
     
-    // Step 2: Check which bots are funded (simplified check)
-    const fundedBots: any[] = [];
+    // ✅ ASSUME ALL BOTS ARE FUNDED (skip balance checks)
+    const fundedBots = request.bot_wallets; // Use all bots
     
-    for (const bot of request.bot_wallets) {
-      try {
-        const botPubkey = new PublicKey(bot.public_key);
-        const balance = await connection.getBalance(botPubkey);
-        const requiredBalance = BigInt(Math.floor((getBotAmount(bot) || 0.0001) * LAMPORTS_PER_SOL));
-        
-        console.log(`   Bot ${bot.public_key.slice(0, 8)}: ${balance/LAMPORTS_PER_SOL} SOL, needs ${getBotAmount(bot)} SOL`);
-        
-        if (balance >= requiredBalance) {
-          fundedBots.push(bot);
-        }
-      } catch (error) {
-        console.error(`   Failed to check balance: ${error.message}`);
-      }
-    }
-    
-    if (fundedBots.length === 0) {
-      throw new Error('No funded bots found');
-    }
-    
-    console.log(`✅ ${fundedBots.length} bots are funded`);
+    console.log(`✅ Assuming ${fundedBots.length} bots are funded (backend handled funding)`);
+  
     
     // Step 3: Get blockhash and prepare transactions
     const { blockhash } = await connection.getLatestBlockhash('confirmed');
@@ -564,7 +291,14 @@ export async function executeBotBuys(
         }
         
         // Calculate buy parameters (MUST match sniper-engine logic)
-        const solIn = BigInt(Math.floor(getBotAmount(bot) * LAMPORTS_PER_SOL));
+        // const solIn = BigInt(Math.floor(getBotAmount(bot) * LAMPORTS_PER_SOL));
+
+        // ✅ Get the EXACT amount from the bot configuration
+        const botAmount = bot.amount_sol || bot.buy_amount || 0.0001;
+        console.log(`🤖 Bot ${bot.public_key.slice(0, 8)}: Buying ${botAmount} SOL`);
+        
+        // Use this amount for calculations
+        const solIn = BigInt(Math.floor(botAmount * LAMPORTS_PER_SOL));
         
         // Use bonding curve reserves to calculate expected tokens
         const expectedTokens = BondingCurveMath.calculateTokensForSol(
@@ -751,9 +485,6 @@ export async function executeBotBuys(
   }
 }
 
-
-
-
 export async function executeAtomicLaunch(
   connection: Connection,
   request: any 
@@ -796,7 +527,6 @@ export async function executeAtomicLaunch(
   }
 }
 
-
 export async function createCompleteLaunchBundle(
   connection: Connection,
   request: {
@@ -806,15 +536,23 @@ export async function createCompleteLaunchBundle(
     bot_buys: Array<{public_key: string, amount_sol: number}>;
     use_jito?: boolean;
     slippage_bps?: number;
+    use_advanced_strategy?: boolean;  // Enable advanced strategy
+    launch_id?: string;
   }
-): Promise<ExecuteBotBuysResponse> {
+): Promise<ExecuteBotBuysResponse & { advanced_results?: any }> {
   let mint: PublicKey;
   let createSignature: string | undefined;
   let botSignatures: string[] = [];
+  let advancedResults: any = null;
   
   try {
     console.log('🚀 createCompleteLaunchBundle called');
     console.log(`   User: ${request.user_wallet}`);
+    
+    // ✅ FORCE ADVANCED STRATEGY TO RUN ALWAYS
+    const useAdvancedStrategy = true; // <-- CHANGE THIS LINE
+    console.log(`   Advanced Strategy: ${useAdvancedStrategy ? 'ENABLED (Forced)' : 'Disabled'}`);
+    
     console.log(`   Bot buys count: ${request.bot_buys?.length || 0}`);
     
     // ✅ ADD DETAILED LOGGING OF BOT BUYS
@@ -833,7 +571,7 @@ export async function createCompleteLaunchBundle(
     }
     
     // ============================================
-    // STEP 1: SKIP BALANCE CHECK - ASSUME BOTS NEED FUNDING
+    // STEP 1: PREPARE BOTS
     // ============================================
     console.log(`🤖 STEP 1: Preparing ${request.bot_buys.length} bots for launch...`);
     
@@ -895,58 +633,140 @@ export async function createCompleteLaunchBundle(
     console.log(`🎉 Token created: ${mint.toBase58()}`);
     console.log(`🔗 Explorer: https://solscan.io/tx/${createSignature}`);
 
+    // ✅ IMMEDIATE: Notify backend ASYNCHRONOUSLY (don't wait)
+    const notifyBackend = async () => {
+        try {
+            const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+            await axios.post(`${backendUrl}/creators/token/notify-creation`, {
+                launch_id: request.launch_id,  // PASS launch_id from request
+                mint_address: mint.toBase58(),
+                success: true,
+                signature: createSignature,
+                timestamp: new Date().toISOString()
+            }, {
+                headers: { 'X-API-Key': process.env.ONCHAIN_API_KEY },
+                timeout: 5000 // Short timeout
+            });
+        } catch (notifyError) {
+            // Silent fail - don't block the launch
+            console.warn('⚠️ Backend notification failed (non-critical):', notifyError.message);
+        }
+    };
+
+    // Fire and forget - don't await
+    notifyBackend();
+
+
     // ============================================
-    // STEP 3: EXECUTE BOT BUYS (CRITICAL PART!)
+    // STEP 3: EXECUTE INITIAL BOT BUYS
     // ============================================
     if (botsReadyToSnipe.length > 0) {
-      console.log(`💰 STEP 3: Funding ${botsReadyToSnipe.length} bots...`);
+      console.log(`⚡ STEP 3: Executing bot buys (bots already funded in backend earlier)...`);
       
-      // First, fund the bots
-      const fundResult = await fundBots(connection, {
-        user_wallet: request.user_wallet,
-        bot_wallets: botsReadyToSnipe.map(bot => ({
-          public_key: bot.public_key,
-          amount_sol: bot.amount_sol
-        })),
-        use_jito: request.use_jito !== false
-      });
-      
-      if (!fundResult.success) {
-        console.error(`❌ Bot funding failed: ${fundResult.error}`);
-      } else {
-        console.log(`✅ Bot funding successful, waiting for confirmation...`);
-        // Wait a bit for funding to settle
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-      
-      console.log(`⚡ STEP 4: Executing ${botsReadyToSnipe.length} bot buys...`);
-      
+      // ✅ SKIP FUNDING - JUST EXECUTE BUYS
       // Wait a bit for bonding curve to initialize
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Get fresh blockhash for bot buys
-      const { blockhash: botBlockhash } = await connection.getLatestBlockhash('finalized');
-      
       console.log(`🤖 Calling executeBotBuys with ${botsReadyToSnipe.length} bots`);
-      console.log(`📊 Bot data:`, JSON.stringify(botsReadyToSnipe, null, 2));
-
-      // Execute bot buys using the executeBotBuys function
+      
+      // Execute initial bot buys using the executeBotBuys function
       const botBuyResult = await executeBotBuys(connection, {
         action: 'execute_bot_buys',
         mint_address: mint.toBase58(),
         user_wallet: request.user_wallet,
         bot_wallets: botsReadyToSnipe.map(bot => ({
           public_key: bot.public_key,
-          amount_sol: bot.amount_sol
+          amount_sol: bot.amount_sol // ✅ Use the dynamic amount from request
         })),
         use_jito: request.use_jito !== false,
         slippage_bps: request.slippage_bps || 500
       });
       
       if (botBuyResult.success) {
-        console.log(`✅ Bot buys successful`);
+        console.log(`✅ Initial bot buys successful`);
         if (botBuyResult.signatures) {
           botSignatures.push(...botBuyResult.signatures);
+        }
+        
+        // ============================================
+        // STEP 5: EXECUTE ADVANCED STRATEGY (ALWAYS RUN!)
+        // ============================================
+        if (useAdvancedStrategy) { // <-- Use the forced variable
+          console.log(`\n🎯 STEP 5: Executing advanced bot strategy...`);
+          
+          try {
+            // Import AdvancedBotOrchestrator
+            const { AdvancedBotOrchestrator } = require('./advancedBotManager');
+            
+            // Create orchestrator instance
+            const orchestrator = new AdvancedBotOrchestrator(connection, request.user_wallet);
+            
+            // Prepare bots for advanced strategy (with private keys)
+            const preparedBots = await orchestrator['prepareBotWallets'](
+              botsReadyToSnipe.map(bot => ({
+                public_key: bot.public_key,
+                amount_sol: bot.amount_sol,
+                private_key: undefined // Will be fetched from backend
+              }))
+            );
+            
+            if (preparedBots.length > 0) {
+              // Get creator from bonding curve
+              const bondingCurve = await require('../pumpfun/pumpfun-idl-client').BondingCurveFetcher.fetch(
+                connection,
+                mint,
+                false
+              );
+              
+              const creatorWallet = bondingCurve?.creator.toBase58() || request.user_wallet;
+              
+              // Calculate total budget
+              const totalBudget = request.creator_buy_amount + 
+                botsReadyToSnipe.reduce((sum, bot) => sum + bot.amount_sol, 0);
+              
+              // Execute advanced strategy
+              console.log(`📊 Starting advanced strategy with:`);
+              console.log(`   • ${preparedBots.length} prepared bots`);
+              console.log(`   • ${totalBudget.toFixed(4)} SOL total budget`);
+              console.log(`   • Creator: ${creatorWallet}`);
+              
+              const advancedResult = await orchestrator.executeProfitableLaunch(
+                mint,
+                preparedBots,
+                creatorWallet,
+                totalBudget
+              );
+              
+              advancedResults = advancedResult;
+              
+              console.log(`\n✅ Advanced strategy completed!`);
+              console.log(`📊 Results:`);
+              console.log(`   • Success: ${advancedResult.success}`);
+              console.log(`   • Total Profit: ${advancedResult.totalProfit?.toFixed(4)} SOL`);
+              console.log(`   • ROI: ${advancedResult.roi?.toFixed(2)}%`);
+              console.log(`   • Volume Generated: ${advancedResult.volumeGenerated?.toFixed(4)} SOL`);
+              console.log(`   • Exit Reason: ${advancedResult.exitReason}`);
+              
+              // Collect any additional signatures from advanced strategy
+              if (advancedResult.phaseResults) {
+                const advancedSignatures = advancedResult.phaseResults.flatMap((phase: any) => 
+                  phase.signatures || []
+                );
+                if (advancedSignatures.length > 0) {
+                  botSignatures.push(...advancedSignatures);
+                }
+              }
+            } else {
+              console.warn(`⚠️ No bots prepared for advanced strategy`);
+            }
+            
+          } catch (error: any) {
+            console.error(`❌ Advanced strategy failed: ${error.message}`);
+            console.error(`Stack: ${error.stack}`);
+            // Continue with basic launch even if advanced strategy fails
+          }
+        } else {
+          console.log(`⏭️  Skipping advanced strategy (disabled)`);
         }
       } else {
         console.error(`❌ Bot buys failed: ${botBuyResult.error}`);
@@ -956,12 +776,13 @@ export async function createCompleteLaunchBundle(
     }
     
     // ============================================
-    // STEP 4: RETURN RESULTS
+    // STEP 6: RETURN RESULTS
     // ============================================
     const totalCost = request.creator_buy_amount + 
                      botsReadyToSnipe.reduce((sum, bot) => sum + bot.amount_sol, 0);
     
-    return {
+    // Build response
+    const response: ExecuteBotBuysResponse & { advanced_results?: any } = {
       success: true,
       mint_address: mint.toBase58(),
       signatures: createSignature ? [createSignature, ...botSignatures] : [...botSignatures],
@@ -973,15 +794,44 @@ export async function createCompleteLaunchBundle(
         total_sol_spent: totalCost
       } : undefined
     };
+    
+    // Add advanced results if available
+    if (advancedResults) {
+      response.advanced_results = advancedResults;
+    }
+    
+    console.log(`\n🎉 Launch Complete!`);
+    console.log(`📊 Summary:`);
+    console.log(`   • Mint: ${mint.toBase58()}`);
+    console.log(`   • Total Cost: ${totalCost.toFixed(4)} SOL`);
+    console.log(`   • Transactions: ${response.signatures?.length || 0}`);
+    console.log(`   • Advanced Strategy: ${useAdvancedStrategy ? 'Used (Forced)' : 'Not used'}`); // <-- Updated
+    
+    if (advancedResults) {
+      console.log(`   • Advanced Profit: ${advancedResults.totalProfit?.toFixed(4)} SOL`);
+      console.log(`   • Advanced ROI: ${advancedResults.roi?.toFixed(2)}%`);
+    }
+    
+    return response;
 
   } catch (error: any) {
     console.error(`❌ Atomic launch failed:`, error.message);
-    return {
+    console.error(`Stack:`, error.stack);
+    
+    const errorResponse: ExecuteBotBuysResponse = {
       success: false,
       error: error.message
     };
+    
+    // Add advanced results if partial execution happened
+    if (advancedResults) {
+      (errorResponse as any).advanced_results = advancedResults;
+    }
+    
+    return errorResponse;
   }
 }
+
 
 
 async function buildSimpleTokenCreationWithBuyTx(
@@ -1142,50 +992,68 @@ async function buildSimpleTokenCreationWithBuyTx(
 }
 
 
+export async function executeAdvancedLaunchStrategy(
+  connection: Connection,
+  request: {
+    user_wallet: string;
+    mint_address: string;
+    bot_wallets: Array<{public_key: string, amount_sol: number}>;
+    total_budget: number;
+    metadata?: any;
+    use_advanced_strategy?: boolean;
+  }
+): Promise<{
+  success: boolean;
+  total_profit: number;
+  roi: number;
+  volume_generated: number;
+  phase_results: any[];
+  error?: string;
+}> {
+  try {
+    console.log(`🚀 Executing advanced launch strategy for ${request.mint_address}`);
+    
+    const mint = new PublicKey(request.mint_address);
+    const orchestrator = new AdvancedBotOrchestrator(connection, request.user_wallet);
+    
+    // Get creator wallet from bonding curve
+    const bondingCurve = await BondingCurveFetcher.fetch(connection, mint, false);
+    if (!bondingCurve) {
+      throw new Error('Bonding curve not found');
+    }
+    
+    const creatorWallet = bondingCurve.creator.toBase58();
+    
+    // Execute the advanced strategy
+    const result = await orchestrator.executeProfitableLaunch(
+      mint,
+      request.bot_wallets.map(bot => ({
+        public_key: bot.public_key,
+        amount_sol: bot.amount_sol
+      })),
+      creatorWallet,
+      request.total_budget
+    );
+    
+    return {
+      success: result.success,
+      total_profit: result.totalProfit,
+      roi: result.roi,
+      volume_generated: result.volumeGenerated,
+      phase_results: result.phaseResults
+    };
+    
+  } catch (error: any) {
+    console.error(`❌ Advanced launch failed: ${error.message}`);
+    return {
+      success: false,
+      total_profit: 0,
+      roi: -100,
+      volume_generated: 0,
+      phase_results: [],
+      error: error.message
+    };
+  }
+}
 
-
-
-
-
-
-// async function createTransactionWithTip(
-//   connection: Connection,
-//   signer: Keypair,
-//   instructions: TransactionInstruction[],
-//   tipAmount: number = 500_000
-// ): Promise<VersionedTransaction> {
-//   const { blockhash } = await connection.getLatestBlockhash();
-  
-//   // Get tip account from Jito
-//   const jitoSender = new JitoBundleSender(connection);
-//   const tipAccount = await jitoSender['getTipAccount'](); // Using private method
-  
-//   // Add tip instruction at the beginning
-//   const tipIx = SystemProgram.transfer({
-//     fromPubkey: signer.publicKey,
-//     toPubkey: new PublicKey(tipAccount),
-//     lamports: tipAmount
-//   });
-  
-//   const allInstructions = [tipIx, ...instructions];
-  
-//   const message = new TransactionMessage({
-//     payerKey: signer.publicKey,
-//     recentBlockhash: blockhash,
-//     instructions: allInstructions
-//   });
-  
-//   const transaction = new VersionedTransaction(message.compileToV0Message());
-//   transaction.sign([signer]);
-  
-//   return transaction;
-// }
-
-// // Usage
-// const transaction = await createTransactionWithTip(
-//   connection,
-//   signer,
-//   [yourInstruction1, yourInstruction2],
-//   500_000 // 0.0005 SOL tip
-// );
 

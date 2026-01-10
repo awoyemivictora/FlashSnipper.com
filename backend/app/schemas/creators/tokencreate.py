@@ -140,11 +140,31 @@ class LaunchConfigBase(BaseModel):
 #         description="Custom metadata (overrides AI generation if provided)"
 #     )
 
+# Create an enum for distribution types
+class DistributionType(str, enum.Enum):
+    NORMAL = "normal"
+    UNIFORM = "uniform"
+    LOG_NORMAL = "log_normal"
+    RANDOM = "random"
+
 class LaunchConfigCreate(LaunchConfigBase):
     """Launch config for creation"""
     custom_metadata: Optional[Dict[str, Any]] = Field(
         default=None,
         description="Custom metadata (overrides AI generation if provided)"
+    )
+    
+    # Dynamic bot settings
+    bot_variability: Optional[float] = Field(0.3, ge=0.0, le=1.0)  # 0-100%
+    bot_distribution: Optional[DistributionType] = Field(DistributionType.NORMAL)
+    min_buy_amount: Optional[float] = Field(None, gt=0)
+    max_buy_amount: Optional[float] = Field(None, gt=0)
+    stagger_buys: Optional[bool] = Field(False)
+    buy_delay_ms: Optional[int] = Field(1000, ge=0)
+    
+    model_config = ConfigDict(
+        use_enum_values=True,  # Use the enum values (strings) when dumping to dict
+        extra="allow"  # Allow extra fields
     )
     
     @model_validator(mode='after')

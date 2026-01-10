@@ -45,6 +45,16 @@ export interface LaunchConfig {
   
   // Add atomicMode to fix the error
   atomicMode?: boolean;
+
+  // Dynamic bot buy settings
+  botVariability: number; // 0-1 (0-100% variability)
+  botDistribution: 'normal' | 'uniform' | 'log_normal' | 'random';
+  minBuyAmount?: number;
+  maxBuyAmount?: number;
+
+  // Optional advanced settings
+  staggerBuys?: boolean;             // Whether to stagger buys over time
+  buyDelayMs?: number;               // Delay between bot buys in milliseconds
 }
 
 export interface BotArmyWallet {

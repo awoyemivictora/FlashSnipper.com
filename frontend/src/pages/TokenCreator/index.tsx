@@ -12,6 +12,7 @@ import { registerWallet, verifyWallet, getNonce } from '@/services/auth';
 import PreFundingManager from '@/components/PreFundingManager';
 import { convertToBackendConfig, createCustomMetadataFromAI, validateMetadataForLaunch } from '@/utils/configConverter';
 import { convertIpfsToHttpUrl, isIpfsUrl } from '@/utils/ipfs';
+import RealTimeLaunchDashboard from '@/components/RealTimeLaunchDashboard';
 
 const MIN_SOL_FOR_CREATOR_MODE = 0.0001;
 
@@ -47,7 +48,11 @@ const TokenCreator: React.FC = () => {
     useDalle: true,
     useJitoBundle: true,
     priority: 10,
-    botSpread: 'random'
+    botSpread: 'random',
+    botVariability: 0.3, // 30% variability
+    botDistribution: 'normal',
+    staggerBuys: false,                // Don't stagger by default
+    buyDelayMs: 1000,                  // 1 second delay if staggering
   });
   
   const [botArmy, setBotArmy] = useState<BotArmyWallet[]>([]);
@@ -79,6 +84,7 @@ const TokenCreator: React.FC = () => {
   const [showPreFundingPanel, setShowPreFundingPanel] = useState(false);
   const [metadataGenerated, setMetadataGenerated] = useState<boolean>(false);
   const currentYear = new Date().getFullYear();
+  const [showLaunchDashboard, setShowLaunchDashboard] = useState(false);
 
   // Refs
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
@@ -227,12 +233,25 @@ const TokenCreator: React.FC = () => {
     initializeCreator();
 
     return () => {
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current);
-      }
-      launchWebSocket.disconnect();
-    };
-  }, []);
+    if (progressInterval.current) {
+      clearInterval(progressInterval.current);
+    }
+    
+    // Clean up all WebSocket listeners
+    const events = [
+      'status_update', 'launch_started', 'token_creation_started', 
+      'token_created', 'launch_error', 'token_creation_failed',
+      'launch_completed', 'launch_failed', 'update', 'complete',
+      'failed', 'payload_sent', 'bot_buy_start'
+    ];
+    
+    events.forEach(event => {
+      launchWebSocket.off(event, () => {});
+    });
+    
+    launchWebSocket.disconnect();
+  };
+}, []);
 
   const handleUsePreFunded = () => {
     setUsePreFundedBots(true);
@@ -362,6 +381,125 @@ const TokenCreator: React.FC = () => {
       setMetadataGenerated(true);
     }
   }, [launchConfig.tokenName, launchConfig.tokenSymbol, metadataGenerated]);
+
+  useEffect(() => {
+    const setupWebSocketListeners = () => {
+      // Connection events
+      launchWebSocket.on('connected', (data: any) => {
+        console.log('Connected to launch:', data.launchId);
+      });
+      
+      launchWebSocket.on('disconnected', (data: any) => {
+        console.log('Disconnected from launch:', data.launchId);
+      });
+      
+      // Status updates from backend
+      launchWebSocket.on('status_update', (data: any) => {
+        setLaunchStatus({
+          phase: data.status.toLowerCase().replace(/_/g, '-') as any,
+          progress: data.progress,
+          message: data.message,
+          currentStep: data.current_step,
+          estimatedTimeRemaining: data.estimated_time_remaining
+        });
+      });
+      
+      // Launch specific events (from your backend)
+      launchWebSocket.on('launch_started', (data: any) => {
+        console.log('Launch started event received:', data);
+        setLaunchStatus(prev => ({
+          ...prev,
+          phase: 'launching',
+          progress: 40,
+          message: 'Starting atomic launch...',
+          currentStep: 'Launch Started'
+        }));
+      });
+      
+      launchWebSocket.on('token_creation_started', (data: any) => {
+        console.log('Token creation started:', data);
+        setLaunchStatus(prev => ({
+          ...prev,
+          phase: 'creating',
+          progress: 50,
+          message: 'Creating token on blockchain...',
+          currentStep: 'Token Creation'
+        }));
+      });
+      
+      launchWebSocket.on('token_created', (data: any) => {
+        console.log('✅ Token created event received:', data);
+        
+        setLaunchStatus(prev => ({
+          ...prev,
+          phase: 'creating',
+          progress: 60,
+          message: `Token created: ${data.name} (${data.symbol})`,
+          currentStep: 'Token Created'
+        }));
+        
+        // Show dashboard immediately
+        setShowLaunchDashboard(true);
+      });
+      
+      // Error events
+      launchWebSocket.on('launch_error', (data: any) => {
+        console.error('Launch error event received:', data);
+        setLaunchStatus({
+          phase: 'failed',
+          progress: 0,
+          message: `❌ Launch error: ${data.error || data.message}`,
+          currentStep: 'Failed',
+          estimatedTimeRemaining: 0
+        });
+      });
+      
+      launchWebSocket.on('token_creation_failed', (data: any) => {
+        console.error('Token creation failed event received:', data);
+        setLaunchStatus({
+          phase: 'failed',
+          progress: 0,
+          message: `❌ Token creation failed: ${data.error}`,
+          currentStep: 'Failed',
+          estimatedTimeRemaining: 0
+        });
+      });
+      
+      // Completion event
+      launchWebSocket.on('launch_completed', (data: any) => {
+        console.log('Launch completed event received:', data);
+        setLaunchStatus({
+          phase: 'complete',
+          progress: 100,
+          message: '🎉 Launch completed successfully!',
+          currentStep: 'Complete',
+          estimatedTimeRemaining: 0
+        });
+      });
+      
+      // Generic update event (fallback)
+      launchWebSocket.on('update', (data: any) => {
+        console.log('Generic update event:', data);
+      });
+    };
+
+    // Set up listeners when component mounts
+    setupWebSocketListeners();
+
+    // Cleanup on unmount
+    return () => {
+      const events = [
+        'connected', 'disconnected', 'status_update', 'launch_started',
+        'token_creation_started', 'token_created', 'launch_error',
+        'token_creation_failed', 'launch_completed', 'update',
+        'complete', 'failed', 'atomic_launch_start', 'bot_buy_start',
+        'payload_sent', 'token_creation_confirmed'
+      ];
+      events.forEach(event => {
+        launchWebSocket.off(event, () => {});
+      });
+    };
+  }, []); // Empty dependency array - runs once on mount
 
   // ============================================
   // UTILITY FUNCTIONS
@@ -799,8 +937,99 @@ const TokenCreator: React.FC = () => {
         // Setup WebSocket connection for real-time updates
         launchWebSocket.connect(launchId);
 
-        // ... rest of WebSocket handling code ...
-      
+        // Listen for all event types
+        launchWebSocket.on('launch_started', (data: any) => {
+          console.log('Launch started event received:', data);
+          setLaunchStatus(prev => ({
+            ...prev,
+            phase: 'launching',
+            progress: 40,
+            message: 'Starting launch...',
+            currentStep: 'Launch Started'
+          }));
+        });
+
+        launchWebSocket.on('token_creation_started', (data: any) => {
+          console.log('Token creation started:', data);
+          setLaunchStatus(prev => ({
+            ...prev,
+            phase: 'creating',
+            progress: 50,
+            message: 'Creating token on blockchain...',
+            currentStep: 'Token Creation'
+          }));
+        });
+
+        launchWebSocket.on('token_created', (data: any) => {
+          console.log('Token created event received:', data);
+          
+          // Show the dashboard when token is created
+          setShowLaunchDashboard(true);
+          
+          // Update launch status
+          setLaunchStatus(prev => ({
+            ...prev,
+            phase: 'creating',
+            progress: 60,
+            message: `Token created: ${data.name} (${data.symbol})`,
+            currentStep: 'Token Created'
+          }));
+        });
+
+        launchWebSocket.on('launch_error', (data: any) => {
+          console.error('Launch error event received:', data);
+          setLaunchStatus({
+            phase: 'failed',
+            progress: 0,
+            message: `❌ Launch error: ${data.error || data.message}`,
+            currentStep: 'Failed',
+            estimatedTimeRemaining: 0
+          });
+        });
+
+        launchWebSocket.on('launch_completed', (data: any) => {
+          setLaunchStatus({
+            phase: 'complete',
+            progress: 100,
+            message: '🎉 Launch completed successfully!',
+            currentStep: 'Complete',
+            estimatedTimeRemaining: 0
+          });
+          
+          // Add to results
+          setLaunchResults(prev => [...prev, {
+            success: data.success || true,
+            mintAddress: data.mint_address,
+            creatorTransaction: data.creator_tx_hash,
+            botBuyBundleId: data.bot_buy_bundle_id,
+            botSellBundleId: data.bot_sell_bundle_id,
+            totalProfit: data.total_profit || 0,
+            roi: data.roi || 0,
+            duration: data.duration || 0
+          }]);
+        });
+
+        launchWebSocket.on('launch_failed', (data: any) => {
+          setLaunchStatus({
+            phase: 'failed',
+            progress: 0,
+            message: `❌ Launch failed: ${data.error || 'Unknown error'}`,
+            currentStep: 'Failed',
+            estimatedTimeRemaining: 0
+          });
+        });
+        
+        // Keep existing status_update handler
+        launchWebSocket.on('status_update', (data: any) => {
+          setLaunchStatus({
+            phase: data.status.toLowerCase().replace(/_/g, '-') as any,
+            progress: data.progress,
+            message: data.message,
+            currentStep: data.current_step,
+            estimatedTimeRemaining: data.estimated_time_remaining
+          });
+        });
+
         // ✅ IMPORTANT: Update the launch config with the returned metadata
         if (response.metadata) {
           setLaunchConfig(prev => ({
@@ -1250,7 +1479,147 @@ const TokenCreator: React.FC = () => {
         
         // Setup WebSocket connection for atomic launch
         launchWebSocket.connect(launchId);
+
+        // ✅ CORRECTED: Add all the proper event handlers
+        // In the WebSocket connection setup, add:
+        launchWebSocket.on('launch_started', (data: any) => {
+          console.log('Launch started event received:', data);
+          setLaunchStatus(prev => ({
+            ...prev,
+            phase: 'launching',
+            progress: 40,
+            message: 'Starting atomic launch...',
+            currentStep: 'Launch Started'
+          }));
+        });
+
+        launchWebSocket.on('token_creation_started', (data: any) => {
+          console.log('Token creation started:', data);
+          setLaunchStatus(prev => ({
+            ...prev,
+            phase: 'creating',
+            progress: 50,
+            message: 'Creating token on blockchain...',
+            currentStep: 'Token Creation'
+          }));
+        });
+
+        launchWebSocket.on('token_created', (data: any) => {
+          console.log('✅ Token created event received:', data);
+          
+          // ✅ IMMEDIATE update - don't wait for backend
+          setLaunchStatus(prev => ({
+            ...prev,
+            phase: 'creating',
+            progress: 60,
+            message: `Token created: ${data.name} (${data.symbol})`,
+            currentStep: 'Token Created'
+          }));
+          
+          // Show the dashboard immediately
+          setShowLaunchDashboard(true);
+          
+          // Update local state with token details
+          if (data.mint_address) {
+            // Store in results immediately
+            setLaunchResults(prev => [...prev, {
+              success: true,
+              mintAddress: data.mint_address,
+              creatorTransaction: data.creator_tx_hash,
+              botBuyBundleId: data.bot_buy_bundle_id,
+              botSellBundleId: data.bot_sell_bundle_id,
+              totalProfit: 0, // Will be updated later
+              roi: 0,
+              duration: 0
+            }]);
+          }
+          
+          // Start monitoring bot buys
+          setLaunchStatus(prev => ({
+            ...prev,
+            phase: 'funding',
+            progress: 70,
+            message: 'Executing bot buys...',
+            currentStep: 'Bot Execution'
+          }));
+        });
+
+        launchWebSocket.on('token_creation_confirmed', (data: any) => {
+          // Backend has confirmed and updated database
+          console.log('Backend confirmed token creation:', data);
+        });
         
+        launchWebSocket.on('launch_error', (data: any) => {
+          console.error('Launch error event received:', data);
+          setLaunchStatus({
+            phase: 'failed',
+            progress: 0,
+            message: `❌ Launch error: ${data.error || data.message}`,
+            currentStep: 'Failed',
+            estimatedTimeRemaining: 0
+          });
+        });
+        
+        launchWebSocket.on('token_creation_failed', (data: any) => {
+          console.error('Token creation failed event received:', data);
+          setLaunchStatus({
+            phase: 'failed',
+            progress: 0,
+            message: `❌ Token creation failed: ${data.error}`,
+            currentStep: 'Failed',
+            estimatedTimeRemaining: 0
+          });
+        });
+
+        launchWebSocket.on('payload_sent', (data: any) => {
+          console.log('Payload sent event received:', data);
+          setLaunchStatus(prev => ({
+            ...prev,
+            phase: 'launching',
+            progress: 45,
+            message: 'Sending transaction to blockchain...',
+            currentStep: 'Sending Transaction'
+          }));
+        });
+
+        // For bot execution events
+        launchWebSocket.on('bot_buy_start', (data: any) => {
+          console.log('Bot buy started:', data);
+          setLaunchStatus(prev => ({
+            ...prev,
+            phase: 'funding',
+            progress: 70,
+            message: 'Executing bot buys...',
+            currentStep: 'Bot Execution'
+          }));
+        });
+
+        launchWebSocket.on('launch_completed', (data: any) => {
+          console.log('Launch completed event received:', data);
+          setLaunchStatus({
+            phase: 'complete',
+            progress: 100,
+            message: '🎉 Launch completed successfully!',
+            currentStep: 'Complete',
+            estimatedTimeRemaining: 0
+          });
+          
+          // Update results with final data
+          if (data.results) {
+            setLaunchResults(prev => [...prev, {
+              success: true,
+              mintAddress: data.mint_address || prev[prev.length - 1]?.mintAddress,
+              creatorTransaction: data.creator_tx_hash,
+              botBuyBundleId: data.bot_buy_bundle_id,
+              botSellBundleId: data.bot_sell_bundle_id,
+              totalProfit: data.results.total_profit || 0,
+              roi: data.results.roi || 0,
+              duration: data.results.duration || 0
+            }]);
+          }
+        });
+
+        // Keep existing handlers as fallbacks
         launchWebSocket.on('update', (data: LaunchStatus) => {
           setLaunchStatus({
             phase: data.status.toLowerCase().replace(/_/g, '-') as any,
@@ -1304,6 +1673,7 @@ const TokenCreator: React.FC = () => {
             estimatedTimeRemaining: 0
           });
         });
+
         
         // Also poll for status updates (fallback)
         const pollStatus = async () => {
@@ -3069,6 +3439,80 @@ const TokenCreator: React.FC = () => {
             {/* Status Display */}
             <StatusCard />
 
+            {/* {activeLaunchId && (
+              <div className="mb-6">
+                <button
+                  onClick={() => setShowLaunchDashboard(true)}
+                  className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4 text-left hover:border-purple-500/50 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-white font-bold">Live Launch Monitoring</h3>
+                        <p className="text-sm text-gray-400">Click to open real-time dashboard</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                      <span className="text-sm text-emerald-400">Live</span>
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            )} */}
+
+            {activeLaunchId && !showLaunchDashboard && (
+              <div className="mb-6">
+                <button
+                  onClick={() => setShowLaunchDashboard(true)}
+                  className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4 text-left hover:border-purple-500/50 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-white font-bold">Live Launch Dashboard</h3>
+                        <p className="text-sm text-gray-400">Click to open real-time monitoring</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                      <span className="text-sm text-emerald-400">Live</span>
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            )}
+
+            {showLaunchDashboard && activeLaunchId && (
+              <RealTimeLaunchDashboard
+                launchId={activeLaunchId}
+                onClose={() => setShowLaunchDashboard(false)}
+              />
+)}
+
+            {showLaunchDashboard && activeLaunchId && (
+              <RealTimeLaunchDashboard
+                launchId={activeLaunchId}
+                onClose={() => setShowLaunchDashboard(false)}
+              />
+            )}
+
             {/* Insufficient Balance Warning - Shows when user has < 0.0001 SOL */}
             <InsufficientBalanceWarning />
             
@@ -3314,6 +3758,93 @@ const TokenCreator: React.FC = () => {
                               className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-purple-500 [&::-webkit-slider-thumb]:to-pink-500"
                             />
                           </div>
+
+                          {/* Dynamic Bot Buy Settings Section */}
+<div className="mt-6 p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/30">
+  <h4 className="text-white font-bold text-lg mb-3 flex items-center gap-2">
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+    </svg>
+    Dynamic Bot Buy Settings
+  </h4>
+  
+  <p className="text-sm text-gray-400 mb-4">
+    Make buys look organic by varying amounts across bots
+  </p>
+  
+  <div className="space-y-4">
+    {/* Variability Slider */}
+    <div>
+      <div className="flex justify-between text-sm mb-2">
+        <label className="text-gray-400">Bot Amount Variability</label>
+        <span className="text-white font-medium">{launchConfig.botVariability * 100}%</span>
+      </div>
+      <input
+        type="range"
+        min="0"
+        max="1"
+        step="0.05"
+        value={launchConfig.botVariability}
+        onChange={(e) => setLaunchConfig(prev => ({ 
+          ...prev, 
+          botVariability: parseFloat(e.target.value) 
+        }))}
+        className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-purple-500 [&::-webkit-slider-thumb]:to-pink-500"
+      />
+      <div className="flex justify-between text-xs text-gray-500 mt-1">
+        <span>No Variation</span>
+        <span>High Variation</span>
+      </div>
+    </div>
+    
+    {/* Distribution Type */}
+    <div>
+      <label className="block text-gray-400 text-sm mb-2">Amount Distribution</label>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {[
+          { id: 'normal', label: 'Normal', desc: 'Bell curve' },
+          { id: 'uniform', label: 'Uniform', desc: 'Even spread' },
+          { id: 'log_normal', label: 'Log-Normal', desc: 'Organic tail' },
+          { id: 'random', label: 'Random', desc: 'Completely random' }
+        ].map((dist) => (
+          <button
+            key={dist.id}
+            onClick={() => setLaunchConfig(prev => ({ ...prev, botDistribution: dist.id as any }))}
+            className={`p-3 rounded-lg border transition-all ${
+              launchConfig.botDistribution === dist.id
+                ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/30 text-white'
+                : 'bg-gray-900/50 border-gray-700/50 text-gray-400 hover:text-white hover:border-gray-600/50'
+            }`}
+          >
+            <div className="flex flex-col items-center gap-1">
+              <span className="font-medium">{dist.label}</span>
+              <span className="text-xs text-gray-500">{dist.desc}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+    
+    {/* Preview Stats */}
+    <div className="mt-4 p-3 bg-gray-900/30 rounded-lg border border-gray-700/50">
+      <div className="flex items-center justify-between text-sm">
+        <div>
+          <div className="text-gray-400">Base Amount</div>
+          <div className="text-white font-medium">{launchConfig.botWalletBuyAmount} SOL</div>
+        </div>
+        <div>
+          <div className="text-gray-400">Variation</div>
+          <div className="text-purple-400 font-medium">±{(launchConfig.botVariability * 100).toFixed(0)}%</div>
+        </div>
+        <div>
+          <div className="text-gray-400">Distribution</div>
+          <div className="text-emerald-400 font-medium capitalize">{launchConfig.botDistribution}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
                           
                           <div className="grid grid-cols-2 gap-4">
                             <div>

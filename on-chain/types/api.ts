@@ -137,7 +137,7 @@ export interface FundBotsResponse {
 }
 
 
-// export interface ExecuteBotBuysResponse {
+// export interface ExecuteBotBuysRonse {
 //   success: boolean;
 //   bundle_id?: string;
 //   signatures?: string[];
@@ -165,6 +165,16 @@ export interface ExecuteBotBuysResponse {
   stats?: ExecuteBotBuysStats | any; // Make stats more flexible
   total_sol_received?: number; // Add for sell operations
   sell_stats?: any; // Add for sell operations
+  endpointUsed?: string;
+  // Add this for advanced strategy results
+  advanced_results?: {
+    success: boolean;
+    totalProfit: number;
+    roi: number;
+    phaseResults: any[];
+    volumeGenerated: number;
+    exitReason: string;
+  };
 }
 
 // Base stats interface
@@ -180,11 +190,11 @@ export interface ExecuteBotBuysStats {
 // ============================================
 
 export interface SellStrategyConfig {
-    minProfitPercentage: number;  // Minimum profit % to trigger sell (e.g., 50 = 50%)
-    maxHoldTimeSeconds: number;   // Maximum time to hold before selling
-    stopLossPercentage: number;   // Stop loss % (e.g., 20 = sell if down 20%)
-    staggeredSellDelayMs: number; // Delay between bot sells (ms)
-    partialSellPercentages: number[]; // [25, 25, 50] = sell 25%, then 25%, then 50%
+    minProfitPercentage?: number;  // Make optional
+    maxHoldTimeSeconds?: number;   // Make optional  
+    stopLossPercentage?: number;   // Make optional
+    staggeredSellDelayMs?: number; // Make optional
+    partialSellPercentages?: number[]; // Keep optional
 }
 
 export interface BotSellRequest {
@@ -209,6 +219,14 @@ export interface SellExecutionResult {
         bots_sold: number;
         creator_sold: boolean;
         profit_percentage?: number;
+        // Add these optional properties for advanced strategy
+        advanced_strategy_used?: boolean;
+        monitoring_time_ms?: number;
+        exit_signal?: string;
+        peak_price?: number;
+        final_price?: number;
+        price_drop_from_peak?: string;
+        strategy_aggressiveness?: 'conservative' | 'moderate' | 'aggressive';
     };
 }
 

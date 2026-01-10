@@ -39,6 +39,8 @@ from app.utils import redis_client
 from collections import deque
 from typing import Set
 from app.utils.shared import save_bot_state, load_bot_state
+from app.routers.creators.websocket import router as websocket_router
+
 
 
 # Disable SQLAlchemy logging
@@ -158,6 +160,8 @@ app.include_router(openai_router)
 app.include_router(tokencreate_router)
 app.include_router(creator_user_router)
 app.include_router(prefund_router)
+# Websocket router to update frontend
+app.include_router(websocket_router)
 
 
 

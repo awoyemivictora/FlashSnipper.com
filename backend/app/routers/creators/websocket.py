@@ -80,5 +80,41 @@ async def send_launch_status_update(launch_id: str, status_data: Dict):
     }
     await manager.send_personal_message(json.dumps(message), launch_id)
     
+
+@router.websocket("/ws/launch/{launch_id}/status")
+async def launch_status_websocket(websocket: WebSocket, launch_id: str):
+    """
+    WebSocket endpoint for real-time launch status updates
+    """
+    await manager.connect(websocket, launch_id, connection_type="launch")
     
+    try:
+        # Send initial connection confirmation
+        await websocket.send_json({
+            "event": "connected",
+            "launch_id": launch_id,
+            "timestamp": datetime.utcnow().isoformat(),
+            "message": f"Connected to launch {launch_id} updates"
+        })
+        
+        # Keep connection alive
+        while True:
+            # Wait for ping messages
+            data = await websocket.receive_text()
+            try:
+                message = json.loads(data)
+                if message.get("type") == "ping":
+                    await websocket.send_json({
+                        "type": "pong",
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+            except json.JSONDecodeError:
+                # Ignore non-JSON messages
+                pass
+                
+    except WebSocketDisconnect:
+        logger.info(f"WebSocket disconnected for launch {launch_id}")
+    except Exception as e:
+        logger.error(f"WebSocket error for launch {launch_id}: {e}")
+          
     

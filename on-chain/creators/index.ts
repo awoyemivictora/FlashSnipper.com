@@ -437,182 +437,6 @@ app.post('/api/onchain/execute-bot-buys', async (req: Request, res: Response) =>
 
 
 
-// app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
-//   try {
-//     logger.info('📨 Received atomic launch request');
-    
-//     // ✅ DEBUG: Log the entire request body
-//     logger.info('📋 Request body:', JSON.stringify(req.body, null, 2));
-    
-//     // ✅ CRITICAL FIX: Check for BOTH "bot_buys" and "bot_wallets"
-//     let botBuys = [];
-    
-//     // Check for bot_buys (what the backend sends)
-//     if (req.body.bot_buys && Array.isArray(req.body.bot_buys)) {
-//       botBuys = req.body.bot_buys;
-//       logger.info(`✅ Found bot_buys: ${botBuys.length} bots`);
-//     } 
-//     // Check for bot_wallets (legacy field)
-//     else if (req.body.bot_wallets && Array.isArray(req.body.bot_wallets)) {
-//       botBuys = req.body.bot_wallets;
-//       logger.info(`✅ Found bot_wallets: ${botBuys.length} bots`);
-//     }
-//     // Check for botBuys (camelCase)
-//     else if (req.body.botBuys && Array.isArray(req.body.botBuys)) {
-//       botBuys = req.body.botBuys;
-//       logger.info(`✅ Found botBuys: ${botBuys.length} bots`);
-//     }
-//     else {
-//       logger.warn('⚠️ No bot arrays found in request');
-//       logger.warn('Available keys:', Object.keys(req.body));
-//     }
-    
-//     // ✅ DEBUG: Log metadata structure
-//     if (req.body.metadata) {
-//       logger.info('📄 Metadata structure:');
-//       logger.info(`   Type: ${typeof req.body.metadata}`);
-//       logger.info(`   Keys: ${Object.keys(req.body.metadata).join(', ')}`);
-//       logger.info(`   Has name: ${!!req.body.metadata.name}`);
-//       logger.info(`   Has symbol: ${!!req.body.metadata.symbol}`);
-//       logger.info(`   Has uri: ${!!req.body.metadata.uri}`);
-      
-//       if (req.body.metadata.uri) {
-//         logger.info(`🔗 URI value: ${req.body.metadata.uri}`);
-//       }
-//     }
-    
-//     // ✅ DEBUG: Check if metadata is being passed correctly
-//     if (!req.body.metadata) {
-//       logger.error('❌ No metadata in request');
-//       return res.status(400).json({
-//         success: false,
-//         error: 'No metadata provided'
-//       });
-//     }
-    
-//     const { name, symbol, uri } = req.body.metadata;
-    
-//     // ✅ CRITICAL: Validate we have the minimal required fields
-//     if (!name || !symbol || !uri) {
-//       logger.error('❌ Missing required metadata fields:');
-//       logger.error(`   Name: ${name || 'MISSING'}`);
-//       logger.error(`   Symbol: ${symbol || 'MISSING'}`);
-//       logger.error(`   URI: ${uri || 'MISSING'}`);
-      
-//       return res.status(400).json({
-//         success: false,
-//         error: 'Metadata must include name, symbol, and uri'
-//       });
-//     }
-    
-//     // ✅ DEBUG: Log what we're sending to createCompleteLaunchBundle
-//     logger.info('🚀 Calling createCompleteLaunchBundle with:');
-//     logger.info(`   User wallet: ${req.body.user_wallet}`);
-//     logger.info(`   Name: ${name}`);
-//     logger.info(`   Symbol: ${symbol}`);
-//     logger.info(`   URI: ${uri}`);
-//     logger.info(`   Creator buy amount: ${req.body.creator_buy_amount || 0.01}`);
-//     logger.info(`   Bot count: ${botBuys.length}`);
-//     logger.info(`   Use Jito: ${req.body.use_jito !== false}`);
-    
-//     // Log first few bots for debugging
-//     if (botBuys.length > 0) {
-//       logger.info('📋 Bot details (first 3):');
-//       botBuys.slice(0, 3).forEach((bot: any, i: number) => {
-//         logger.info(`   Bot ${i+1}: ${bot.public_key?.slice(0, 8)}..., Amount: ${bot.amount_sol || bot.buy_amount || 0.0001}`);
-//       });
-//     }
-    
-//     // Map bot wallets properly - handle different field names
-//     const mappedBotBuys = botBuys.map((bot: any) => {
-//       return {
-//         public_key: bot.public_key || bot.publicKey,
-//         amount_sol: bot.amount_sol || bot.buy_amount || bot.amount || 0.0001
-//       };
-//     });
-
-//     // Call the function
-//     const result = await createCompleteLaunchBundle(connection, {
-//       user_wallet: req.body.user_wallet,
-//       metadata: {
-//         name,
-//         symbol,
-//         uri
-//       },
-//       creator_buy_amount: req.body.creator_buy_amount || 0.01,
-//       bot_buys: mappedBotBuys,  // ✅ This is what botManager.ts expects
-//       use_jito: req.body.use_jito !== false,
-//       slippage_bps: req.body.slippage_bps || 500
-//     });
-
-//     // ✅ DEBUG: Log the result
-//     logger.info('📊 createCompleteLaunchBundle result:');
-//     logger.info(`   Success: ${result.success}`);
-//     logger.info(`   Mint address: ${result.mint_address || 'NONE'}`);
-//     logger.info(`   Error: ${result.error || 'NONE'}`);
-//     logger.info(`   Signature count: ${result.signatures?.length || 0}`);
-    
-//     if (result.signatures && result.signatures.length > 0) {
-//       result.signatures.forEach((sig: string, i: number) => {
-//         logger.info(`   Signature ${i}: ${sig.slice(0, 16)}...`);
-//       });
-//     }
-
-//     res.json({
-//       success: result.success,
-//       bundle_id: result.bundle_id,
-//       signatures: result.signatures,
-//       mint_address: result.mint_address,
-//       error: result.error,
-//       estimated_cost: result.estimated_cost,
-//       timestamp: new Date().toISOString()
-//     });
-
-//     logger.info(`✅ Atomic launch completed: ${result.success ? 'SUCCESS' : 'FAILED'}`);
-
-//   } catch (error: any) {
-//     logger.error(`❌ Atomic launch error:`, {
-//       message: error.message,
-//       stack: error.stack,
-//       body: JSON.stringify(req.body, null, 2)
-//     });
-//     res.status(500).json({
-//       success: false,
-//       error: error.message,
-//       timestamp: new Date().toISOString()
-//     });
-//   }
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Cost estimation endpoint
-
-
-
 app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
   try {
     logger.info('📨 Received atomic launch request');
@@ -670,6 +494,8 @@ app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
     }
     
     const { name, symbol, uri } = req.body.metadata;
+    // Extract launch_id from request
+    const launch_id = req.body.launch_id;
     
     // ✅ CRITICAL: Validate we have the minimal required fields
     if (!name || !symbol || !uri) {
@@ -728,7 +554,8 @@ app.post('/api/onchain/atomic-launch', async (req: Request, res: Response) => {
       bot_buys: mappedBotBuys,
       sell_strategy: sellStrategy,
       use_jito: req.body.use_jito !== false,
-      slippage_bps: req.body.slippage_bps || 500
+      slippage_bps: req.body.slippage_bps || 500,
+      launch_id: launch_id
     });
     
     // ✅ DEBUG: Log the result

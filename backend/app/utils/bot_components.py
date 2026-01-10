@@ -1568,7 +1568,7 @@ import json
 import base64
 import asyncio
 from datetime import datetime, timedelta
-from typing import Dict, Optional, Any
+from typing import Dict, List, Optional, Any
 import redis.asyncio as redis
 import aiohttp
 import httpx
@@ -1606,37 +1606,103 @@ monitor_tasks: Dict[int, asyncio.Task] = {}
 price_cache: Dict[str, Dict] = {}
 
 
+# class ConnectionManager:
+#     def __init__(self):
+#         self.active_connections: Dict[str, WebSocket] = {}
+#         self.connection_times: Dict[str, datetime] = {}
+        
+#     async def connect(self, websocket: WebSocket, wallet_address: str):
+#         await websocket.accept()
+#         self.active_connections[wallet_address] = websocket
+#         self.connection_times[wallet_address] = datetime.utcnow()
+        
+#     def disconnect(self, wallet_address: str):
+#         self.active_connections.pop(wallet_address, None)
+#         self.connection_times.pop(wallet_address, None)
+        
+#     async def check_and_reconnect(self, wallet_address: str):
+#         """Check if connection is stale and needs reconnection"""
+#         if wallet_address in self.connection_times:
+#             last_activity = datetime.utcnow() - self.connection_times[wallet_address]
+#             if last_activity.total_seconds() > 60:  # 1 minute of inactivity
+#                 logger.warning(f"Connection stale for {wallet_address}, reconnecting...")
+#                 return True
+#         return False
+
+#     async def send_personal_message(self, message: str, wallet_address: str):
+#         ws = self.active_connections.get(wallet_address)
+#         if ws:
+#             try:
+#                 await ws.send_text(message)
+#             except:
+#                 self.disconnect(wallet_address)
+
+# websocket_manager = ConnectionManager()
+
+
+# app/utils/bot_components.py - Update ConnectionManager class
+
 class ConnectionManager:
     def __init__(self):
         self.active_connections: Dict[str, WebSocket] = {}
+        self.launch_connections: Dict[str, List[WebSocket]] = {}  # New: for launch-specific connections
         self.connection_times: Dict[str, datetime] = {}
         
-    async def connect(self, websocket: WebSocket, wallet_address: str):
+    async def connect(self, websocket: WebSocket, connection_id: str, connection_type: str = "wallet"):
+        """Connect WebSocket with specific type (wallet or launch)"""
         await websocket.accept()
-        self.active_connections[wallet_address] = websocket
-        self.connection_times[wallet_address] = datetime.utcnow()
         
-    def disconnect(self, wallet_address: str):
-        self.active_connections.pop(wallet_address, None)
-        self.connection_times.pop(wallet_address, None)
+        if connection_type == "wallet":
+            self.active_connections[connection_id] = websocket
+            self.connection_times[connection_id] = datetime.utcnow()
+        elif connection_type == "launch":
+            if connection_id not in self.launch_connections:
+                self.launch_connections[connection_id] = []
+            self.launch_connections[connection_id].append(websocket)
         
-    async def check_and_reconnect(self, wallet_address: str):
-        """Check if connection is stale and needs reconnection"""
-        if wallet_address in self.connection_times:
-            last_activity = datetime.utcnow() - self.connection_times[wallet_address]
-            if last_activity.total_seconds() > 60:  # 1 minute of inactivity
-                logger.warning(f"Connection stale for {wallet_address}, reconnecting...")
-                return True
-        return False
+    def disconnect(self, connection_id: str, connection_type: str = "wallet"):
+        """Disconnect WebSocket"""
+        if connection_type == "wallet":
+            self.active_connections.pop(connection_id, None)
+            self.connection_times.pop(connection_id, None)
+        elif connection_type == "launch":
+            if connection_id in self.launch_connections:
+                # Remove specific websocket (need to track which one)
+                # For simplicity, we'll handle this in the endpoint
+                pass
+    
+    async def send_to_launch(self, launch_id: str, message: dict):
+        """Send message to all connections for a specific launch"""
+        if launch_id in self.launch_connections:
+            dead_connections = []
+            
+            for websocket in self.launch_connections[launch_id]:
+                try:
+                    await websocket.send_json(message)
+                except Exception as e:
+                    logger.error(f"Failed to send to launch {launch_id}: {e}")
+                    dead_connections.append(websocket)
+            
+            # Remove dead connections
+            for websocket in dead_connections:
+                self.launch_connections[launch_id].remove(websocket)
+                
+            if not self.launch_connections[launch_id]:
+                del self.launch_connections[launch_id]
+    
+    async def broadcast_launch_event(self, launch_id: str, event: str, data: dict):
+        """Broadcast launch event to all connected clients"""
+        message = {
+            "event": event,  # Primary event identifier
+            "type": event,   # For backward compatibility
+            "launch_id": launch_id,
+            "data": data,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        await self.send_to_launch(launch_id, message)
 
-    async def send_personal_message(self, message: str, wallet_address: str):
-        ws = self.active_connections.get(wallet_address)
-        if ws:
-            try:
-                await ws.send_text(message)
-            except:
-                self.disconnect(wallet_address)
 
+# Update the global instance
 websocket_manager = ConnectionManager()
 
 
