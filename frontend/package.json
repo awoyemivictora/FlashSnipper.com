@@ -45,7 +45,6 @@
     "@solana/wallet-adapter-trezor": "^0.4.8",
     "@solana/wallet-adapter-neko": "^0.1.4",
     "@solana/wallet-adapter-alpha": "^0.2.13",
-    "@solana-mobile/wallet-adapter-mobile": "^0.4.2",
     "@solana/wallet-standard-wallet-adapter-react": "^0.1.0",
 
     "@tailwindcss/typography": "^0.5.16",
