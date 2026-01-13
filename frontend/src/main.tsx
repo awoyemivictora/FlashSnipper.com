@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './styles/index.css';
-import './polyfills.ts';
+import './polyfills';
 
 // Test if Buffer is polyfilled
 if (typeof window !== 'undefined') {

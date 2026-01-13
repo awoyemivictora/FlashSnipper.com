@@ -2,41 +2,32 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tagger from "@dhiwise/component-tagger";
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import nodeResolve from '@rollup/plugin-node-resolve'; 
 import path from 'path'; 
 
 export default defineConfig({
   build: {
     outDir: "build",
-    rollupOptions: {
-      external: ['@solana-mobile/wallet-adapter-mobile'],
-    },
   },
   plugins: [
     react(),
     tagger(),
-    nodePolyfills({
-      include: ['buffer', 'process'],
-      globals: {
-        Buffer: true,
-        process: true,
-      },
+    NodeGlobalsPolyfillPlugin({
+      process: true,
+      buffer: true,
     }),
     nodeResolve({
-      browser: true,
-      preferBuiltins: false,
     }), 
   ],
   define: {
+    'global.Buffer': 'globalThis.Buffer',
     'process.env.NODE_DEBUG': 'false',
     'process.env': {}, 
-    global: 'globalThis',
+    'global': 'globalThis', 
   },
   resolve: {
     alias: {
-      buffer: 'buffer/',
-      process: 'process/browser',
+      'buffer': 'buffer/',
       '@': path.resolve(__dirname, './src'), 
       '@components': path.resolve(__dirname, './src/components'),
       '@pages': path.resolve(__dirname, './src/pages'),
@@ -52,7 +43,6 @@ export default defineConfig({
     allowedHosts: ['.amazonaws.com', '.builtwithrocket.new']
   },
   optimizeDeps: {
-    include: ['buffer', 'process'],
     esbuildOptions: {
       define: {
         global: 'globalThis'
@@ -66,4 +56,3 @@ export default defineConfig({
     }
   }
 });
-
