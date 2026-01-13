@@ -2293,7 +2293,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 
-// Import from @solana/wallet-adapter-wallets (the official package)
+// Import from @solana/wallet-adapter-wallets
 import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
@@ -2345,8 +2345,6 @@ interface WalletContextType {
     icon?: string;
     readyState: WalletReadyState;
     category: 'popular' | 'mobile' | 'browser' | 'hardware' | 'web3';
-    isMobileCompatible: boolean;
-    mobileAppUrl?: string;
   }>;
   switchNetwork: (network: WalletAdapterNetwork) => void;
   refreshBalance: () => Promise<void>;
@@ -2382,193 +2380,146 @@ const WalletContext = createContext<WalletContextType>({
 
 export const useWallet = () => useContext(WalletContext);
 
-// Enhanced mobile detection with better browser sniffing
+// Enhanced mobile detection
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [isAndroid, setIsAndroid] = useState(false);
 
   useEffect(() => {
-    const checkDevice = () => {
-      const userAgent = navigator.userAgent;
-      const width = window.innerWidth;
-      
-      const ios = /iPhone|iPad|iPod/i.test(userAgent);
-      const android = /Android/i.test(userAgent);
-      const mobile = ios || android || width < 768;
-      
-      setIsIOS(ios);
-      setIsAndroid(android);
-      setIsMobile(mobile);
+    const checkMobile = () => {
+      setIsMobile(
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        ) || window.innerWidth < 768
+      );
     };
     
-    checkDevice();
-    window.addEventListener('resize', checkDevice);
-    return () => window.removeEventListener('resize', checkDevice);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  return { isMobile, isIOS, isAndroid };
+  return isMobile;
 };
 
-// Helper function to check if wallet app is installed on mobile
-const checkMobileWalletInstalled = (walletName: string): boolean => {
+// Mobile wallet detection utilities
+const MOBILE_WALLET_CONFIGS = {
+  phantom: {
+    name: 'Phantom',
+    scheme: 'phantom://',
+    appStoreUrl: 'https://phantom.app/download',
+    deepLinkUrl: 'https://phantom.app/ul/browse/{encodedUrl}',
+    readyStateOnMobile: WalletReadyState.Loadable,
+  },
+  solflare: {
+    name: 'Solflare',
+    scheme: 'solflare://',
+    appStoreUrl: 'https://solflare.com/download',
+    deepLinkUrl: 'https://solflare.com/ul/browse/{encodedUrl}',
+    readyStateOnMobile: WalletReadyState.Loadable,
+  },
+  trust: {
+    name: 'Trust Wallet',
+    scheme: 'trust://',
+    appStoreUrl: 'https://trustwallet.com/solana-wallet',
+    deepLinkUrl: 'https://link.trustwallet.com/open_url?url={encodedUrl}',
+    readyStateOnMobile: WalletReadyState.Loadable,
+  },
+};
+
+// Check if a mobile wallet app is installed
+const isMobileWalletInstalled = (walletName: string): boolean => {
   if (typeof window === 'undefined') return false;
   
-  const userAgent = navigator.userAgent;
-  const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
-  const isAndroid = /Android/i.test(userAgent);
+  const walletLower = walletName.toLowerCase();
+  const userAgent = navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(userAgent);
+  const isAndroid = /android/.test(userAgent);
   
   if (!isIOS && !isAndroid) return false;
   
-  // Check for wallet-specific deep link support
-  const walletLower = walletName.toLowerCase();
-  
-  if (walletLower.includes('phantom')) {
-    // Phantom mobile detection
-    const phantomLink = 'phantom://';
-    if (isIOS) {
-      // iOS - check if Phantom app is installed via URL scheme
-      const iframe = document.createElement('iframe');
-      iframe.src = phantomLink;
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 100);
-      // Note: This is a best-effort check and may not be 100% reliable
-    }
-    return true; // Assume Phantom is available on mobile
-  }
-  
-  if (walletLower.includes('trust')) {
-    // Trust Wallet uses WalletConnect - always available on mobile
-    return true;
-  }
-  
-  if (walletLower.includes('solflare')) {
-    // Solflare mobile detection
-    return true; // Available via deep link
-  }
-  
-  return false;
+  // For mobile, we assume wallets are available via deep links
+  // This is the industry standard approach
+  return ['phantom', 'solflare', 'trust'].some(name => 
+    walletLower.includes(name)
+  );
 };
 
-
-// Custom Wallet Modal with mobile-specific handling
+// Simple, clean Custom Wallet Modal
 const CustomWalletModal: FC = () => {
   const { wallets, select } = useSolanaWallet();
   const { visible, setVisible } = useWalletModal();
-  const { isMobile, isIOS, isAndroid } = useIsMobile();
+  const isMobile = useIsMobile();
   
   const handleClose = () => setVisible(false);
   
   const handleWalletClick = async (walletName: string, readyState: WalletReadyState) => {
-    const walletLower = walletName.toLowerCase();
-    
-    // MOBILE-SPECIFIC LOGIC
-    if (isMobile) {
-      // Special handling for mobile wallets
-      
-      // PHANTOM on mobile - always try to connect even if shows as NotDetected
-      if (walletLower.includes('phantom')) {
-        try {
-          // Force select and let Phantom handle mobile connection
-          select(walletName as any);
-          handleClose();
-          return;
-        } catch (error) {
-          console.error('Phantom mobile connection error:', error);
-        }
-      }
-      
-      // TRUST WALLET on mobile
-      if (walletLower.includes('trust')) {
-        try {
-          // Trust Wallet uses WalletConnect on mobile
-          select(walletName as any);
-          handleClose();
-          return;
-        } catch (error) {
-          console.error('Trust Wallet mobile connection error:', error);
-        }
-      }
-      
-      // SOLFLARE on mobile
-      if (walletLower.includes('solflare')) {
-        // Check if Solflare is installed
-        if (readyState === WalletReadyState.NotDetected) {
-          // Redirect to App Store/Play Store
-          if (isIOS) {
-            window.open('https://apps.apple.com/app/solflare-solana-wallet/id1580902717', '_blank');
-          } else if (isAndroid) {
-            window.open('https://play.google.com/store/apps/details?id=com.solflare.mobile', '_blank');
-          } else {
-            window.open('https://solflare.com/download', '_blank');
-          }
-          return;
-        }
-      }
-    }
-    
-    // DESKTOP LOGIC
-    if (readyState === WalletReadyState.NotDetected) {
-      // Show installation instructions
-      let installUrl = '';
-      
-      if (walletLower.includes('phantom')) {
-        installUrl = 'https://phantom.app/download';
-      } else if (walletLower.includes('solflare')) {
-        installUrl = 'https://solflare.com/download';
-      } else if (walletLower.includes('trust')) {
-        installUrl = 'https://trustwallet.com/solana-wallet';
-      }
-      
-      if (installUrl && window.confirm(`${walletName} is not installed. Would you like to visit the download page?`)) {
-        window.open(installUrl, '_blank');
-      }
-      return;
-    }
-    
-    // For Loadable or Installed wallets
     try {
-      select(walletName as any);
-      handleClose();
+      // Check if this is a mobile-specific scenario
+      const walletLower = walletName.toLowerCase();
+      
+      if (isMobile) {
+        // On mobile, handle wallet-specific behaviors
+        if (readyState === WalletReadyState.NotDetected) {
+          // For mobile, check if it's a mobile wallet that can be opened via deep link
+          const mobileWalletKey = Object.keys(MOBILE_WALLET_CONFIGS).find(key => 
+            walletLower.includes(key)
+          );
+          
+          if (mobileWalletKey) {
+            const config = MOBILE_WALLET_CONFIGS[mobileWalletKey as keyof typeof MOBILE_WALLET_CONFIGS];
+            
+            // Try to open via deep link first
+            const currentUrl = encodeURIComponent(window.location.href);
+            const deepLinkUrl = config.deepLinkUrl.replace('{encodedUrl}', currentUrl);
+            
+            // Open deep link (will open app if installed)
+            window.location.href = deepLinkUrl;
+            
+            // Fallback to app store after a delay
+            setTimeout(() => {
+              if (!document.hidden) {
+                // App didn't open, redirect to app store
+                window.open(config.appStoreUrl, '_blank');
+              }
+            }, 1000);
+            
+            handleClose();
+            return;
+          }
+        }
+      }
+      
+      // For desktop or already detected wallets, use normal selection
+      if (readyState !== WalletReadyState.NotDetected || isMobile) {
+        select(walletName as any);
+        handleClose();
+      } else {
+        // Show installation prompt for desktop
+        let installUrl = '';
+        if (walletLower.includes('phantom')) {
+          installUrl = 'https://phantom.app/download';
+        } else if (walletLower.includes('solflare')) {
+          installUrl = 'https://solflare.com/download';
+        } else if (walletLower.includes('trust')) {
+          installUrl = 'https://trustwallet.com/solana-wallet';
+        }
+        
+        if (installUrl && window.confirm(`${walletName} is not installed. Would you like to visit the download page?`)) {
+          window.open(installUrl, '_blank');
+        }
+      }
     } catch (error) {
-      console.error(`Error selecting wallet ${walletName}:`, error);
+      console.error(`Error handling wallet ${walletName}:`, error);
     }
   };
   
   if (!visible) return null;
   
-  // Sort wallets: mobile-compatible first, then by readiness
-  const sortedWallets = [...wallets].sort((a, b) => {
-    const aName = a.adapter.name.toLowerCase();
-    const bName = b.adapter.name.toLowerCase();
-    
-    // Mobile-first sorting
-    if (isMobile) {
-      const aIsMobilePreferred = aName.includes('phantom') || aName.includes('trust');
-      const bIsMobilePreferred = bName.includes('phantom') || bName.includes('trust');
-      
-      if (aIsMobilePreferred && !bIsMobilePreferred) return -1;
-      if (!aIsMobilePreferred && bIsMobilePreferred) return 1;
-    }
-    
-    // Then by readiness
-    if (a.readyState === WalletReadyState.Installed && b.readyState !== WalletReadyState.Installed) return -1;
-    if (a.readyState !== WalletReadyState.Installed && b.readyState === WalletReadyState.Installed) return 1;
-    
-    // Then alphabetically
-    return aName.localeCompare(bName);
-  });
-  
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
       <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-gray-700 shadow-2xl">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-white">
-            {isMobile ? 'Connect Wallet (Mobile)' : 'Connect Wallet'}
-          </h2>
+          <h2 className="text-xl font-semibold text-white">Connect Wallet</h2>
           <button 
             onClick={handleClose}
             className="text-gray-400 hover:text-white transition-colors"
@@ -2577,28 +2528,12 @@ const CustomWalletModal: FC = () => {
           </button>
         </div>
         
-        {isMobile && (
-          <div className="mb-4 p-3 bg-blue-900/20 border border-blue-700/50 rounded-lg">
-            <p className="text-sm text-blue-300">
-              💡 On mobile, wallets may open in their respective apps. Make sure you have the wallet app installed.
-            </p>
-          </div>
-        )}
-        
         <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-          {sortedWallets.map((wallet) => {
+          {wallets.map((wallet) => {
             const isInstalled = wallet.readyState === WalletReadyState.Installed;
             const isLoadable = wallet.readyState === WalletReadyState.Loadable;
             const isNotDetected = wallet.readyState === WalletReadyState.NotDetected;
             const walletName = wallet.adapter.name as string;
-            const walletLower = walletName.toLowerCase();
-            
-            // Determine if wallet is mobile-preferred
-            const isMobilePreferred = isMobile && (
-              walletLower.includes('phantom') || 
-              walletLower.includes('trust') ||
-              walletLower.includes('solflare')
-            );
             
             return (
               <button
@@ -2606,15 +2541,12 @@ const CustomWalletModal: FC = () => {
                 onClick={() => handleWalletClick(walletName, wallet.readyState)}
                 className={`
                   flex items-center gap-3 p-3 w-full rounded-lg transition-all duration-200
-                  ${isNotDetected && !isMobilePreferred
+                  ${isNotDetected && !isMobile
                     ? 'opacity-60 cursor-not-allowed bg-gray-800/30' 
                     : 'hover:bg-gray-800/50 bg-gray-800/30'
                   }
-                  ${isMobilePreferred ? 'border border-cyan-500/30' : ''}
-                  ${isInstalled ? 'border border-green-500/30' : ''}
-                  ${isLoadable ? 'border border-blue-500/30' : ''}
                 `}
-                disabled={isNotDetected && !isMobilePreferred}
+                disabled={isNotDetected && !isMobile}
               >
                 {wallet.adapter.icon && (
                   <img 
@@ -2627,7 +2559,6 @@ const CustomWalletModal: FC = () => {
                   <div className="flex items-center gap-2">
                     <span className="text-white font-medium">
                       {walletName}
-                      {isMobilePreferred && " 📱"}
                     </span>
                     {isInstalled && (
                       <span className="text-xs px-2 py-0.5 rounded bg-green-900/30 text-green-400 border border-green-700/50">
@@ -2639,23 +2570,15 @@ const CustomWalletModal: FC = () => {
                         Available
                       </span>
                     )}
-                    {isNotDetected && isMobilePreferred && (
-                      <span className="text-xs px-2 py-0.5 rounded bg-cyan-900/30 text-cyan-400 border border-cyan-700/50">
-                        Mobile App
-                      </span>
-                    )}
-                    {isNotDetected && !isMobilePreferred && (
+                    {isNotDetected && (
                       <span className="text-xs px-2 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700/50">
-                        Not Installed
+                        {isMobile ? 'Mobile App' : 'Not Installed'}
                       </span>
                     )}
                   </div>
                   {isNotDetected && (
                     <p className="text-xs text-gray-400 mt-1">
-                      {isMobilePreferred 
-                        ? 'Tap to open in app or install' 
-                        : 'Click for installation instructions'
-                      }
+                      {isMobile ? 'Tap to open in app or install' : 'Click for installation instructions'}
                     </p>
                   )}
                 </div>
@@ -2667,22 +2590,7 @@ const CustomWalletModal: FC = () => {
         
         <div className="mt-6 pt-4 border-t border-gray-800/50">
           <p className="text-xs text-gray-500 text-center">
-            Don't have a wallet? Try{' '}
-            <a 
-              href={isMobile ? 'https://phantom.app/download' : 'https://phantom.app/download'} 
-              target="_blank" 
-              className="text-cyan-400 hover:text-cyan-300"
-            >
-              Phantom
-            </a>
-            {' or '}
-            <a 
-              href={isMobile ? 'https://solflare.com/download' : 'https://solflare.com/download'} 
-              target="_blank" 
-              className="text-cyan-400 hover:text-cyan-300"
-            >
-              Solflare
-            </a>
+            Don't have a wallet? Try <a href="https://phantom.app/download" target="_blank" className="text-cyan-400 hover:text-cyan-300">Phantom</a> or <a href="https://solflare.com/download" target="_blank" className="text-cyan-400 hover:text-cyan-300">Solflare</a>
           </p>
         </div>
       </div>
@@ -2706,55 +2614,30 @@ export const WalletProvider: FC<{
   const [balance, setBalance] = useState<number | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { isMobile } = useIsMobile();
+  const isMobile = useIsMobile();
   
   const clearError = useCallback(() => setError(null), []);
   
-  // Initialize wallets with mobile-specific handling
+  // Initialize wallets with PROPER mobile handling
   const wallets = useMemo(() => {
-    try {
-      const walletAdaptersList: BaseWalletAdapter[] = [];
-      
-      // CRITICAL FIX: Initialize adapters in specific order with proper configuration
-      
-      // 1. Phantom - with mobile awareness
-      const phantomAdapter = new PhantomWalletAdapter();
-      // Force Phantom to be available on mobile (it uses deep links)
-      if (isMobile) {
-        // Patch the adapter to always show as Loadable on mobile
-        Object.defineProperty(phantomAdapter, 'readyState', {
-          get() {
-            return WalletReadyState.Loadable;
-          }
-        });
-      }
-      walletAdaptersList.push(phantomAdapter);
-      
-      // 2. Solflare - with network config
-      const solflareAdapter = new SolflareWalletAdapter({ network: currentNetwork });
-      walletAdaptersList.push(solflareAdapter);
-      
-      // 3. Trust Wallet - mobile compatible
-      const trustAdapter = new TrustWalletAdapter();
-      // Trust Wallet uses WalletConnect, always available on mobile
-      if (isMobile) {
-        Object.defineProperty(trustAdapter, 'readyState', {
-          get() {
-            return WalletReadyState.Loadable;
-          }
-        });
-      }
-      walletAdaptersList.push(trustAdapter);
-      
-      console.log(`✅ Initialized ${walletAdaptersList.length} wallet adapters for ${isMobile ? 'mobile' : 'desktop'}`);
-      return walletAdaptersList;
-      
-    } catch (error) {
-      console.error('❌ Error initializing wallet adapters:', error);
-      setError('Failed to initialize wallet adapters. Please refresh the page.');
-      return [];
-    }
-  }, [currentNetwork, isMobile]);
+    const adapters: BaseWalletAdapter[] = [];
+    
+    // IMPORTANT: Initialize wallets in a specific order
+    // 1. Phantom (mobile-friendly)
+    const phantomAdapter = new PhantomWalletAdapter();
+    adapters.push(phantomAdapter);
+    
+    // 2. Solflare (mobile-friendly)
+    const solflareAdapter = new SolflareWalletAdapter({ network: currentNetwork });
+    adapters.push(solflareAdapter);
+    
+    // 3. Trust Wallet (mobile-friendly via WalletConnect)
+    const trustAdapter = new TrustWalletAdapter();
+    adapters.push(trustAdapter);
+    
+    console.log(`Initialized ${adapters.length} wallet adapters`);
+    return adapters;
+  }, [currentNetwork]);
 
   const endpoint = useMemo(() => {
     if (customEndpoint) return customEndpoint;
@@ -2795,7 +2678,7 @@ export const WalletProvider: FC<{
         wallets={wallets} 
         autoConnect={autoConnect}
         onError={(error: WalletError) => {
-          console.error('🔴 Wallet provider error:', error);
+          console.error('Wallet provider error:', error);
           setError(error.message || 'An unknown wallet error occurred');
         }}
       >
@@ -2846,7 +2729,6 @@ const WalletContextInner: FC<{
   clearError,
   isMobile
 }) => {
-  const { isIOS, isAndroid } = useIsMobile();
   const { connection } = useConnection();
   const solanaWallet = useSolanaWallet();
   const {
@@ -2878,7 +2760,7 @@ const WalletContextInner: FC<{
     }
   }, [wallet]);
 
-  // Fetch wallet balance with error handling
+  // Fetch wallet balance
   const fetchBalance = useCallback(async (forceRefresh = false) => {
     if (publicKey && connected) {
       setBalanceLoading(true);
@@ -2887,7 +2769,7 @@ const WalletContextInner: FC<{
         const balanceSOL = balanceLamports / LAMPORTS_PER_SOL;
         setBalance(balanceSOL);
       } catch (error) {
-        console.error('❌ Error fetching balance:', error);
+        console.error('Error fetching balance:', error);
         setError('Failed to fetch balance. Check your connection.');
         setBalance(null);
       } finally {
@@ -2911,12 +2793,12 @@ const WalletContextInner: FC<{
         localStorage.removeItem('wallet-adapter:cache');
         sessionStorage.removeItem('solana-wallet-adapter:cache');
       } catch (error) {
-        console.error('❌ Error clearing wallet cache:', error);
+        console.error('Error clearing wallet cache:', error);
       }
     }
   }, []);
 
-  // Enhanced connect function with mobile support
+  // Enhanced connect function for mobile
   const connect = useCallback(async (walletName?: string) => {
     try {
       clearError();
@@ -2929,21 +2811,14 @@ const WalletContextInner: FC<{
         );
         
         if (targetWallet) {
-          // CRITICAL MOBILE FIX: Force connection even if NotDetected on mobile
-          if (targetWallet.readyState === WalletReadyState.NotDetected && isMobile) {
+          // On mobile, handle wallet-specific deep links
+          if (isMobile && targetWallet.readyState === WalletReadyState.NotDetected) {
             const walletLower = targetWallet.adapter.name.toLowerCase();
             
-            // Special handling for mobile wallets
-            if (walletLower.includes('phantom')) {
-              // Phantom on mobile - force select
-              console.log('🔄 Forcing Phantom connection on mobile');
-              select(targetWallet.adapter.name);
-              return;
-            }
-            
-            if (walletLower.includes('trust')) {
-              // Trust Wallet on mobile
-              console.log('🔄 Forcing Trust Wallet connection on mobile');
+            // Check if it's a mobile wallet that supports deep links
+            if (walletLower.includes('phantom') || walletLower.includes('solflare') || walletLower.includes('trust')) {
+              // For mobile wallets, we'll let the modal handle the deep link
+              // Just select it and let the adapter handle it
               select(targetWallet.adapter.name);
               return;
             }
@@ -2960,12 +2835,12 @@ const WalletContextInner: FC<{
         setVisible(true);
       }
     } catch (error: any) {
-      console.error('❌ Connection error:', error);
+      console.error('Connection error:', error);
       setError(error.message || 'Failed to connect wallet. Please try again.');
     }
   }, [availableWallets, select, setError, clearError, isMobile]);
 
-  // Disconnect wallet with cleanup
+  // Disconnect wallet
   const disconnect = useCallback(async () => {
     try {
       clearError();
@@ -2975,22 +2850,21 @@ const WalletContextInner: FC<{
       setWalletIcon(null);
       setBalance(null);
     } catch (error: any) {
-      console.error('❌ Error disconnecting:', error);
+      console.error('Error disconnecting:', error);
       setError(error.message || 'Failed to disconnect. Please try again.');
     }
   }, [solanaDisconnect, setError, clearError]);
 
-  // Transaction signing functions (keep your existing implementations)
+  // Transaction signing functions
   const signTransaction = useCallback(async (transaction: Transaction): Promise<Transaction> => {
     try {
       clearError();
       if (!connected || !solanaSignTransaction) {
         throw new Error('Wallet not connected or signing not supported');
       }
-      const signedTx = await solanaSignTransaction(transaction);
-      return signedTx;
+      return await solanaSignTransaction(transaction);
     } catch (error: any) {
-      console.error('❌ Failed to sign transaction:', error);
+      console.error('Failed to sign transaction:', error);
       setError(error.message || 'Failed to sign transaction. Please try again.');
       throw error;
     }
@@ -3004,13 +2878,12 @@ const WalletContextInner: FC<{
       }
       const adapter = wallet.adapter;
       if ('signTransaction' in adapter) {
-        const signedTx = await (adapter as any).signTransaction(transaction);
-        return signedTx;
+        return await (adapter as any).signTransaction(transaction);
       } else {
         throw new Error('Wallet does not support versioned transactions');
       }
     } catch (error: any) {
-      console.error('❌ Failed to sign versioned transaction:', error);
+      console.error('Failed to sign versioned transaction:', error);
       setError(error.message || 'Failed to sign versioned transaction. Please try again.');
       throw error;
     }
@@ -3022,10 +2895,9 @@ const WalletContextInner: FC<{
       if (!connected || !solanaSignAllTransactions) {
         throw new Error('Wallet not connected or batch signing not supported');
       }
-      const signedTxs = await solanaSignAllTransactions(transactions);
-      return signedTxs;
+      return await solanaSignAllTransactions(transactions);
     } catch (error: any) {
-      console.error('❌ Failed to sign transactions:', error);
+      console.error('Failed to sign transactions:', error);
       setError(error.message || 'Failed to sign transactions. Please try again.');
       throw error;
     }
@@ -3037,7 +2909,7 @@ const WalletContextInner: FC<{
       if (!connected || !solanaSendTransaction) {
         throw new Error('Wallet not connected');
       }
-      const signature = await solanaSendTransaction(
+      return await solanaSendTransaction(
         transaction,
         connection,
         { 
@@ -3046,9 +2918,8 @@ const WalletContextInner: FC<{
           maxRetries: 5
         }
       );
-      return signature;
     } catch (error: any) {
-      console.error('❌ Error sending transaction:', error);
+      console.error('Error sending transaction:', error);
       setError(error.message || 'Failed to send transaction. Please try again.');
       throw error;
     }
@@ -3072,10 +2943,9 @@ const WalletContextInner: FC<{
     await fetchBalance(true);
   }, [fetchBalance]);
 
-  // Enhanced wallet categorization with mobile compatibility
+  // Wallet categorization
   const getWalletCategory = (
     walletName: string, 
-    readyState: WalletReadyState, 
     isMobileDevice: boolean
   ): 'popular' | 'mobile' | 'browser' | 'hardware' | 'web3' => {
     const name = walletName.toLowerCase();
@@ -3095,30 +2965,7 @@ const WalletContextInner: FC<{
     return 'web3';
   };
 
-  // Get mobile app URLs for wallets
-  const getMobileAppUrl = useCallback((walletName: string): string | undefined => {
-    const name = walletName.toLowerCase();
-    
-    if (name.includes('phantom')) {
-      if (isIOS) return 'https://apps.apple.com/app/phantom-solana-wallet/id1598432977';
-      if (isAndroid) return 'https://play.google.com/store/apps/details?id=app.phantom';
-      return 'https://phantom.app/download';
-    }
-    
-    if (name.includes('solflare')) {
-      if (isIOS) return 'https://apps.apple.com/app/solflare-solana-wallet/id1580902717';
-      if (isAndroid) return 'https://play.google.com/store/apps/details?id=com.solflare.mobile';
-      return 'https://solflare.com/download';
-    }
-    
-    if (name.includes('trust')) {
-      return 'https://trustwallet.com/solana-wallet';
-    }
-    
-    return undefined;
-  }, [isIOS, isAndroid]); // Add dependencies
-
-  // Enhanced wallet filtering with mobile support
+  // Categorized wallets
   const categorizedWallets = useMemo(() => {
     const uniqueWallets = new Map<string, {
       name: string; 
@@ -3126,42 +2973,24 @@ const WalletContextInner: FC<{
       icon?: string;
       readyState: WalletReadyState;
       category: 'popular' | 'mobile' | 'browser' | 'hardware' | 'web3';
-      isMobileCompatible: boolean;
-      mobileAppUrl?: string;
     }>();
     
     availableWallets.forEach(wallet => {
       const walletName = wallet.adapter.name;
-      const readyState = wallet.readyState;
-      const walletLower = walletName.toLowerCase();
-      
-      // CRITICAL FIX: Mark wallets as mobile-compatible even if NotDetected
-      const isMobileCompatible = isMobile && (
-        walletLower.includes('phantom') || 
-        walletLower.includes('trust') ||
-        walletLower.includes('solflare')
-      );
-      
-      // For mobile compatibility, override readyState if needed
-      const displayReadyState = isMobileCompatible && readyState === WalletReadyState.NotDetected
-        ? WalletReadyState.Loadable
-        : readyState;
       
       if (!uniqueWallets.has(walletName)) {
         uniqueWallets.set(walletName, {
           name: walletName,
           adapter: wallet.adapter as BaseWalletAdapter,
           icon: wallet.adapter.icon,
-          readyState: displayReadyState,
-          category: getWalletCategory(walletName, displayReadyState, isMobile),
-          isMobileCompatible,
-          mobileAppUrl: isMobile ? getMobileAppUrl(walletName) : undefined // Use the memoized function
+          readyState: wallet.readyState,
+          category: getWalletCategory(walletName, isMobile)
         });
       }
     });
 
     return Array.from(uniqueWallets.values());
-  }, [availableWallets, isMobile, getMobileAppUrl, getWalletCategory]); // Add getMobileAppUrl to dependencies
+  }, [availableWallets, isMobile]);
 
   const contextValue: WalletContextType = {
     connected,
@@ -3215,6 +3044,7 @@ const WalletContextInner: FC<{
     </WalletContext.Provider>
   );
 };
+
 
 
 // Custom Wallet Connect Button Component
