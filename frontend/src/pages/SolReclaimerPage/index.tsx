@@ -158,77 +158,94 @@ const SolReclaimerPage: React.FC = () => {
 
 
 
-  const reclaimAll = async () => {
+  // const reclaimAll = async () => {
+  //   if (!publicKey || !estimate || estimate.reclaimableAccounts === 0) {
+  //     setError('Please connect your wallet to reclaim SOL');
+  //     return;
+  //   }
+
+  //   // Show the reclaim modal
+  //   setShowReclaimModal(true);
+  //   setReclaimStatus('processing');
+  //   setReclaimProgress(0);
+  //   setReclaiming(true);
+  //   setError(null);
+    
+  //   // Initialize animation progress
+  //   let animationProgress = 0;
+  //   const animationInterval = setInterval(() => {
+  //     animationProgress += Math.random() * 8;
+  //     if (animationProgress > 85) {
+  //       animationProgress = 85; // Hold at 85% until actual completion
+  //     }
+  //     setReclaimProgress(animationProgress);
+  //   }, 200);
+
+  //   try {
+  //     // Perform the actual reclaim
+  //     const results = await reclaimer.reclaimSol(
+  //       tokenAccounts,
+  //       publicKey,
+  //       async (tx) => {
+  //         if (!window.solana || !window.solana.signTransaction) {
+  //           throw new Error('Wallet not connected');
+  //         }
+  //         return await window.solana.signTransaction(tx);
+  //       }
+  //     );
+
+  //     // Clear animation interval
+  //     clearInterval(animationInterval);
+      
+  //     // Complete the progress animation
+  //     setReclaimProgress(100);
+      
+  //     // Update with real results
+  //     if (results[0]?.success) {
+  //       setReclaimDetails({
+  //         accountsClosing: results[0].closedAccounts,
+  //         solAmount: results[0].reclaimedSol,
+  //         transactionId: results[0].signature || ''
+  //       });
+  //       setReclaimStatus('success');
+  //       setResults(results);
+        
+  //       // Auto-refresh scan after 2 seconds
+  //       setTimeout(() => {
+  //         if (publicKey) {
+  //           scanWallet(publicKey.toString());
+  //         }
+  //       }, 2000);
+  //     } else {
+  //       setReclaimStatus('failed');
+  //       setError(results[0]?.error || 'Reclaim failed');
+  //     }
+  //   } catch (err: any) {
+  //     clearInterval(animationInterval);
+  //     setReclaimStatus('failed');
+  //     setError(err.message || 'Reclaim failed. Please try again.');
+  //     console.error(err);
+  //   } finally {
+  //     setReclaiming(false);
+  //   }
+  // };
+
+  const handleReclaimClick = () => {
     if (!publicKey || !estimate || estimate.reclaimableAccounts === 0) {
       setError('Please connect your wallet to reclaim SOL');
       return;
     }
-
-    // Show the reclaim modal
-    setShowReclaimModal(true);
-    setReclaimStatus('processing');
-    setReclaimProgress(0);
-    setReclaiming(true);
-    setError(null);
     
-    // Initialize animation progress
-    let animationProgress = 0;
-    const animationInterval = setInterval(() => {
-      animationProgress += Math.random() * 8;
-      if (animationProgress > 85) {
-        animationProgress = 85; // Hold at 85% until actual completion
-      }
-      setReclaimProgress(animationProgress);
-    }, 200);
-
-    try {
-      // Perform the actual reclaim
-      const results = await reclaimer.reclaimSol(
-        tokenAccounts,
-        publicKey,
-        async (tx) => {
-          if (!window.solana || !window.solana.signTransaction) {
-            throw new Error('Wallet not connected');
-          }
-          return await window.solana.signTransaction(tx);
-        }
-      );
-
-      // Clear animation interval
-      clearInterval(animationInterval);
-      
-      // Complete the progress animation
-      setReclaimProgress(100);
-      
-      // Update with real results
-      if (results[0]?.success) {
-        setReclaimDetails({
-          accountsClosing: results[0].closedAccounts,
-          solAmount: results[0].reclaimedSol,
-          transactionId: results[0].signature || ''
-        });
-        setReclaimStatus('success');
-        setResults(results);
-        
-        // Auto-refresh scan after 2 seconds
-        setTimeout(() => {
-          if (publicKey) {
-            scanWallet(publicKey.toString());
-          }
-        }, 2000);
-      } else {
-        setReclaimStatus('failed');
-        setError(results[0]?.error || 'Reclaim failed');
-      }
-    } catch (err: any) {
-      clearInterval(animationInterval);
-      setReclaimStatus('failed');
-      setError(err.message || 'Reclaim failed. Please try again.');
-      console.error(err);
-    } finally {
-      setReclaiming(false);
-    }
+    setShowReclaimModal(true);
+    setReclaimStatus('pending'); // NOT 'processing' yet!
+    setReclaimProgress(0);
+    setReclaimDetails({
+      accountsClosing: estimate.reclaimableAccounts,
+      solAmount: estimate.estimatedTotalSol,
+      transactionId: ''
+    });
   };
+
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -248,64 +265,6 @@ const SolReclaimerPage: React.FC = () => {
       minimumFractionDigits: 4,
       maximumFractionDigits: 4
     });
-  };
-
-  // // Add this function to handle the reclaim animation
-  // const startReclaimAnimation = () => {
-  //   if (!estimate) return;
-    
-  //   setReclaimDetails({
-  //     accountsClosing: estimate.reclaimableAccounts,
-  //     solAmount: estimate.estimatedTotalSol,
-  //     transactionId: ''
-  //   });
-    
-  //   // Animate progress from 0 to 100%
-  //   let progress = 0;
-  //   const interval = setInterval(() => {
-  //     progress += Math.random() * 10;
-  //     if (progress > 100) {
-  //       progress = 100;
-  //       clearInterval(interval);
-        
-  //       // Simulate transaction completion
-  //       setTimeout(() => {
-  //         setReclaimStatus('success');
-  //         setReclaimProgress(100);
-  //         setReclaimDetails(prev => ({
-  //           ...prev,
-  //           transactionId: Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)
-  //         }));
-  //       }, 500);
-  //     }
-  //     setReclaimProgress(progress);
-  //   }, 200);
-  // };
-
-  const startReclaimAnimation = () => {
-    if (!estimate) return;
-    
-    setReclaimDetails({
-      accountsClosing: estimate.reclaimableAccounts,
-      solAmount: estimate.estimatedTotalSol,
-      transactionId: ''
-    });
-    
-    // Set initial progress
-    setReclaimProgress(30); // Start at 30% to show waiting for wallet
-    
-    // Animate progress slowly while waiting for wallet
-    let progress = 30;
-    const interval = setInterval(() => {
-      progress += 1;
-      if (progress > 85) {
-        progress = 85; // Hold at 85% until transaction completes
-      }
-      setReclaimProgress(progress);
-    }, 300);
-    
-    // Return the interval so we can clear it later
-    return interval;
   };
 
   // Calculate progress percentage
@@ -921,31 +880,75 @@ Close unused token accounts and reclaim your SOL.
                         ) : (
                           <div className="space-y-3">
                             <button
-                              onClick={() => {
-                                // This will trigger the actual reclaim process
-                                setReclaimStatus('processing');
-                                setReclaimProgress(0);
-                                
-                                // Start the progress animation
-                                let progress = 0;
-                                const interval = setInterval(() => {
-                                  progress += 2; // Slow progress while waiting for wallet
-                                  if (progress > 30) { // Only go to 30% while waiting for wallet
-                                    progress = 30;
-                                  }
-                                  setReclaimProgress(progress);
-                                }, 200);
-                                
-                                // Actually start the reclaim process
-                                setTimeout(() => {
-                                  reclaimAll();
-                                  clearInterval(interval);
-                                }, 100);
-                              }}
-                              className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white rounded-lg font-medium transition-all duration-200"
-                            >
-                              Confirm & Reclaim SOL
-                            </button>
+  onClick={async () => {
+    if (!publicKey) {
+      setError('Wallet not connected');
+      setReclaimStatus('failed');
+      return;
+    }
+    
+    setReclaimStatus('processing');
+    setReclaiming(true);
+    
+    // Start progress animation
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 2;
+      if (progress > 30) {
+        progress = 30;
+      }
+      setReclaimProgress(progress);
+    }, 200);
+    
+    try {
+      // Now actually perform the reclaim
+      const results = await reclaimer.reclaimSol(
+        tokenAccounts,
+        publicKey,  // <-- This is now guaranteed to be non-null
+        async (tx) => {
+          if (!window.solana || !window.solana.signTransaction) {
+            throw new Error('Wallet not connected');
+          }
+          return await window.solana.signTransaction(tx);
+        }
+      );
+      
+      clearInterval(interval);
+      setReclaimProgress(100);
+      
+      if (results[0]?.success) {
+        setReclaimDetails({
+          accountsClosing: results[0].closedAccounts,
+          solAmount: results[0].reclaimedSol,
+          transactionId: results[0].signature || ''
+        });
+        setReclaimStatus('success');
+        setResults(results);
+        
+        // Auto-refresh scan after 2 seconds
+        setTimeout(() => {
+          if (publicKey) {
+            scanWallet(publicKey.toString());
+          }
+        }, 2000);
+      } else {
+        setReclaimStatus('failed');
+        setError(results[0]?.error || 'Reclaim failed');
+      }
+    } catch (err: any) {
+      clearInterval(interval);
+      setReclaimStatus('failed');
+      setError(err.message || 'Reclaim failed. Please try again.');
+      console.error(err);
+    } finally {
+      setReclaiming(false);
+    }
+  }}
+  className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white rounded-lg font-medium transition-all duration-200"  
+>
+  Confirm & Reclaim SOL
+</button>
+
                             <button
                               onClick={() => setShowReclaimModal(false)}
                               className="w-full py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-medium transition-colors"
@@ -1098,8 +1101,8 @@ Close unused token accounts and reclaim your SOL.
 
                         {/* Claim SOL Button */}
                         <button
-                          onClick={reclaimAll}
-                          disabled={reclaiming || !connected}
+                          onClick={handleReclaimClick}
+                          disabled={!connected || estimate?.reclaimableAccounts === 0} 
                           className={`w-full py-3 rounded-xl font-bold transition-all duration-200 ${
                             reclaiming || !connected
                               ? 'bg-gray-700 cursor-not-allowed'
