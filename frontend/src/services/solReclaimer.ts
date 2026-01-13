@@ -404,7 +404,7 @@ export class SolReclaimer {
         }
       }
       
-      console.log(`Found ${accounts.length} total accounts (${tokenAccounts.value.length} token + ${token2022Accounts.value.length} token2022)`);
+      // console.log(`Found ${accounts.length} total accounts (${tokenAccounts.value.length} token + ${token2022Accounts.value.length} token2022)`);
       
       return accounts;
     } catch (error) {
@@ -492,7 +492,7 @@ export class SolReclaimer {
     const reclaimableAccounts = this.getReclaimableAccounts(accounts);
     
     if (reclaimableAccounts.length === 0) {
-      console.log("No reclaimable Token 2022 accounts found");
+      // console.log("No reclaimable Token 2022 accounts found");
       return [];
     }
     
@@ -502,8 +502,8 @@ export class SolReclaimer {
       const feeAmount = totalReclaimed * 0.005;
       const netAmount = totalReclaimed - feeAmount;
       
-      console.log(`Reclaiming ${reclaimableAccounts.length} Token 2022 accounts`);
-      console.log(`Total: ${totalReclaimed} SOL, Fee: ${feeAmount} SOL, Net: ${netAmount} SOL`);
+      // console.log(`Reclaiming ${reclaimableAccounts.length} Token 2022 accounts`);
+      // console.log(`Total: ${totalReclaimed} SOL, Fee: ${feeAmount} SOL, Net: ${netAmount} SOL`);
       
       // Get latest blockhash
       const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash();
@@ -550,10 +550,10 @@ export class SolReclaimer {
         transaction.add(transferInstruction);
       }
       
-      console.log(`Created transaction with ${transaction.instructions.length} instructions`);
+      // console.log(`Created transaction with ${transaction.instructions.length} instructions`);
       
       // Sign the transaction
-      console.log('Requesting wallet signature...');
+      // console.log('Requesting wallet signature...');
       
       const signedTransaction = await signTransaction(transaction as any);
       
@@ -567,7 +567,7 @@ export class SolReclaimer {
         }
       );
       
-      console.log(`Transaction sent: ${signature}`);
+      // console.log(`Transaction sent: ${signature}`);
       
       // Wait for confirmation
       await this.connection.confirmTransaction(
@@ -579,7 +579,7 @@ export class SolReclaimer {
         'confirmed'
       );
       
-      console.log('Transaction confirmed!');
+      // console.log('Transaction confirmed!');
       
       return [{
         success: true,

@@ -361,7 +361,7 @@ export const WalletProvider: FC<{
       //   walletAdaptersList.push(mobileAdapter);
       // }
       
-      console.log(`✅ Initialized ${walletAdaptersList.length} wallet adapters`);
+      // console.log(`✅ Initialized ${walletAdaptersList.length} wallet adapters`);
       return walletAdaptersList;
       
     } catch (error) {
@@ -404,7 +404,7 @@ export const WalletProvider: FC<{
   
   // Network switch handler
   const switchNetwork = useCallback((newNetwork: WalletAdapterNetwork) => {
-    console.log(`🔄 Switching to ${newNetwork} network`);
+    // console.log(`🔄 Switching to ${newNetwork} network`);
     setCurrentNetwork(newNetwork);
   }, []);
 
@@ -604,11 +604,11 @@ const WalletContextInner: FC<{
   }, [availableWallets]);
 
   useEffect(() => {
-    console.log('Available wallets:', availableWallets.map(w => ({
-      name: w.adapter.name,
-      readyState: w.readyState,
-      icon: w.adapter.icon
-    })));
+    // console.log('Available wallets:', availableWallets.map(w => ({
+    //   name: w.adapter.name,
+    //   readyState: w.readyState,
+    //   icon: w.adapter.icon
+    // })));
   }, [availableWallets]);
 
   // Update wallet info when connected
@@ -616,7 +616,7 @@ const WalletContextInner: FC<{
     if (wallet?.adapter) {
       setWalletName(wallet.adapter.name || 'Unknown Wallet');
       setWalletIcon(wallet.adapter.icon || null);
-      console.log(`🔗 Connected to ${wallet.adapter.name}`);
+      // console.log(`🔗 Connected to ${wallet.adapter.name}`);
     } else {
       setWalletName(null);
       setWalletIcon(null);
@@ -645,7 +645,7 @@ const WalletContextInner: FC<{
         // Clear session storage
         sessionStorage.removeItem('solana-wallet-adapter:cache');
         
-        console.log('✅ Cleared wallet cache');
+        // console.log('✅ Cleared wallet cache');
       } catch (error) {
         console.error('❌ Error clearing wallet cache:', error);
       }
@@ -750,7 +750,7 @@ const WalletContextInner: FC<{
         );
         
         if (targetWallet) {
-          console.log(`🔌 Attempting to connect to ${targetWallet.adapter.name} (state: ${targetWallet.readyState})`);
+          // console.log(`🔌 Attempting to connect to ${targetWallet.adapter.name} (state: ${targetWallet.readyState})`);
           
           // Check if wallet is detected
           if (targetWallet.readyState === WalletReadyState.NotDetected) {
@@ -787,7 +787,7 @@ const WalletContextInner: FC<{
       } else {
         // If no wallet specified, the modal will handle selection
         // This triggers the default wallet modal
-        console.log('Opening wallet modal for selection');
+        // console.log('Opening wallet modal for selection');
         // You need to access the modal context here
         const { setVisible } = useWalletModal();
         setVisible(true);
@@ -802,13 +802,13 @@ const WalletContextInner: FC<{
   const disconnect = useCallback(async () => {
     try {
       clearError();
-      console.log('🔌 Disconnecting wallet...');
+      // console.log('🔌 Disconnecting wallet...');
       await solanaDisconnect();
       clearWalletCache(); // Clear cache on disconnect
       setWalletName(null);
       setWalletIcon(null);
       setBalance(null);
-      console.log('✅ Wallet disconnected');
+      // console.log('✅ Wallet disconnected');
     } catch (error: any) {
       console.error('❌ Error disconnecting:', error);
       setError(error.message || 'Failed to disconnect. Please try again.');
@@ -828,9 +828,9 @@ const WalletContextInner: FC<{
         throw new Error('Transaction missing recent blockhash');
       }
       
-      console.log('✍️ Signing transaction...');
+      // console.log('✍️ Signing transaction...');
       const signedTx = await solanaSignTransaction(transaction);
-      console.log('✅ Transaction signed successfully');
+      // console.log('✅ Transaction signed successfully');
       return signedTx;
     } catch (error: any) {
       console.error('❌ Failed to sign transaction:', error);
@@ -848,13 +848,13 @@ const WalletContextInner: FC<{
         throw new Error('Wallet not connected or versioned transactions not supported');
       }
       
-      console.log('✍️ Signing versioned transaction...');
+      // console.log('✍️ Signing versioned transaction...');
       
       // Check if the adapter supports versioned transactions
       const adapter = wallet.adapter;
       if ('signTransaction' in adapter) {
         const signedTx = await (adapter as any).signTransaction(transaction);
-        console.log('✅ Versioned transaction signed successfully');
+        // console.log('✅ Versioned transaction signed successfully');
         return signedTx;
       } else {
         throw new Error('Wallet does not support versioned transactions');
@@ -879,9 +879,9 @@ const WalletContextInner: FC<{
         throw new Error('No transactions to sign');
       }
       
-      console.log(`✍️ Signing ${transactions.length} transactions...`);
+      // console.log(`✍️ Signing ${transactions.length} transactions...`);
       const signedTxs = await solanaSignAllTransactions(transactions);
-      console.log(`✅ ${signedTxs.length} transactions signed successfully`);
+      // console.log(`✅ ${signedTxs.length} transactions signed successfully`);
       return signedTxs;
     } catch (error: any) {
       console.error('❌ Failed to sign transactions:', error);
@@ -898,7 +898,7 @@ const WalletContextInner: FC<{
         throw new Error('Wallet not connected');
       }
       
-      console.log('🚀 Sending transaction...');
+      // console.log('🚀 Sending transaction...');
       const signature = await solanaSendTransaction(
         transaction,
         connection,
@@ -909,7 +909,7 @@ const WalletContextInner: FC<{
         }
       );
       
-      console.log(`✅ Transaction sent: ${signature}`);
+      // console.log(`✅ Transaction sent: ${signature}`);
       return signature;
     } catch (error: any) {
       console.error('❌ Error sending transaction:', error);
@@ -2029,7 +2029,7 @@ export const WalletQuickActions: React.FC = () => {
             <EnhancedWalletSelector 
               maxHeight="70vh"
               onWalletSelect={(walletName) => {
-                console.log('Selected wallet:', walletName);
+                // console.log('Selected wallet:', walletName);
                 setShowWallets(false);
               }}
             />
