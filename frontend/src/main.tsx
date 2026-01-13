@@ -2,6 +2,22 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './styles/index.css';
+import './polyfills.ts';
+
+// Test if Buffer is polyfilled
+if (typeof window !== 'undefined') {
+  console.log('Buffer available?', typeof window.Buffer !== 'undefined');
+  console.log('Buffer.from test:', typeof Buffer !== 'undefined' ? 'Yes' : 'No');
+  
+  // Force polyfill if not available
+  if (typeof Buffer === 'undefined') {
+    console.log('Buffer not found, importing polyfill...');
+    import('buffer').then(({ Buffer }) => {
+      window.Buffer = Buffer;
+      console.log('Buffer polyfilled successfully');
+    });
+  }
+}
 
 // GLOBAL AUTH EXPIRED HANDLER — RUNS ONCE, FOREVER
 if (typeof window !== 'undefined') {
@@ -20,3 +36,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <App />
   </React.StrictMode>
 );
+
