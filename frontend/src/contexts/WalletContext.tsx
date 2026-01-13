@@ -185,13 +185,149 @@ const useIsMobile = () => {
 };
 
 
+// const CustomWalletModal: FC = () => {
+//   const { wallets, select } = useSolanaWallet();
+//   const { visible, setVisible } = useWalletModal();
+  
+//   const handleClose = () => setVisible(false);
+  
+//   const handleWalletClick = (walletName: string, readyState: WalletReadyState) => {
+//     if (readyState === WalletReadyState.NotDetected) {
+//       // Show installation instructions instead of throwing error
+//       const walletLower = walletName.toLowerCase();
+//       let installUrl = '';
+      
+//       if (walletLower.includes('phantom')) {
+//         installUrl = 'https://phantom.app/download';
+//       } else if (walletLower.includes('solflare')) {
+//         installUrl = 'https://solflare.com/download';
+//       } else if (walletLower.includes('trust')) {
+//         installUrl = 'https://trustwallet.com/solana-wallet';
+//       }
+      
+//       if (installUrl && window.confirm(`${walletName} is not installed. Would you like to visit the download page?`)) {
+//         window.open(installUrl, '_blank');
+//       }
+//       return;
+//     }
+    
+//     select(walletName as any);
+//     handleClose();
+//   };
+  
+//   if (!visible) return null;
+  
+//   // Group wallets by readiness
+//   const installedWallets = wallets.filter(w => w.readyState === WalletReadyState.Installed);
+//   const notInstalledWallets = wallets.filter(w => w.readyState === WalletReadyState.NotDetected);
+//   const loadableWallets = wallets.filter(w => w.readyState === WalletReadyState.Loadable);
+  
+//   const allWallets = [
+//     ...installedWallets,
+//     ...loadableWallets,
+//     ...notInstalledWallets
+//   ];
+  
+//   return (
+//     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+//       <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-gray-700 shadow-2xl">
+//         <div className="flex justify-between items-center mb-6">
+//           <h2 className="text-xl font-semibold text-white">Connect Wallet</h2>
+//           <button 
+//             onClick={handleClose}
+//             className="text-gray-400 hover:text-white transition-colors"
+//           >
+//             <X className="w-5 h-5" />
+//           </button>
+//         </div>
+        
+//         <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+//           {allWallets.map((wallet) => {
+//             const isInstalled = wallet.readyState === WalletReadyState.Installed;
+//             const isLoadable = wallet.readyState === WalletReadyState.Loadable;
+//             const isNotDetected = wallet.readyState === WalletReadyState.NotDetected;
+            
+//             return (
+//               <button
+//                 key={wallet.adapter.name as string}
+//                 onClick={() => handleWalletClick(wallet.adapter.name as string, wallet.readyState)}
+//                 disabled={isNotDetected}
+//                 className={`
+//                   flex items-center gap-3 p-3 w-full rounded-lg transition-all duration-200
+//                   ${isNotDetected 
+//                     ? 'opacity-60 cursor-not-allowed bg-gray-800/30' 
+//                     : 'hover:bg-gray-800/50 bg-gray-800/30'
+//                   }
+//                   ${isInstalled ? 'border border-green-500/30' : ''}
+//                   ${isLoadable ? 'border border-blue-500/30' : ''}
+//                 `}
+//               >
+//                 {wallet.adapter.icon && (
+//                   <img 
+//                     src={wallet.adapter.icon} 
+//                     alt={wallet.adapter.name as string}
+//                     className="w-8 h-8 rounded"
+//                   />
+//                 )}
+//                 <div className="flex-1 text-left">
+//                   <div className="flex items-center gap-2">
+//                     <span className="text-white font-medium">
+//                       {wallet.adapter.name as string}
+//                     </span>
+//                     {isInstalled && (
+//                       <span className="text-xs px-2 py-0.5 rounded bg-green-900/30 text-green-400 border border-green-700/50">
+//                         Installed
+//                       </span>
+//                     )}
+//                     {isLoadable && (
+//                       <span className="text-xs px-2 py-0.5 rounded bg-blue-900/30 text-blue-400 border border-blue-700/50">
+//                         Available
+//                       </span>
+//                     )}
+//                     {isNotDetected && (
+//                       <span className="text-xs px-2 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700/50">
+//                         Not Installed
+//                       </span>
+//                     )}
+//                   </div>
+//                   {isNotDetected && (
+//                     <p className="text-xs text-gray-400 mt-1">
+//                       Click for installation instructions
+//                     </p>
+//                   )}
+//                 </div>
+//                 <ChevronDown className="w-4 h-4 text-gray-400 transform -rotate-90" />
+//               </button>
+//             );
+//           })}
+//         </div>
+        
+//         <div className="mt-6 pt-4 border-t border-gray-800/50">
+//           <p className="text-xs text-gray-500 text-center">
+//             Don't have a wallet? Try <a href="https://phantom.app/download" target="_blank" className="text-cyan-400 hover:text-cyan-300">Phantom</a> or <a href="https://solflare.com/download" target="_blank" className="text-cyan-400 hover:text-cyan-300">Solflare</a>
+//           </p>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+
+
+// Main Wallet Provider Component
+
+
 const CustomWalletModal: FC = () => {
   const { wallets, select } = useSolanaWallet();
   const { visible, setVisible } = useWalletModal();
+  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
   
-  const handleClose = () => setVisible(false);
+  const handleClose = () => {
+    setSelectedWallet(null);
+    setVisible(false);
+  };
   
-  const handleWalletClick = (walletName: string, readyState: WalletReadyState) => {
+  const handleWalletClick = async (walletName: string, readyState: WalletReadyState) => {
     if (readyState === WalletReadyState.NotDetected) {
       // Show installation instructions instead of throwing error
       const walletLower = walletName.toLowerCase();
@@ -211,9 +347,30 @@ const CustomWalletModal: FC = () => {
       return;
     }
     
-    select(walletName as any);
-    handleClose();
-  };
+    // Set loading state for this wallet
+    setSelectedWallet(walletName);
+    
+    try {
+      // Add a small delay to ensure UI updates
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Select the wallet
+      select(walletName as any);
+      
+      // Wait a bit before closing modal to ensure wallet connection starts
+      setTimeout(() => {
+        handleClose();
+      }, 300);
+    } catch (error) {
+      console.error(`Error selecting wallet ${walletName}:`, error);
+      setSelectedWallet(null);
+    }
+
+    // Add this inside the handleWalletClick function, after the try-catch:
+    setTimeout(() => {
+      setSelectedWallet(null);
+    }, 10000); // Clear loading state after 10 seconds
+      };
   
   if (!visible) return null;
   
@@ -236,6 +393,7 @@ const CustomWalletModal: FC = () => {
           <button 
             onClick={handleClose}
             className="text-gray-400 hover:text-white transition-colors"
+            disabled={!!selectedWallet}
           >
             <X className="w-5 h-5" />
           </button>
@@ -246,15 +404,16 @@ const CustomWalletModal: FC = () => {
             const isInstalled = wallet.readyState === WalletReadyState.Installed;
             const isLoadable = wallet.readyState === WalletReadyState.Loadable;
             const isNotDetected = wallet.readyState === WalletReadyState.NotDetected;
+            const isLoading = selectedWallet === wallet.adapter.name;
             
             return (
               <button
                 key={wallet.adapter.name as string}
-                onClick={() => handleWalletClick(wallet.adapter.name as string, wallet.readyState)}
-                disabled={isNotDetected}
+                onClick={() => !isLoading && handleWalletClick(wallet.adapter.name as string, wallet.readyState)}
+                disabled={isNotDetected || isLoading}
                 className={`
-                  flex items-center gap-3 p-3 w-full rounded-lg transition-all duration-200
-                  ${isNotDetected 
+                  flex items-center gap-3 p-3 w-full rounded-lg transition-all duration-200 relative
+                  ${isNotDetected || isLoading
                     ? 'opacity-60 cursor-not-allowed bg-gray-800/30' 
                     : 'hover:bg-gray-800/50 bg-gray-800/30'
                   }
@@ -262,6 +421,13 @@ const CustomWalletModal: FC = () => {
                   ${isLoadable ? 'border border-blue-500/30' : ''}
                 `}
               >
+                {/* Loading overlay */}
+                {isLoading && (
+                  <div className="absolute inset-0 bg-gray-800/70 rounded-lg flex items-center justify-center">
+                    <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />
+                  </div>
+                )}
+                
                 {wallet.adapter.icon && (
                   <img 
                     src={wallet.adapter.icon} 
@@ -289,6 +455,11 @@ const CustomWalletModal: FC = () => {
                         Not Installed
                       </span>
                     )}
+                    {isLoading && (
+                      <span className="text-xs px-2 py-0.5 rounded bg-cyan-900/30 text-cyan-400 border border-cyan-700/50">
+                        Connecting...
+                      </span>
+                    )}
                   </div>
                   {isNotDetected && (
                     <p className="text-xs text-gray-400 mt-1">
@@ -312,7 +483,8 @@ const CustomWalletModal: FC = () => {
   );
 };
 
-// Main Wallet Provider Component
+
+
 export const WalletProvider: FC<{ 
   children: ReactNode;
   autoConnect?: boolean;
