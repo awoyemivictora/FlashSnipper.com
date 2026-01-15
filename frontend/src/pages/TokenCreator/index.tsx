@@ -873,7 +873,197 @@ const TokenCreator: React.FC = () => {
     }
   };
 
+  // const generateFromCryptoAccounts = async () => {
+  //   setAiGenerating(true);
+  //   setLaunchStatus(prev => ({
+  //     ...prev,
+  //     message: 'Fetching latest crypto insights...',
+  //     currentStep: 'Crypto Intelligence'
+  //   }));
+    
+  //   try {
+  //     // Call the unified endpoint with tweet_accounts source
+  //     const response = await apiService.request('/ai/generate-metadata-unified', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({
+  //         style: 'professional',
+  //         keywords: '',
+  //         source: 'tweet_accounts', // Changed from 'trending' to 'tweet_accounts'
+  //         use_images: true,
+  //         category: 'crypto'
+  //       })
+  //     });
+
+  //     if (response.success && response.metadata) {
+  //       const metadata = response.metadata;
+        
+  //       // Create display metadata
+  //       const tokenMetadata: TokenMetadata = {
+  //         name: metadata.name,
+  //         symbol: metadata.symbol,
+  //         description: metadata.description || 'Token created from latest crypto intelligence',
+  //         image: metadata.image_url,
+  //         external_url: "https://pump.fun",
+  //         attributes: [
+  //           { trait_type: "Created On", value: new Date().toLocaleDateString() },
+  //           { trait_type: "Crypto Intelligence", value: "Yes" },
+  //           { trait_type: "Source", value: response.tweet_info?.source_account || 'Crypto Account' },
+  //           { trait_type: "Launch Strategy", value: "Intelligence-Based Launch" }
+  //         ],
+  //         created_at: new Date().toISOString(),
+  //         metadata_uri: metadata.metadata_uri,
+  //         ipfs_uri: metadata.metadata_uri,
+  //         ipfs_cid: metadata.metadata_uri ? extractIpfsCid(metadata.metadata_uri) : undefined
+  //       };
+        
+  //       setGeneratedMetadata(tokenMetadata);
+        
+  //       // Update launch config
+  //       setLaunchConfig(prev => ({
+  //         ...prev,
+  //         tokenName: metadata.name,
+  //         tokenSymbol: metadata.symbol,
+  //         tokenDescription: metadata.description || 'Token created from latest crypto intelligence',
+  //         imageUrl: convertIpfsToHttpUrl(metadata.image_url),
+  //         customMetadata: {
+  //           name: metadata.name,
+  //           symbol: metadata.symbol,
+  //           metadata_uri: metadata.metadata_uri,
+  //           image_url: metadata.image_url,
+  //           description: metadata.description
+  //         }
+  //       }));
+
+  //       setMetadataGenerated(true);
+  //       setShowPreview(true);
+        
+  //       setLaunchStatus(prev => ({
+  //         ...prev,
+  //         phase: 'metadata',
+  //         message: `✅ Token metadata generated from @${response.tweet_info?.source_account || 'crypto account'}!`,
+  //         progress: 20
+  //       }));
+
+  //       // Add tweet info to state if available
+  //       if (response.tweet_info) {
+  //         console.log('Tweet info:', response.tweet_info);
+  //         // You could store this in state if you want to show it in the UI
+  //       }
+  //     } else {
+  //       throw new Error('Failed to generate from crypto accounts');
+  //     }
+  //   } catch (error) {
+  //     console.error('Crypto accounts generation failed:', error);
+  //     setLaunchStatus(prev => ({
+  //       ...prev,
+  //       message: '❌ Crypto accounts generation failed, falling back...',
+  //       progress: 10
+  //     }));
+  //     // Fallback to AI generation
+  //     generateAIMetadata();
+  //   } finally {
+  //     setAiGenerating(false);
+  //   }
+  // };
+
   // Add helper function to extract IPFS CID
+  
+  const generateFromCryptoAccounts = async () => {
+    setAiGenerating(true);
+    setLaunchStatus(prev => ({
+      ...prev,
+      message: 'Fetching latest crypto insights...',
+      currentStep: 'Crypto Intelligence'
+    }));
+    
+    try {
+      // Call the unified endpoint with tweet_accounts source
+      const response = await apiService.request('/ai/generate-metadata-unified', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          style: 'professional',
+          keywords: '',
+          source: 'tweet_accounts', // This is the key change
+          use_images: true,
+          category: 'crypto'
+        })
+      });
+
+      console.log('Crypto accounts response:', response); // Add this for debugging
+      
+      if (response.success && response.metadata) {
+        const metadata = response.metadata;
+        
+        // Create display metadata
+        const tokenMetadata: TokenMetadata = {
+          name: metadata.name,
+          symbol: metadata.symbol,
+          description: metadata.description || 'Token created from latest crypto intelligence',
+          image: metadata.image_url,
+          external_url: "https://pump.fun",
+          attributes: [
+            { trait_type: "Created On", value: new Date().toLocaleDateString() },
+            { trait_type: "Crypto Intelligence", value: "Yes" },
+            { trait_type: "Source", value: response.tweet_info?.source_account || 'Crypto Account' },
+            { trait_type: "Launch Strategy", value: "Intelligence-Based Launch" }
+          ],
+          created_at: new Date().toISOString(),
+          metadata_uri: metadata.metadata_uri,
+          ipfs_uri: metadata.metadata_uri,
+          ipfs_cid: metadata.metadata_uri ? extractIpfsCid(metadata.metadata_uri) : undefined
+        };
+        
+        setGeneratedMetadata(tokenMetadata);
+        
+        // Update launch config
+        setLaunchConfig(prev => ({
+          ...prev,
+          tokenName: metadata.name,
+          tokenSymbol: metadata.symbol,
+          tokenDescription: metadata.description || 'Token created from latest crypto intelligence',
+          imageUrl: convertIpfsToHttpUrl(metadata.image_url),
+          customMetadata: {
+            name: metadata.name,
+            symbol: metadata.symbol,
+            metadata_uri: metadata.metadata_uri,
+            image_url: metadata.image_url,
+            description: metadata.description
+          }
+        }));
+
+        setMetadataGenerated(true);
+        setShowPreview(true);
+        
+        setLaunchStatus(prev => ({
+          ...prev,
+          phase: 'metadata',
+          message: `✅ Token metadata generated from @${response.tweet_info?.source_account || 'crypto account'}!`,
+          progress: 20
+        }));
+
+        // Add tweet info to state if available
+        if (response.tweet_info) {
+          console.log('Tweet info:', response.tweet_info);
+        }
+      } else {
+        throw new Error(response.error || 'Failed to generate from crypto accounts');
+      }
+    } catch (error) {
+      console.error('Crypto accounts generation failed:', error);
+      setLaunchStatus(prev => ({
+        ...prev,
+        message: '❌ Crypto accounts generation failed, falling back...',
+        progress: 10
+      }));
+      // Fallback to AI generation
+      generateAIMetadata();
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+  
   const extractIpfsCid = (ipfsUrl: string): string | undefined => {
     try {
       const match = ipfsUrl.match(/ipfs\/([a-zA-Z0-9]+)/);
@@ -3027,6 +3217,22 @@ const TokenCreator: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              {generatedMetadata.attributes?.some(attr => attr.trait_type === "Crypto Intelligence") && (
+                <div className="mb-4 p-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-emerald-500/30">
+                  <div className="flex items-center gap-2 text-emerald-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                    <span className="text-sm font-medium">Based on Latest Crypto Intelligence</span>
+                  </div>
+                  {generatedMetadata.attributes.find(attr => attr.trait_type === "Source")?.value && (
+                    <div className="text-xs text-emerald-300 mt-1">
+                      Source: @{generatedMetadata.attributes.find(attr => attr.trait_type === "Source")?.value}
+                    </div>
+                  )}
+                </div>
+              )}
               
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {generatedMetadata.attributes.map((attr, index) => (
@@ -4630,7 +4836,7 @@ const TokenCreator: React.FC = () => {
                             </div>
     
                             {/* Metadata Source */}
-                            <div>
+                            {/* <div>
                               <label className="block text-gray-400 text-sm mb-2">Metadata Source</label>
                               <div className="grid grid-cols-2 gap-2">
                                 <button
@@ -4668,6 +4874,83 @@ const TokenCreator: React.FC = () => {
                                   </div>
                                 </button>
                               </div>
+                            </div> */}
+                            {/* Metadata Source */}
+                            <div>
+                              <label className="block text-gray-400 text-sm mb-2">Metadata Source</label>
+                              <div className="grid grid-cols-3 gap-2">
+                                <button
+                                  onClick={() => setLaunchConfig(prev => ({ ...prev, metadataSource: 'ai' }))}
+                                  className={`py-3 rounded-lg border transition-all ${
+                                    launchConfig.metadataSource === 'ai'
+                                      ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-white'
+                                      : 'bg-gray-900/50 border-gray-700/50 text-gray-400 hover:text-white hover:border-gray-600/50'
+                                  }`}
+                                >
+                                  <div className="flex flex-col items-center gap-1">
+                                    <img
+                                      src="/images/openai.png"
+                                      alt="Logo"
+                                      className="w-7 h-7"
+                                    />
+                                    <span className="text-sm font-medium">AI Generated</span>
+                                  </div>
+                                </button>
+                                <button
+                                  onClick={() => setLaunchConfig(prev => ({ ...prev, metadataSource: 'trending' }))}
+                                  className={`py-3 rounded-lg border transition-all ${
+                                    launchConfig.metadataSource === 'trending'
+                                      ? 'bg-gradient-to-r from-red-500/20 to-orange-500/20 border-red-500/30 text-white'
+                                      : 'bg-gray-900/50 border-gray-700/50 text-gray-400 hover:text-white hover:border-gray-600/50'
+                                  }`}
+                                >
+                                  <div className="flex flex-col items-center gap-1">
+                                    <img
+                                      src="/images/x.png"
+                                      alt="Logo"
+                                      className="w-6 h-6"
+                                    />
+                                    <span className="text-sm font-medium">X Trends</span>
+                                  </div>
+                                </button>
+                                <button
+                                  onClick={() => setLaunchConfig(prev => ({ ...prev, metadataSource: 'tweet_accounts' }))}
+                                  className={`py-3 rounded-lg border transition-all ${
+                                    launchConfig.metadataSource === 'tweet_accounts'
+                                      ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/30 text-white'
+                                      : 'bg-gray-900/50 border-gray-700/50 text-gray-400 hover:text-white hover:border-gray-600/50'
+                                  }`}
+                                >
+                                  <div className="flex flex-col items-center gap-1">
+                                    <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                    </svg>
+                                    <span className="text-sm font-medium">Crypto Accounts</span>
+                                  </div>
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Status indicator showing current source */}
+                            <div className="mt-2">
+                              {launchConfig.metadataSource === 'ai' && (
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full border border-blue-500/30">
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm text-blue-400 font-medium">Using AI for metadata</span>
+                                </div>
+                              )}
+                              {launchConfig.metadataSource === 'trending' && (
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded-full border border-red-500/30">
+                                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm text-red-400 font-medium">Using X Trends for metadata</span>
+                                </div>
+                              )}
+                              {launchConfig.metadataSource === 'tweet_accounts' && (
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-full border border-green-500/30">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm text-green-400 font-medium">Using crypto accounts for metadata</span>
+                                </div>
+                              )}
                             </div>
 
                             {/* DALL-E Toggle - Only show when using AI source */}
@@ -4707,7 +4990,8 @@ const TokenCreator: React.FC = () => {
                               </div>
                             )}
                             
-                            {/* <div>
+                            {/* Keywords for OpenAI generation */}
+                            <div>
                               <label className="block text-gray-400 text-sm mb-2">Keywords</label>
                               <input
                                 type="text"
@@ -4716,7 +5000,7 @@ const TokenCreator: React.FC = () => {
                                 className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white placeholder-gray-500 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
                                 placeholder="meme, solana, crypto, ai, etc."
                               />
-                            </div> */}
+                            </div>
                           </div>
                         </div>
                         
@@ -5121,50 +5405,119 @@ const TokenCreator: React.FC = () => {
                       )}
 
 
-                      {/* In your Generate button section */}
-                      <button
-                      onClick={() => {
-                        if (launchConfig.metadataSource === 'trending') {
-                          console.log('📡 Generating from X Trends...');
-                          generateFromTrending();
-                        } else {
-                          console.log('🤖 Generating from AI...');
-                          console.log('🔍 DALL-E enabled:', launchConfig.useDalle);
-                          generateAIMetadata();
-                        }
-                      }}
-                      disabled={aiGenerating}
-                      className={`py-4 px-6 rounded-xl font-bold transition-all duration-200 shadow-lg hover:shadow-purple-500/25 ${
-                        launchConfig.metadataSource === 'trending'
-                          ? 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white'
-                          : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
-                      }`}
-                    >
-                      {aiGenerating ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Generating...</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          {launchConfig.metadataSource === 'trending' ? (
-                            <>
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                              </svg>
-                              <span>Generate with X Trends</span>
-                            </>
+                      {/* <button
+                        onClick={() => {
+                          if (launchConfig.metadataSource === 'trending') {
+                            console.log('📡 Generating from X Trends...');
+                            generateFromTrending();
+                          } else if (launchConfig.metadataSource === 'tweet_accounts') {
+                            console.log('📊 Generating from crypto accounts...');
+                            generateFromCryptoAccounts();
+                          } else {
+                            console.log('🤖 Generating from AI...');
+                            console.log('🔍 DALL-E enabled:', launchConfig.useDalle);
+                            generateAIMetadata();
+                          }
+                        }}
+                        disabled={aiGenerating}
+                        className={`py-4 px-6 rounded-xl font-bold transition-all duration-200 shadow-lg ${
+                          launchConfig.metadataSource === 'trending'
+                            ? 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white hover:shadow-red-500/25'
+                            : launchConfig.metadataSource === 'tweet_accounts'
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white hover:shadow-green-500/25'
+                            : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white hover:shadow-blue-500/25'
+                        }`}
+                      >
+                        {aiGenerating ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Generating...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            {launchConfig.metadataSource === 'trending' ? (
+                              <>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                </svg>
+                                <span>Generate from X Trends</span>
+                              </>
+                            ) : launchConfig.metadataSource === 'tweet_accounts' ? (
+                              <>
+                                <svg className="w-5 h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                </svg>
+                                <span>Generate from Crypto Accounts</span>
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                                <span>Generate with AI {launchConfig.useDalle && ' + DALL-E'}</span>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </button> */}
+
+                        <button
+                          onClick={() => {
+                            console.log('🔄 Current metadata source:', launchConfig.metadataSource);
+                            if (launchConfig.metadataSource === 'trending') {
+                              console.log('📡 Generating from X Trends...');
+                              generateFromTrending();
+                            } else if (launchConfig.metadataSource === 'tweet_accounts') {
+                              console.log('📊 Generating from crypto accounts...');
+                              console.log('📤 Sending request to /ai/generate-metadata-unified with source: tweet_accounts');
+                              generateFromCryptoAccounts();
+                            } else {
+                              console.log('🤖 Generating from AI...');
+                              console.log('🔍 DALL-E enabled:', launchConfig.useDalle);
+                              generateAIMetadata();
+                            }
+                          }}
+                          disabled={aiGenerating}
+                          className={`py-4 px-6 rounded-xl font-bold transition-all duration-200 shadow-lg ${
+                            launchConfig.metadataSource === 'trending'
+                              ? 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white hover:shadow-red-500/25'
+                              : launchConfig.metadataSource === 'tweet_accounts'
+                              ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white hover:shadow-green-500/25'
+                              : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white hover:shadow-blue-500/25'
+                          }`}
+                        >
+                          {aiGenerating ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              <span>Generating...</span>
+                            </div>
                           ) : (
-                            <>
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                              </svg>
-                              <span>Generate with AI {launchConfig.useDalle && ' + DALL-E'}</span>
-                            </>
+                            <div className="flex items-center gap-2">
+                              {launchConfig.metadataSource === 'trending' ? (
+                                <>
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                  </svg>
+                                  <span>Generate from X Trends</span>
+                                </>
+                              ) : launchConfig.metadataSource === 'tweet_accounts' ? (
+                                <>
+                                  <svg className="w-5 h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                  </svg>
+                                  <span>Generate from Crypto Accounts</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                  </svg>
+                                  <span>Generate with AI {launchConfig.useDalle && ' + DALL-E'}</span>
+                                </>
+                              )}
+                            </div>
                           )}
-                        </div>
-                      )}
-                    </button>
+                        </button>
 
                         {/* Keep advanced toggle button */}
                         <button
@@ -5298,29 +5651,29 @@ const TokenCreator: React.FC = () => {
                     <BotWalletsTable botWallets={botWallets} />
                   )}
                 </>
-              ) : (
-                // Optional: Show a message that features are locked
-                <div className="bg-gradient-to-br from-gray-900/50 to-dark-2/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-800/50 text-center">
-                  <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
+                ) : (
+                  // Optional: Show a message that features are locked
+                  <div className="bg-gradient-to-br from-gray-900/50 to-dark-2/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-800/50 text-center">
+                    <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-white text-xl font-bold mb-2">Features Locked</h3>
+                    <p className="text-gray-400 mb-6">
+                      Token creation features require a minimum of {MIN_SOL_FOR_CREATOR_MODE} SOL in your wallet.
+                      Please fund your wallet to unlock all features.
+                    </p>
+                    <div className="flex justify-center gap-3">
+                      <button
+                        onClick={handleFundWallet}
+                        className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-medium py-3 px-8 rounded-lg transition-all shadow-lg hover:shadow-emerald-500/25"
+                      >
+                        Fund Wallet Now
+                      </button>
+                    </div>
                   </div>
-                  <h3 className="text-white text-xl font-bold mb-2">Features Locked</h3>
-                  <p className="text-gray-400 mb-6">
-                    Token creation features require a minimum of {MIN_SOL_FOR_CREATOR_MODE} SOL in your wallet.
-                    Please fund your wallet to unlock all features.
-                  </p>
-                  <div className="flex justify-center gap-3">
-                    <button
-                      onClick={handleFundWallet}
-                      className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-medium py-3 px-8 rounded-lg transition-all shadow-lg hover:shadow-emerald-500/25"
-                    >
-                      Fund Wallet Now
-                    </button>
-                  </div>
-                </div>
-              )}
+                )}
               </div>
             </div>
           

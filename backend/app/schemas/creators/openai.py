@@ -97,8 +97,19 @@ class BatchMetadataResponse(BaseModel):
     total_count: int = Field(description="Total generated")
     request_id: List[str] = Field(default_factory=list, description="OpenAI request IDs")
     
-    
+class UnifiedRequest(BaseModel):
+    style: str = "trending"
+    keywords: str = ""
+    source: str = "trending"
+    use_images: bool = True
+    category: str = "meme"
+    use_dalle: bool = False 
 
+class LatestAccountRequest(BaseModel):
+    use_tweet_image: bool = True
+    style: str = "professional"
+    accounts: Optional[List[str]] = None
+    method: str = "search"
 
 
 

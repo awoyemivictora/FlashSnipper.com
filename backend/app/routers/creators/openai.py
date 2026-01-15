@@ -1,11 +1,11 @@
 import base64
 from datetime import datetime, timedelta
 import time
-from fastapi import APIRouter, File, HTTPException, UploadFile, Query
+from fastapi import APIRouter, Body, File, HTTPException, UploadFile, Query
 from typing import Any, Dict, List, Optional
 import logging
 import httpx
-from app.schemas.creators.openai import Attribute, BatchMetadataRequest, BatchMetadataResponse, MetadataRequest, SimpleMetadataResponse, TokenMetadata
+from app.schemas.creators.openai import Attribute, BatchMetadataRequest, BatchMetadataResponse, LatestAccountRequest, MetadataRequest, SimpleMetadataResponse, TokenMetadata, UnifiedRequest
 from openai import OpenAI
 import json 
 from app.config import settings
@@ -323,6 +323,348 @@ class SimpleXAnalyzer:
             return 'meme'
         else:
             return 'viral'
+
+
+
+
+
+
+    async def get_latest_from_accounts(self, accounts: List[str] = None, max_per_account: int = 2) -> List[Dict]:
+        """
+        Get latest tweets from specified accounts
+        """
+        try:
+            if not self.bearer_token:
+                logger.warning("No X bearer token configured")
+                return []
+            
+            session = await self.get_session()
+            
+            # Default accounts if none provided
+            if not accounts:
+                accounts = [
+                    'whalewatchalert',
+                    'mobyagent', 
+                    'cointelegraph',
+                    'FirstSquawk',
+                    'binance',
+                    'WhaleInsider',
+                    'NewListingsFeed',
+                    'aixbt_agent',
+                    'DeItaone',
+                    'financialjuice'
+                ]
+            
+            all_tweets = []
+            
+            for username in accounts:
+                try:
+                    # Get user ID first
+                    user_id = await self._get_user_id(session, username)
+                    if not user_id:
+                        logger.warning(f"Could not find user ID for @{username}")
+                        continue
+                    
+                    # Get recent tweets from user
+                    tweets = await self._get_user_tweets(session, user_id, max_results=max_per_account)
+                    
+                    for tweet in tweets:
+                        # Add username to tweet data
+                        tweet['source_account'] = username
+                        all_tweets.append(tweet)
+                        
+                    logger.info(f"✅ Found {len(tweets)} recent tweets from @{username}")
+                    
+                except Exception as e:
+                    logger.error(f"Error fetching tweets from @{username}: {e}")
+                    continue
+            
+            # Sort all tweets by creation time (newest first)
+            sorted_tweets = sorted(
+                all_tweets,
+                key=lambda x: x.get('created_at', ''),
+                reverse=True
+            )
+            
+            logger.info(f"✅ Found {len(sorted_tweets)} total tweets from {len(accounts)} accounts")
+            
+            return sorted_tweets
+            
+        except Exception as e:
+            logger.error(f"Failed to get tweets from accounts: {e}")
+            return []
+
+    async def _get_user_id(self, session, username: str) -> Optional[str]:
+        """Get user ID from username"""
+        try:
+            url = f"https://api.x.com/2/users/by/username/{username}"
+            headers = {'Authorization': f'Bearer {self.bearer_token}'}
+            
+            async with session.get(url, headers=headers, timeout=10) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    return data.get('data', {}).get('id')
+                else:
+                    logger.warning(f"Could not find user @{username}: {response.status}")
+                    return None
+        except Exception as e:
+            logger.error(f"Error getting user ID for @{username}: {e}")
+            return None
+
+
+
+
+    # Update the _get_user_tweets method to fix the max_results issue
+    async def _get_user_tweets(self, session, user_id: str, max_results: int = 5) -> List[Dict]:
+        """Get recent tweets from a user with media"""
+        try:
+            url = f"https://api.x.com/2/users/{user_id}/tweets"
+            
+            headers = {
+                'Authorization': f'Bearer {self.bearer_token}',
+                'Content-Type': 'application/json'
+            }
+            
+            # FIX: Ensure max_results is between 5 and 100
+            max_results = max(5, min(max_results, 100))
+            
+            params = {
+                'max_results': max_results,
+                'tweet.fields': 'text,created_at,public_metrics,attachments',
+                'media.fields': 'url,preview_image_url,type,media_key,height,width,variants',
+                'expansions': 'attachments.media_keys,author_id',
+                'exclude': 'retweets',  # Changed from 'retweets,replies' to just 'retweets'
+                'user.fields': 'username,name,verified'
+            }
+            
+            async with session.get(url, headers=headers, params=params, timeout=15) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    tweets = []
+                    tweet_data = data.get('data', [])
+                    if not tweet_data:
+                        return tweets
+                    
+                    users = {user['id']: user for user in data.get('includes', {}).get('users', [])}
+                    media_items = data.get('includes', {}).get('media', [])
+                    
+                    # Create a dictionary of media by media_key
+                    media = {}
+                    for media_item in media_items:
+                        media_key = media_item.get('media_key')
+                        if media_key:
+                            media[media_key] = media_item
+                    
+                    for tweet in tweet_data:
+                        user_id = tweet.get('author_id')
+                        user = users.get(user_id, {})
+                        
+                        metrics = tweet.get('public_metrics', {})
+                        engagement_score = (
+                            metrics.get('like_count', 0) * 1 +
+                            metrics.get('retweet_count', 0) * 2 +
+                            metrics.get('reply_count', 0) * 3
+                        )
+                        
+                        # Extract image URL if tweet has media
+                        image_url = None
+                        attachments = tweet.get('attachments', {})
+                        media_keys = attachments.get('media_keys', [])
+                        
+                        # Check for photos
+                        for media_key in media_keys:
+                            media_item = media.get(media_key)
+                            if media_item and media_item.get('type') == 'photo':
+                                # Get image URL
+                                image_url = media_item.get('url') or \
+                                        media_item.get('preview_image_url')
+                                
+                                if not image_url and media_key:
+                                    # Construct Twitter URL
+                                    image_url = f"https://pbs.twimg.com/media/{media_key}?format=jpg&name=large"
+                                
+                                if image_url:
+                                    break
+                        
+                        tweets.append({
+                            'text': tweet.get('text', ''),
+                            'created_at': tweet.get('created_at', ''),
+                            'user': {
+                                'username': user.get('username', ''),
+                                'name': user.get('name', ''),
+                                'verified': user.get('verified', False)
+                            },
+                            'metrics': metrics,
+                            'engagement_score': engagement_score,
+                            'image_url': image_url,
+                            'source': 'account_tweet'
+                        })
+                    
+                    return tweets
+                else:
+                    error_text = await response.text()
+                    logger.warning(f"User tweets API error: {response.status} - {error_text}")
+                    return []
+                    
+        except Exception as e:
+            logger.error(f"User tweets error: {e}")
+            return []
+
+    async def get_latest_from_accounts_via_search(self, accounts: List[str] = None, max_tweets: int = 10) -> List[Dict]:
+        """
+        Get latest tweets from specified accounts using search API
+        This often works better than user timeline API
+        """
+        try:
+            if not self.bearer_token:
+                logger.warning("No X bearer token configured")
+                return []
+            
+            session = await self.get_session()
+            
+            # Default accounts if none provided
+            if not accounts:
+                accounts = [
+                    'whalewatchalert',
+                    'mobyagent', 
+                    'cointelegraph',
+                    'FirstSquawk',
+                    'binance',
+                    'WhaleInsider',
+                    'NewListingsFeed',
+                    'aixbt_agent',
+                    'DeItaone',
+                    'financialjuice'
+                ]
+            
+            all_tweets = []
+            
+            # Create OR query for all accounts
+            accounts_query = " OR ".join([f"from:{account}" for account in accounts])
+            
+            # Search for tweets from these accounts
+            search_tweets = await self._search_tweets_by_accounts(
+                session, 
+                accounts_query,
+                max_results=max_tweets
+            )
+            
+            # Add source account to each tweet
+            for tweet in search_tweets:
+                # Extract source account from tweet
+                if 'user' in tweet and 'username' in tweet['user']:
+                    tweet['source_account'] = tweet['user']['username'].lower()
+                all_tweets.append(tweet)
+            
+            # Sort by creation time (newest first)
+            sorted_tweets = sorted(
+                all_tweets,
+                key=lambda x: x.get('created_at', ''),
+                reverse=True
+            )
+            
+            logger.info(f"✅ Found {len(sorted_tweets)} tweets from {len(accounts)} accounts via search")
+            
+            return sorted_tweets
+            
+        except Exception as e:
+            logger.error(f"Failed to get tweets from accounts via search: {e}")
+            return []
+
+    async def _search_tweets_by_accounts(self, session, query: str, max_results: int = 20) -> List[Dict]:
+        """Search for tweets from specific accounts"""
+        try:
+            url = "https://api.x.com/2/tweets/search/recent"
+            
+            headers = {
+                'Authorization': f'Bearer {self.bearer_token}',
+                'Content-Type': 'application/json'
+            }
+            
+            # Ensure max_results is within limits
+            max_results = max(10, min(max_results, 100))
+            
+            params = {
+                'query': f"{query} -is:retweet has:images",
+                'max_results': max_results,
+                'tweet.fields': 'text,created_at,public_metrics,attachments,author_id',
+                'media.fields': 'url,preview_image_url,type,media_key,height,width,variants',
+                'expansions': 'author_id,attachments.media_keys',
+                'user.fields': 'username,name,verified'
+            }
+            
+            async with session.get(url, headers=headers, params=params, timeout=15) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    tweets = []
+                    tweet_data = data.get('data', [])
+                    users = {user['id']: user for user in data.get('includes', {}).get('users', [])}
+                    media_items = data.get('includes', {}).get('media', [])
+                    
+                    # Create a dictionary of media by media_key
+                    media = {}
+                    for media_item in media_items:
+                        media_key = media_item.get('media_key')
+                        if media_key:
+                            media[media_key] = media_item
+                    
+                    for tweet in tweet_data:
+                        user_id = tweet.get('author_id')
+                        user = users.get(user_id, {})
+                        
+                        metrics = tweet.get('public_metrics', {})
+                        engagement_score = (
+                            metrics.get('like_count', 0) * 1 +
+                            metrics.get('retweet_count', 0) * 2 +
+                            metrics.get('reply_count', 0) * 3
+                        )
+                        
+                        # Extract image URL if tweet has media
+                        image_url = None
+                        attachments = tweet.get('attachments', {})
+                        media_keys = attachments.get('media_keys', [])
+                        
+                        # Check for photos
+                        for media_key in media_keys:
+                            media_item = media.get(media_key)
+                            if media_item and media_item.get('type') == 'photo':
+                                # Get image URL
+                                image_url = media_item.get('url') or \
+                                        media_item.get('preview_image_url')
+                                
+                                if not image_url and media_key:
+                                    # Construct Twitter URL
+                                    image_url = f"https://pbs.twimg.com/media/{media_key}?format=jpg&name=large"
+                                
+                                if image_url:
+                                    break
+                        
+                        tweets.append({
+                            'text': tweet.get('text', ''),
+                            'created_at': tweet.get('created_at', ''),
+                            'user': {
+                                'username': user.get('username', ''),
+                                'name': user.get('name', ''),
+                                'verified': user.get('verified', False)
+                            },
+                            'metrics': metrics,
+                            'engagement_score': engagement_score,
+                            'image_url': image_url,
+                            'source': 'account_search'
+                        })
+                    
+                    return tweets
+                else:
+                    error_text = await response.text()
+                    logger.warning(f"Search API error: {response.status} - {error_text}")
+                    return []
+                    
+        except Exception as e:
+            logger.error(f"Search error: {e}")
+            return []
+
 
 
 
@@ -657,6 +999,263 @@ async def quick_generate_metadata(
         use_x_image=use_x_image,  # Updated parameter
         style=style
     )
+
+
+#=====================================
+# Account-Based Tweets EndPoint
+#=====================================
+@router.get("/latest-from-accounts")
+async def get_latest_from_accounts(
+    method: str = Query("search", description="Method: 'timeline' or 'search'"),
+    max_tweets: int = Query(20, description="Max tweets to fetch")
+):
+    """
+    Get latest tweets from specific crypto/whale accounts
+    """
+    try:
+        accounts = [
+            'whalewatchalert',
+            'mobyagent', 
+            'cointelegraph',
+            'FirstSquawk',
+            'binance',
+            'WhaleInsider',
+            'NewListingsFeed',
+            'aixbt_agent',
+            'DeItaone',
+            'financialjuice'
+        ]
+        
+        if method == "timeline":
+            # Use timeline API (requires max_results >= 5)
+            tweets = await simple_x_analyzer.get_latest_from_accounts(accounts)
+        else:
+            # Use search API (often more reliable)
+            tweets = await simple_x_analyzer.get_latest_from_accounts_via_search(accounts, max_tweets)
+        
+        if not tweets:
+            return {
+                "success": False,
+                "message": "No tweets found from accounts. Try different method or check API permissions.",
+                "tweets": [],
+                "method_used": method
+            }
+        
+        # Analyze tweets for token ideas
+        analyzed_tweets = []
+        for tweet in tweets[:10]:  # Top 10 most recent
+            token_ideas = simple_x_analyzer.extract_token_ideas(tweet['text'])
+            
+            analyzed_tweets.append({
+                'tweet_text': tweet['text'][:200],
+                'source_account': tweet.get('source_account', tweet['user']['username'].lower()),
+                'created_at': tweet['created_at'],
+                'engagement': tweet['engagement_score'],
+                'has_image': bool(tweet.get('image_url')),
+                'image_url': tweet.get('image_url', ''),
+                'token_ideas': token_ideas,
+                'category': categorize_trend(tweet['text'])
+            })
+        
+        return {
+            "success": True,
+            "accounts": accounts,
+            "method": method,
+            "tweets": analyzed_tweets,
+            "count": len(analyzed_tweets),
+            "latest_tweet_time": analyzed_tweets[0]['created_at'] if analyzed_tweets else None,
+            "latest_account": analyzed_tweets[0]['source_account'] if analyzed_tweets else None,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    
+    except Exception as e:
+        logger.error(f"Latest from accounts error: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "tweets": []
+        }
+
+@router.post("/generate-from-latest-account")
+async def generate_metadata_from_latest_account(
+    request: LatestAccountRequest = Body(...)
+):
+    """
+    Generate token metadata from the LATEST tweet among specified accounts
+    """
+    try:
+        use_tweet_image = request.use_tweet_image
+        style = request.style
+        accounts = request.accounts
+        method = request.method
+        
+        # If accounts not provided, use default list
+        if not accounts:
+            accounts = [
+                'whalewatchalert',
+                'mobyagent', 
+                'cointelegraph',
+                'FirstSquawk',
+                'binance',
+                'WhaleInsider',
+                'NewListingsFeed',
+                'aixbt_agent',
+                'DeItaone',
+                'financialjuice'
+            ]
+        
+        logger.info(f"Fetching latest tweets from {len(accounts)} accounts using {method} method")
+        
+        # Step 1: Get latest tweets from accounts
+        if method == "timeline":
+            tweets = await simple_x_analyzer.get_latest_from_accounts(accounts)
+        else:
+            tweets = await simple_x_analyzer.get_latest_from_accounts_via_search(accounts)
+        
+        if not tweets:
+            logger.warning(f"No tweets found from specified accounts using {method} method")
+            
+            # Try fallback method
+            fallback_method = "search" if method == "timeline" else "timeline"
+            logger.info(f"Trying fallback method: {fallback_method}")
+            
+            if fallback_method == "timeline":
+                tweets = await simple_x_analyzer.get_latest_from_accounts(accounts)
+            else:
+                tweets = await simple_x_analyzer.get_latest_from_accounts_via_search(accounts)
+            
+            if not tweets:
+                # Last resort: use your existing trending method
+                logger.warning("No tweets from accounts, falling back to general trending")
+                trends = await simple_x_analyzer.get_usa_trending_for_tokens()
+                if trends:
+                    # Convert trending format to match account format
+                    for trend in trends:
+                        trend['source_account'] = trend['user']['username']
+                    tweets = trends
+                else:
+                    raise HTTPException(
+                        status_code=404,
+                        detail="No tweets found from accounts or trending topics. Check X API permissions."
+                    )
+        
+        # Step 2: Get the MOST RECENT tweet
+        latest_tweet = tweets[0] if tweets else None
+        
+        if not latest_tweet:
+            raise HTTPException(status_code=404, detail="No tweets available")
+        
+        source_account = latest_tweet.get('source_account', 
+                                        latest_tweet.get('user', {}).get('username', 'unknown'))
+        
+        logger.info(f"✅ Using latest tweet from @{source_account}")
+        logger.info(f"📅 Tweet time: {latest_tweet.get('created_at')}")
+        logger.info(f"📝 Content: {latest_tweet['text'][:100]}...")
+        
+        tweet_text = latest_tweet['text']
+        tweet_image_url = latest_tweet.get('image_url')
+        
+        # Step 3: Extract token ideas
+        token_ideas = simple_x_analyzer.extract_token_ideas(tweet_text)
+        
+        # Step 4: Download and upload image if available
+        downloaded_image_url = None
+        
+        if use_tweet_image and tweet_image_url:
+            try:
+                logger.info(f"Processing tweet image from @{source_account}")
+                image_cid = await ipfs_service.pin_file_from_url(
+                    tweet_image_url,
+                    f"{source_account}_tweet_{int(time.time())}"
+                )
+                
+                if image_cid:
+                    downloaded_image_url = ipfs_service.public_gateway_url.format(cid=image_cid)
+                    logger.info(f"✅ Uploaded tweet image to IPFS: {downloaded_image_url}")
+                else:
+                    logger.warning("Failed to upload image to IPFS")
+            except Exception as e:
+                logger.error(f"Failed to process tweet image: {e}")
+        
+        # Step 5: Create metadata request
+        metadata_request = MetadataRequest(
+            keywords=f"{token_ideas['context']}, crypto, {source_account}",
+            style=style,
+            category="crypto",
+            theme=f"Token based on latest update from @{source_account}: {tweet_text[:50]}...",
+            use_dalle=False,
+            existing_image=downloaded_image_url,
+            trend_context=f"Latest from @{source_account} at {latest_tweet.get('created_at')}: {tweet_text[:100]}..."
+        )
+        
+        # Step 6: Generate metadata
+        metadata_response = await generate_metadata(metadata_request)
+        
+        # Step 7: Enhance response with tweet info
+        if metadata_response.success:
+            response_data = {
+                "success": True,
+                "method_used": method,
+                "tweet_info": {
+                    "source_account": source_account,
+                    "tweet_time": latest_tweet.get('created_at'),
+                    "tweet_text": tweet_text[:200],
+                    "engagement": latest_tweet['engagement_score'],
+                    "image_available": bool(tweet_image_url),
+                    "image_used": bool(downloaded_image_url)
+                },
+                "token_ideas": token_ideas,
+                "metadata": {
+                    "name": metadata_response.name,
+                    "symbol": metadata_response.symbol,
+                    "description": metadata_response.description,
+                    "metadata_uri": metadata_response.metadata_uri,
+                    "image_url": metadata_response.image_url
+                },
+                "suggestions": [
+                    f"Credit source: Based on @{source_account} latest update",
+                    f"Tweet about this with #{metadata_response.symbol} and @{source_account}",
+                    f"Focus on the key insight from the tweet: {tweet_text[:100]}...",
+                    "Market as 'real-time' token based on latest crypto intelligence"
+                ],
+                "generated_at": datetime.utcnow().isoformat()
+            }
+            
+            # Add original image URL if available
+            if tweet_image_url:
+                response_data["tweet_info"]["original_image_url"] = tweet_image_url
+            
+            return response_data
+        else:
+            raise Exception("Metadata generation failed")
+    
+    except Exception as e:
+        logger.error(f"Failed to generate from latest account: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate metadata from latest account tweet: {str(e)}"
+        )
+
+
+ 
+
+
+@router.post("/quick-generate-from-accounts")
+async def quick_generate_from_accounts(
+    style: str = "professional",
+    use_tweet_image: bool = True
+):
+    """
+    Quick generation using the latest tweet from crypto accounts
+    """
+    return await generate_metadata_from_latest_account(
+        use_tweet_image=use_tweet_image,
+        style=style,
+        accounts=None  # Will use default accounts
+    )
+
+
+
 
 #=====================================
 # Helper Functions
@@ -1084,31 +1683,347 @@ async def generate_metadata(
         )
        
 # Frontend will call this
+# @router.post("/generate-metadata-unified")
+# async def generate_metadata_unified(
+#     style: str = "trending",
+#     keywords: str = "",
+#     source: str = "trending",
+#     use_images: bool = True,
+#     category: str = "meme",
+#     use_dalle: bool = False
+# ):
+#     """
+#     Unified endpoint for frontend - supports both AI and Trending generation
+#     """
+#     try:
+#         # logger.info(f"📡 Unified metadata generation called with source: {source}")
+        
+#         if source == "trending":
+#             logger.info("🚀 Generating metadata from X Trends...")
+            
+#             # Call the trending endpoint with proper parameters
+#             async with httpx.AsyncClient(timeout=60.0) as client:
+#                 response = await client.post(
+#                     f"{settings.BACKEND_BASE_URL}/ai/generate-from-trending-simple",
+#                     json={
+#                         "style": style,
+#                         "use_x_image": use_images  # ✅ Fixed: Correct parameter name
+#                     },
+#                     headers={"X-API-Key": settings.ONCHAIN_API_KEY}
+#                 )
+                
+#                 if response.status_code != 200:
+#                     logger.error(f"Trending API error: {response.status_code}")
+#                     return {
+#                         "success": False,
+#                         "error": f"Trending API error: {response.status_code}",
+#                         "source": "trending"
+#                     }
+                
+#                 result = response.json()  # ✅ This should be a dict
+                
+#                 # ✅ FIX: Handle the SimpleMetadataResponse object properly
+#                 if isinstance(result, dict) and result.get("success"):
+#                     return {
+#                         "success": True,
+#                         "source": "trending",
+#                         "metadata": {
+#                             "name": result["name"],
+#                             "symbol": result["symbol"],
+#                             "description": result.get("description", ""),
+#                             "metadata_uri": result["metadata_uri"],
+#                             "image_url": result["image_url"]
+#                         },
+#                         "generated_from_trend": True
+#                     }
+#                 else:
+#                     logger.error(f"Trending generation failed: {result}")
+#                     return {
+#                         "success": False,
+#                         "error": "Trending generation failed",
+#                         "source": "trending"
+#                     }
+                    
+#         elif source == "ai":
+#             # logger.info("🤖 Generating AI metadata...")
+            
+#             # Call the AI endpoint with correct parameters
+#             metadata_request = MetadataRequest(
+#                 style=style,
+#                 keywords=keywords,
+#                 category=category,
+#                 use_dalle=use_dalle, 
+#                 theme=f"Token created via Flash Sniper"
+#             )
+            
+#             # ✅ FIX: Call generate_metadata directly instead of HTTP
+#             response = await generate_metadata(metadata_request, source="ai")
+            
+#             if not response or not response.success:
+#                 return {
+#                     "success": False,
+#                     "error": "AI metadata generation failed",
+#                     "source": "ai"
+#                 }
+            
+#             return {
+#                 "success": True,
+#                 "source": "ai",
+#                 "metadata": {
+#                     "name": response.name,
+#                     "symbol": response.symbol,
+#                     "description": response.description,
+#                     "metadata_uri": response.metadata_uri,
+#                     "image_url": response.image_url
+#                 },
+#                 "generated_from_trend": False
+#             }
+        
+#         elif source == "tweet_accounts":
+#             logger.info("📈 Generating metadata from latest crypto account tweet...")
+            
+#             # Call the account-based endpoint
+#             async with httpx.AsyncClient(timeout=60.0) as client:
+#                 response = await client.post(
+#                     f"{settings.BACKEND_BASE_URL}/ai/generate-from-latest-account",
+#                     json={
+#                         "style": style,
+#                         "use_tweet_image": use_images
+#                     },
+#                     headers={"X-API-Key": settings.ONCHAIN_API_KEY}
+#                 )
+                
+#                 if response.status_code != 200:
+#                     logger.error(f"Accounts API error: {response.status_code}")
+#                     return {
+#                         "success": False,
+#                         "error": f"Accounts API error: {response.status_code}",
+#                         "source": "accounts"
+#                     }
+                
+#                 result = response.json()
+                
+#                 if isinstance(result, dict) and result.get("success"):
+#                     return {
+#                         "success": True,
+#                         "source": "accounts",
+#                         "metadata": {
+#                             "name": result["metadata"]["name"],
+#                             "symbol": result["metadata"]["symbol"],
+#                             "description": result["metadata"]["description"],
+#                             "metadata_uri": result["metadata"]["metadata_uri"],
+#                             "image_url": result["metadata"]["image_url"]
+#                         },
+#                         "tweet_info": result.get("tweet_info"),
+#                         "generated_from_account": True
+#                     }
+#                 else:
+#                     logger.error(f"Account generation failed: {result}")
+#                     return {
+#                         "success": False,
+#                         "error": "Account generation failed",
+#                         "source": "accounts"
+#                     }   
+            
+#         else:
+#             pass 
+        
+#     except Exception as e:
+#         logger.error(f"Unified generation failed: {e}", exc_info=True)
+#         return {
+#             "success": False,
+#             "error": str(e),
+#             "source": source
+#         }
+  
+# @router.post("/generate-metadata-unified")
+# async def generate_metadata_unified(
+#     request: UnifiedRequest = Body(...)
+# ):
+#     """
+#     Unified endpoint for frontend - supports AI, Trending, and Crypto Accounts generation
+#     """
+#     try:
+#         source = request.source
+#         style = request.style
+#         use_images = request.use_images
+#         keywords=request.keywords
+#         category=request.category
+#         use_dalle=request.use_dalle
+        
+#         logger.info(f"📡 Unified metadata generation called with source: {source}")
+        
+#         if source == "trending":
+#             logger.info("🚀 Generating metadata from X Trends...")
+            
+#             # Call the trending endpoint
+#             async with httpx.AsyncClient(timeout=60.0) as client:
+#                 response = await client.post(
+#                     f"{settings.BACKEND_BASE_URL}/ai/generate-from-trending-simple",
+#                     json={
+#                         "style": style,
+#                         "use_x_image": use_images
+#                     },
+#                     headers={"X-API-Key": settings.ONCHAIN_API_KEY}
+#                 )
+                
+#                 if response.status_code != 200:
+#                     logger.error(f"Trending API error: {response.status_code}")
+#                     return {
+#                         "success": False,
+#                         "error": f"Trending API error: {response.status_code}",
+#                         "source": "trending"
+#                     }
+                
+#                 result = response.json()
+                
+#                 if isinstance(result, dict) and result.get("success"):
+#                     return {
+#                         "success": True,
+#                         "source": "trending",
+#                         "metadata": {
+#                             "name": result["name"],
+#                             "symbol": result["symbol"],
+#                             "description": result.get("description", ""),
+#                             "metadata_uri": result["metadata_uri"],
+#                             "image_url": result["image_url"]
+#                         },
+#                         "generated_from_trend": True
+#                     }
+#                 else:
+#                     logger.error(f"Trending generation failed: {result}")
+#                     return {
+#                         "success": False,
+#                         "error": "Trending generation failed",
+#                         "source": "trending"
+#                     }
+                    
+#         elif source == "tweet_accounts":
+#             logger.info("📈 Generating metadata from latest crypto account tweet...")
+            
+#             # Call the account-based endpoint
+#             async with httpx.AsyncClient(timeout=60.0) as client:
+#                 response = await client.post(
+#                     f"{settings.BACKEND_BASE_URL}/ai/generate-from-latest-account",
+#                     json={
+#                         "style": "professional",
+#                         "use_tweet_image": use_images,  # FIXED: Correct parameter name
+#                         "method": "search"
+#                     },
+#                     headers={"X-API-Key": settings.ONCHAIN_API_KEY}
+#                 )
+                
+#                 if response.status_code != 200:
+#                     # Log the actual error response
+#                     error_text = await response.text()
+#                     logger.error(f"Accounts API error: {response.status_code} - {error_text}")
+#                     return {
+#                         "success": False,
+#                         "error": f"Accounts API error: {response.status_code} - {error_text}",
+#                         "source": "tweet_accounts"
+#                     }
+                
+#                 result = response.json()
+#                 logger.info(f"Accounts generation result: {result}")
+                
+#                 if isinstance(result, dict) and result.get("success"):
+#                     return {
+#                         "success": True,
+#                         "source": "tweet_accounts",
+#                         "metadata": {
+#                             "name": result["metadata"]["name"],
+#                             "symbol": result["metadata"]["symbol"],
+#                             "description": result["metadata"]["description"],
+#                             "metadata_uri": result["metadata"]["metadata_uri"],
+#                             "image_url": result["metadata"]["image_url"]
+#                         },
+#                         "tweet_info": result.get("tweet_info"),
+#                         "generated_from_account": True
+#                     }
+#                 else:
+#                     logger.error(f"Account generation failed: {result}")
+#                     return {
+#                         "success": False,
+#                         "error": "Account generation failed",
+#                         "source": "tweet_accounts"
+#                     }
+                    
+#         elif source == "ai":
+#             logger.info("🤖 Generating AI metadata...")
+            
+#             # Call the AI endpoint with correct parameters
+#             metadata_request = MetadataRequest(
+#                 style=style,
+#                 keywords=keywords,
+#                 category=category,
+#                 use_dalle=use_dalle, 
+#                 theme=f"Token created via Flash Sniper"
+#             )
+            
+#             # Call generate_metadata directly
+#             response = await generate_metadata(metadata_request, source="ai")
+            
+#             if not response or not response.success:
+#                 return {
+#                     "success": False,
+#                     "error": "AI metadata generation failed",
+#                     "source": "ai"
+#                 }
+            
+#             return {
+#                 "success": True,
+#                 "source": "ai",
+#                 "metadata": {
+#                     "name": response.name,
+#                     "symbol": response.symbol,
+#                     "description": response.description,
+#                     "metadata_uri": response.metadata_uri,
+#                     "image_url": response.image_url
+#                 },
+#                 "generated_from_trend": False
+#             }
+#         else:
+#             return {
+#                 "success": False,
+#                 "error": f"Unknown source: {source}",
+#                 "source": source
+#             }
+        
+#     except Exception as e:
+#         logger.error(f"Unified generation failed: {e}", exc_info=True)
+#         return {
+#             "success": False,
+#             "error": str(e),
+#             "source": source
+#         }
+   
 @router.post("/generate-metadata-unified")
 async def generate_metadata_unified(
-    style: str = "trending",
-    keywords: str = "",
-    source: str = "trending",
-    use_images: bool = True,
-    category: str = "meme",
-    use_dalle: bool = False
+    request: UnifiedRequest = Body(...)
 ):
     """
-    Unified endpoint for frontend - supports both AI and Trending generation
+    Unified endpoint for frontend - supports AI, Trending, and Crypto Accounts generation
     """
     try:
-        # logger.info(f"📡 Unified metadata generation called with source: {source}")
+        source = request.source
+        style = request.style
+        use_images = request.use_images
+        keywords = request.keywords
+        category = request.category
+        use_dalle = request.use_dalle
+        
+        logger.info(f"📡 Unified metadata generation called with source: {source}")
         
         if source == "trending":
             logger.info("🚀 Generating metadata from X Trends...")
             
-            # Call the trending endpoint with proper parameters
+            # Call the trending endpoint
             async with httpx.AsyncClient(timeout=60.0) as client:
                 response = await client.post(
                     f"{settings.BACKEND_BASE_URL}/ai/generate-from-trending-simple",
                     json={
                         "style": style,
-                        "use_x_image": use_images  # ✅ Fixed: Correct parameter name
+                        "use_x_image": use_images
                     },
                     headers={"X-API-Key": settings.ONCHAIN_API_KEY}
                 )
@@ -1121,9 +2036,8 @@ async def generate_metadata_unified(
                         "source": "trending"
                     }
                 
-                result = response.json()  # ✅ This should be a dict
+                result = response.json()
                 
-                # ✅ FIX: Handle the SimpleMetadataResponse object properly
                 if isinstance(result, dict) and result.get("success"):
                     return {
                         "success": True,
@@ -1145,8 +2059,64 @@ async def generate_metadata_unified(
                         "source": "trending"
                     }
                     
-        else:  # AI source
-            # logger.info("🤖 Generating AI metadata...")
+        elif source == "tweet_accounts":
+            logger.info("📈 Generating metadata from latest crypto account tweet...")
+            
+            # Call the account-based endpoint
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(
+                    f"{settings.BACKEND_BASE_URL}/ai/generate-from-latest-account",
+                    json={
+                        "style": "professional",
+                        "use_tweet_image": use_images,
+                        "method": "search"
+                    },
+                    headers={"X-API-Key": settings.ONCHAIN_API_KEY}
+                )
+                
+                if response.status_code != 200:
+                    # FIXED: Proper error handling
+                    try:
+                        error_text = response.text  # No parentheses - it's a property
+                        if callable(error_text):  # Some versions have it as a method
+                            error_text = error_text()
+                    except:
+                        error_text = str(response.status_code)
+                    
+                    logger.error(f"Accounts API error: {response.status_code} - {error_text}")
+                    return {
+                        "success": False,
+                        "error": f"Accounts API error: {response.status_code}",
+                        "source": "tweet_accounts"
+                    }
+                
+                result = response.json()
+                logger.info(f"Accounts generation result: {result}")
+                
+                if isinstance(result, dict) and result.get("success"):
+                    return {
+                        "success": True,
+                        "source": "tweet_accounts",
+                        "metadata": {
+                            "name": result["metadata"]["name"],
+                            "symbol": result["metadata"]["symbol"],
+                            "description": result["metadata"]["description"],
+                            "metadata_uri": result["metadata"]["metadata_uri"],
+                            "image_url": result["metadata"]["image_url"]
+                        },
+                        "tweet_info": result.get("tweet_info"),
+                        "generated_from_account": True
+                    }
+                else:
+                    logger.error(f"Account generation failed: {result}")
+                    return {
+                        "success": False,
+                        "error": "Account generation failed",
+                        "source": "tweet_accounts"
+                    }
+                    
+        elif source == "ai":
+            logger.info("🤖 Generating AI metadata...")
             
             # Call the AI endpoint with correct parameters
             metadata_request = MetadataRequest(
@@ -1157,7 +2127,7 @@ async def generate_metadata_unified(
                 theme=f"Token created via Flash Sniper"
             )
             
-            # ✅ FIX: Call generate_metadata directly instead of HTTP
+            # Call generate_metadata directly
             response = await generate_metadata(metadata_request, source="ai")
             
             if not response or not response.success:
@@ -1179,7 +2149,13 @@ async def generate_metadata_unified(
                 },
                 "generated_from_trend": False
             }
-            
+        else:
+            return {
+                "success": False,
+                "error": f"Unknown source: {source}",
+                "source": source
+            }
+        
     except Exception as e:
         logger.error(f"Unified generation failed: {e}", exc_info=True)
         return {
@@ -1187,7 +2163,6 @@ async def generate_metadata_unified(
             "error": str(e),
             "source": source
         }
-        
           
 # ✅ Working    
 @router.post("/generate-metadata-batch", response_model=BatchMetadataResponse)
