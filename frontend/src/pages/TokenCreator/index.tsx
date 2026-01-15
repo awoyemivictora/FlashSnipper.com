@@ -13,6 +13,7 @@ import PreFundingManager from '@/components/PreFundingManager';
 import { convertToBackendConfig, createCustomMetadataFromAI, validateMetadataForLaunch } from '@/utils/configConverter';
 import { convertIpfsToHttpUrl, isIpfsUrl } from '@/utils/ipfs';
 import RealTimeLaunchDashboard from '@/components/RealTimeLaunchDashboard';
+import toast, { Toaster } from 'react-hot-toast';
 
 const MIN_SOL_FOR_CREATOR_MODE = 0.0001;
 
@@ -2018,111 +2019,435 @@ const TokenCreator: React.FC = () => {
     );
   };
 
+  // const StatusCard = () => {
+  //   // Define the PhaseConfig type
+  //   interface PhaseConfig {
+  //     color: string;
+  //     border: string;
+  //     icon: string;
+  //     gradient: string;
+  //     iconBg: string;
+  //     statusText: string;
+  //     bgGradient: string;
+  //     pulse?: boolean;
+  //   }
+
+  //   const getPhaseConfig = (): PhaseConfig => {
+  //     const configs = {
+  //       'setup': { 
+  //         color: 'from-blue-900/20 to-blue-800/10', 
+  //         border: 'border-blue-500/30',
+  //         icon: '⚙️',
+  //         gradient: 'from-blue-500 via-sky-500 to-cyan-500',
+  //         iconBg: 'bg-blue-500',
+  //         statusText: 'Setup Phase',
+  //         bgGradient: 'bg-gradient-to-br from-blue-900/10 to-blue-800/5'
+  //       },
+  //       'metadata': { 
+  //         color: 'from-indigo-900/20 to-purple-800/10', 
+  //         border: 'border-indigo-500/30',
+  //         icon: '🎨',
+  //         gradient: 'from-indigo-500 via-purple-500 to-violet-500',
+  //         iconBg: 'bg-indigo-500',
+  //         statusText: 'Generating Metadata',
+  //         bgGradient: 'bg-gradient-to-br from-indigo-900/10 to-purple-800/5'
+  //       },
+  //       'creating': { 
+  //         color: 'from-violet-900/20 to-purple-800/10', 
+  //         border: 'border-violet-500/30',
+  //         icon: '🏗️',
+  //         gradient: 'from-violet-500 via-purple-500 to-fuchsia-500',
+  //         iconBg: 'bg-violet-500',
+  //         statusText: 'Creating Token',
+  //         bgGradient: 'bg-gradient-to-br from-violet-900/10 to-purple-800/5'
+  //       },
+  //       'funding': { 
+  //         color: 'from-purple-900/20 to-pink-800/10', 
+  //         border: 'border-purple-500/30',
+  //         icon: '💰',
+  //         gradient: 'from-purple-500 via-pink-500 to-rose-500',
+  //         iconBg: 'bg-purple-500',
+  //         statusText: 'Funding Wallets',
+  //         bgGradient: 'bg-gradient-to-br from-purple-900/10 to-pink-800/5'
+  //       },
+  //       'ready': { 
+  //         color: 'from-teal-900/20 to-emerald-800/10', 
+  //         border: 'border-teal-500/30',
+  //         icon: '✅',
+  //         gradient: 'from-teal-500 via-emerald-500 to-green-500',
+  //         iconBg: 'bg-teal-500',
+  //         statusText: 'Ready to Launch',
+  //         bgGradient: 'bg-gradient-to-br from-teal-900/10 to-emerald-800/5'
+  //       },
+  //       'launching': { 
+  //         color: 'from-amber-900/20 to-orange-800/10', 
+  //         border: 'border-amber-500/30',
+  //         icon: '🚀',
+  //         gradient: 'from-amber-500 via-orange-500 to-red-500',
+  //         iconBg: 'bg-amber-500',
+  //         statusText: 'Launching',
+  //         bgGradient: 'bg-gradient-to-br from-amber-900/10 to-orange-800/5'
+  //       },
+  //       'monitoring': { 
+  //         color: 'from-orange-900/20 to-red-800/10', 
+  //         border: 'border-orange-500/30',
+  //         icon: '📊',
+  //         gradient: 'from-orange-500 via-red-500 to-pink-500',
+  //         iconBg: 'bg-orange-500',
+  //         statusText: 'Monitoring',
+  //         bgGradient: 'bg-gradient-to-br from-orange-900/10 to-red-800/5'
+  //       },
+  //       'selling': { 
+  //         color: 'from-emerald-900/20 to-green-800/10', 
+  //         border: 'border-emerald-500/30',
+  //         icon: '📈',
+  //         gradient: 'from-emerald-500 via-green-500 to-lime-500',
+  //         iconBg: 'bg-emerald-500',
+  //         statusText: 'Selling',
+  //         bgGradient: 'bg-gradient-to-br from-emerald-900/10 to-green-800/5'
+  //       },
+  //       'complete': { 
+  //         color: 'from-emerald-900/30 to-green-800/20', 
+  //         border: 'border-emerald-500/40',
+  //         icon: '🎉',
+  //         gradient: 'from-emerald-400 via-green-400 to-lime-400',
+  //         iconBg: 'bg-emerald-400',
+  //         statusText: 'Complete!',
+  //         bgGradient: 'bg-gradient-to-br from-emerald-900/20 to-green-800/15',
+  //         pulse: true
+  //       },
+  //       'failed': { 
+  //         color: 'from-red-900/30 to-rose-800/20', 
+  //         border: 'border-red-500/40',
+  //         icon: '❌',
+  //         gradient: 'from-red-500 via-rose-500 to-pink-500',
+  //         iconBg: 'bg-red-500',
+  //         statusText: 'Failed',
+  //         bgGradient: 'bg-gradient-to-br from-red-900/20 to-rose-800/15'
+  //       }
+  //     };
+      
+  //     return configs[launchStatus.phase] || configs.setup;
+  //   };
+
+  //   const formatTimeRemaining = () => {
+  //     if (launchStatus.estimatedTimeRemaining <= 0) return 'Complete';
+      
+  //     const minutes = Math.floor(launchStatus.estimatedTimeRemaining / 60);
+  //     const seconds = launchStatus.estimatedTimeRemaining % 60;
+      
+  //     if (minutes > 0) {
+  //       return `${minutes}m ${seconds}s`;
+  //     }
+  //     return `${seconds}s`;
+  //   };
+
+  //   const phaseConfig = getPhaseConfig();
+
+  //   // Add IPFS status
+  //   const hasIpfsMetadata = generatedMetadata?.ipfs_cid;
+
+  //   return (
+  //     <div className="bg-dark-2 rounded-lg shadow-lg overflow-hidden border border-[#22253e]">
+  //       {/* Header */}
+  //       <div className="flex items-center justify-between p-4 border-b border-[#000010] bg-gradient-to-r from-dark-2 to-dark-1">
+  //         <div className="flex items-center gap-3">
+  //           <div className="relative">
+  //             <div className={`w-8 h-8 ${phaseConfig.iconBg} rounded-lg flex items-center justify-center`}>
+  //               <span className="text-base">{phaseConfig.icon}</span>
+  //             </div>
+  //             <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border border-dark-2"></div>
+  //           </div>
+  //           <div>
+  //             <h3 className="text-white text-base font-semibold">Launch Status</h3>
+  //             <p className="text-xs text-gray-400">Token deployment progress</p>
+  //           </div>
+  //         </div>
+  //         <div className="flex items-center gap-2">
+  //           {launchStatus.phase === 'complete' ? (
+  //             <span className="px-2 py-1 bg-emerald-900/30 text-emerald-400 text-xs font-medium rounded-full flex items-center gap-1">
+  //               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+  //                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+  //               </svg>
+  //               Complete
+  //             </span>
+  //           ) : launchStatus.phase === 'failed' ? (
+  //             <span className="px-2 py-1 bg-red-900/30 text-red-400 text-xs font-medium rounded-full flex items-center gap-1">
+  //               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+  //                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+  //               </svg>
+  //               Failed
+  //             </span>
+  //           ) : (
+  //             <span className="px-2 py-1 bg-teal-900/30 text-teal-400 text-xs font-medium rounded-full flex items-center gap-1">
+  //               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+  //                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+  //               </svg>
+  //               In Progress
+  //             </span>
+  //           )}
+  //         </div>
+  //       </div>
+        
+  //       {/* Content */}
+  //       <div className="p-4 space-y-4">
+  //         {/* Current Step */}
+  //         <div className="bg-dark-1 rounded-xl p-3 border border-[#2a2d45]">
+  //           <p className="text-sm text-gray-300">{launchStatus.currentStep}</p>
+  //         </div>
+          
+  //         {/* Progress Section */}
+  //         <div className="space-y-3">
+  //           <div className="flex justify-between items-center">
+  //             <span className="text-sm text-gray-400">Progress</span>
+  //             <div className="text-right">
+  //               <div className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">
+  //                 {launchStatus.progress}%
+  //               </div>
+  //               <div className="text-xs text-gray-500">
+  //                 {launchStatus.estimatedTimeRemaining > 0 
+  //                   ? `${formatTimeRemaining()} remaining`
+  //                   : 'Complete'}
+  //               </div>
+  //             </div>
+  //           </div>
+            
+  //           {/* Progress Bar */}
+  //           <div className="h-2 bg-dark-1 rounded-full overflow-hidden">
+  //             <div 
+  //               className={`h-full bg-gradient-to-r ${phaseConfig.gradient} transition-all duration-500 ease-out`}
+  //               style={{ width: `${launchStatus.progress}%` }}
+  //             ></div>
+  //           </div>
+            
+  //           {/* Progress Markers */}
+  //           <div className="flex justify-between text-xs text-gray-500 px-1">
+  //             <span>0%</span>
+  //             <span>50%</span>
+  //             <span>100%</span>
+  //           </div>
+  //         </div>
+          
+  //         {/* Status Message */}
+  //         <div className="bg-dark-1 rounded-xl p-3 border border-[#2a2d45]">
+  //           <div className="flex items-start gap-2">
+  //             <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${phaseConfig.iconBg} ${phaseConfig.pulse ? 'animate-pulse' : ''}`}></div>
+  //             <p className="text-sm text-gray-200">{launchStatus.message}</p>
+  //           </div>
+  //         </div>
+          
+  //         {/* Launch ID */}
+  //         {activeLaunchId && (
+  //           <div className="bg-dark-1 rounded-xl p-3 border border-[#2a2d45]">
+  //             <div className="flex items-center justify-between mb-2">
+  //               <div className="flex items-center gap-2">
+  //                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+  //                 </svg>
+  //                 <span className="text-xs text-gray-400 font-medium">Launch ID</span>
+  //               </div>
+  //               <button
+  //                 onClick={() => navigator.clipboard.writeText(activeLaunchId)}
+  //                 className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+  //               >
+  //                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+  //                 </svg>
+  //                 Copy
+  //               </button>
+  //             </div>
+  //             <div className="text-sm font-mono text-gray-300 break-all bg-dark-2 p-2 rounded-lg border border-[#22253e]">
+  //               {activeLaunchId}
+  //             </div>
+  //           </div>
+  //         )}
+
+  //         {/* IPFS Status Section */}
+  //         {hasIpfsMetadata && (
+  //           <div className="bg-dark-1 rounded-xl p-3 border border-emerald-500/30">
+  //             <div className="flex items-center gap-2 mb-2">
+  //               <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+  //               </svg>
+  //               <span className="text-sm text-emerald-400 font-medium">IPFS Storage Ready</span>
+  //             </div>
+  //             <div className="text-xs text-gray-400">
+  //               Metadata pinned to IPFS (CID: {generatedMetadata?.ipfs_cid?.slice(0, 12) || 'N/A'}...)
+  //             </div>
+  //             <div className="mt-2 text-xs text-gray-500">
+  //               <div className="truncate">URI: {generatedMetadata.ipfs_uri}</div>
+  //             </div>
+  //           </div>
+  //         )}
+          
+  //         {/* Phase Indicator */}
+  //         <PhaseIndicator phase={launchStatus.phase} />
+  //       </div>
+  //     </div>
+  //   );
+  // };
+
   const StatusCard = () => {
+    // Loading states for buttons
+    const [isCopying, setIsCopying] = useState(false);
+    const [isViewing, setIsViewing] = useState(false);
+
     // Define the PhaseConfig type
     interface PhaseConfig {
       color: string;
       border: string;
-      icon: string;
+      icon: React.ReactNode;
       gradient: string;
       iconBg: string;
       statusText: string;
       bgGradient: string;
       pulse?: boolean;
+      accentColor: string;
     }
 
     const getPhaseConfig = (): PhaseConfig => {
-      const configs = {
+      const configs: Record<string, PhaseConfig> = {
         'setup': { 
           color: 'from-blue-900/20 to-blue-800/10', 
-          border: 'border-blue-500/30',
-          icon: '⚙️',
-          gradient: 'from-blue-500 via-sky-500 to-cyan-500',
-          iconBg: 'bg-blue-500',
+          border: 'border-blue-500/20',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          ),
+          gradient: 'from-blue-500 via-cyan-500 to-teal-500',
+          iconBg: 'bg-gradient-to-br from-blue-600 to-cyan-600',
           statusText: 'Setup Phase',
-          bgGradient: 'bg-gradient-to-br from-blue-900/10 to-blue-800/5'
+          bgGradient: 'bg-gradient-to-br from-blue-900/10 via-sky-900/5 to-cyan-900/5',
+          accentColor: 'text-blue-400'
         },
         'metadata': { 
-          color: 'from-indigo-900/20 to-purple-800/10', 
-          border: 'border-indigo-500/30',
-          icon: '🎨',
+          color: 'from-indigo-900/20 to-violet-800/10', 
+          border: 'border-indigo-500/20',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          ),
           gradient: 'from-indigo-500 via-purple-500 to-violet-500',
-          iconBg: 'bg-indigo-500',
+          iconBg: 'bg-gradient-to-br from-indigo-600 to-purple-600',
           statusText: 'Generating Metadata',
-          bgGradient: 'bg-gradient-to-br from-indigo-900/10 to-purple-800/5'
+          bgGradient: 'bg-gradient-to-br from-indigo-900/10 via-purple-900/5 to-violet-900/5',
+          accentColor: 'text-indigo-400'
         },
         'creating': { 
           color: 'from-violet-900/20 to-purple-800/10', 
-          border: 'border-violet-500/30',
-          icon: '🏗️',
+          border: 'border-violet-500/20',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+            </svg>
+          ),
           gradient: 'from-violet-500 via-purple-500 to-fuchsia-500',
-          iconBg: 'bg-violet-500',
+          iconBg: 'bg-gradient-to-br from-violet-600 to-fuchsia-600',
           statusText: 'Creating Token',
-          bgGradient: 'bg-gradient-to-br from-violet-900/10 to-purple-800/5'
+          bgGradient: 'bg-gradient-to-br from-violet-900/10 via-purple-900/5 to-fuchsia-900/5',
+          accentColor: 'text-violet-400'
         },
         'funding': { 
           color: 'from-purple-900/20 to-pink-800/10', 
-          border: 'border-purple-500/30',
-          icon: '💰',
+          border: 'border-purple-500/20',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          ),
           gradient: 'from-purple-500 via-pink-500 to-rose-500',
-          iconBg: 'bg-purple-500',
+          iconBg: 'bg-gradient-to-br from-purple-600 to-pink-600',
           statusText: 'Funding Wallets',
-          bgGradient: 'bg-gradient-to-br from-purple-900/10 to-pink-800/5'
+          bgGradient: 'bg-gradient-to-br from-purple-900/10 via-pink-900/5 to-rose-900/5',
+          accentColor: 'text-purple-400'
         },
         'ready': { 
           color: 'from-teal-900/20 to-emerald-800/10', 
-          border: 'border-teal-500/30',
-          icon: '✅',
+          border: 'border-teal-500/20',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          ),
           gradient: 'from-teal-500 via-emerald-500 to-green-500',
-          iconBg: 'bg-teal-500',
+          iconBg: 'bg-gradient-to-br from-teal-600 to-emerald-600',
           statusText: 'Ready to Launch',
-          bgGradient: 'bg-gradient-to-br from-teal-900/10 to-emerald-800/5'
+          bgGradient: 'bg-gradient-to-br from-teal-900/10 via-emerald-900/5 to-green-900/5',
+          accentColor: 'text-teal-400'
         },
         'launching': { 
           color: 'from-amber-900/20 to-orange-800/10', 
-          border: 'border-amber-500/30',
-          icon: '🚀',
+          border: 'border-amber-500/20',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          ),
           gradient: 'from-amber-500 via-orange-500 to-red-500',
-          iconBg: 'bg-amber-500',
+          iconBg: 'bg-gradient-to-br from-amber-600 to-orange-600',
           statusText: 'Launching',
-          bgGradient: 'bg-gradient-to-br from-amber-900/10 to-orange-800/5'
+          bgGradient: 'bg-gradient-to-br from-amber-900/10 via-orange-900/5 to-red-900/5',
+          accentColor: 'text-amber-400'
         },
         'monitoring': { 
           color: 'from-orange-900/20 to-red-800/10', 
-          border: 'border-orange-500/30',
-          icon: '📊',
+          border: 'border-orange-500/20',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          ),
           gradient: 'from-orange-500 via-red-500 to-pink-500',
-          iconBg: 'bg-orange-500',
+          iconBg: 'bg-gradient-to-br from-orange-600 to-red-600',
           statusText: 'Monitoring',
-          bgGradient: 'bg-gradient-to-br from-orange-900/10 to-red-800/5'
+          bgGradient: 'bg-gradient-to-br from-orange-900/10 via-red-900/5 to-pink-900/5',
+          accentColor: 'text-orange-400'
         },
         'selling': { 
           color: 'from-emerald-900/20 to-green-800/10', 
-          border: 'border-emerald-500/30',
-          icon: '📈',
+          border: 'border-emerald-500/20',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          ),
           gradient: 'from-emerald-500 via-green-500 to-lime-500',
-          iconBg: 'bg-emerald-500',
+          iconBg: 'bg-gradient-to-br from-emerald-600 to-green-600',
           statusText: 'Selling',
-          bgGradient: 'bg-gradient-to-br from-emerald-900/10 to-green-800/5'
+          bgGradient: 'bg-gradient-to-br from-emerald-900/10 via-green-900/5 to-lime-900/5',
+          accentColor: 'text-emerald-400'
         },
         'complete': { 
           color: 'from-emerald-900/30 to-green-800/20', 
-          border: 'border-emerald-500/40',
-          icon: '🎉',
+          border: 'border-emerald-500/30',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          ),
           gradient: 'from-emerald-400 via-green-400 to-lime-400',
-          iconBg: 'bg-emerald-400',
+          iconBg: 'bg-gradient-to-br from-emerald-500 to-green-500',
           statusText: 'Complete!',
-          bgGradient: 'bg-gradient-to-br from-emerald-900/20 to-green-800/15',
-          pulse: true
+          bgGradient: 'bg-gradient-to-br from-emerald-900/20 via-green-900/15 to-lime-900/10',
+          pulse: true,
+          accentColor: 'text-emerald-400'
         },
         'failed': { 
           color: 'from-red-900/30 to-rose-800/20', 
-          border: 'border-red-500/40',
-          icon: '❌',
+          border: 'border-red-500/30',
+          icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.698-.833-2.464 0L4.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          ),
           gradient: 'from-red-500 via-rose-500 to-pink-500',
-          iconBg: 'bg-red-500',
+          iconBg: 'bg-gradient-to-br from-red-600 to-rose-600',
           statusText: 'Failed',
-          bgGradient: 'bg-gradient-to-br from-red-900/20 to-rose-800/15'
+          bgGradient: 'bg-gradient-to-br from-red-900/20 via-rose-900/15 to-pink-900/10',
+          accentColor: 'text-red-400'
         }
       };
       
@@ -2142,146 +2467,319 @@ const TokenCreator: React.FC = () => {
     };
 
     const phaseConfig = getPhaseConfig();
+    // const hasIpfsMetadata = generatedMetadata?.ipfs_cid;
 
-    // Add IPFS status
-    const hasIpfsMetadata = generatedMetadata?.ipfs_cid;
+    const handleCopyURI = async (uri: string) => {
+      if (!uri) return;
+      
+      try {
+        setIsCopying(true);
+        await navigator.clipboard.writeText(uri);
+        
+        toast.success('Copied to clipboard!', {
+          icon: '📋',
+          style: {
+            background: '#064e3b',
+            color: '#fff',
+            border: '1px solid #047857',
+          },
+        });
+      } catch (err) {
+        toast.error('Failed to copy', {
+          icon: '❌',
+        });
+      } finally {
+        setIsCopying(false);
+      }
+    };
+
+    const handleViewIPFS = (uri: string) => {
+      if (!uri) return;
+      
+      try {
+        setIsViewing(true);
+        
+        // Convert ipfs:// URL to HTTP URL if needed
+        let viewUrl = uri;
+        if (uri.startsWith('ipfs://')) {
+          viewUrl = uri.replace('ipfs://', 'https://ipfs.io/ipfs/');
+        }
+        
+        // Open in new tab
+        window.open(viewUrl, '_blank', 'noopener,noreferrer');
+        
+        toast('Opening IPFS link...', {
+          icon: '🔗',
+          duration: 1500,
+        });
+      } catch (err) {
+        toast.error('Failed to open link', {
+          icon: '❌',
+        });
+      } finally {
+        setTimeout(() => setIsViewing(false), 500);
+      }
+    };
+
+    const extractIpfsCid = (uri: string): string => {
+      if (!uri) return '';
+      
+      // Extract CID from various IPFS URL formats
+      const cidMatch = uri.match(/(Qm[1-9A-HJ-NP-Za-km-z]{44}|b[A-Za-z2-7]{58})/);
+      return cidMatch ? cidMatch[0] : uri;
+    };
+
+    const formatIpfsUri = (uri: string): string => {
+      if (!uri) return '';
+      
+      if (uri.length > 60) {
+        return uri.slice(0, 30) + '...' + uri.slice(-20);
+      }
+      return uri;
+    };
+
+    const ipfsUri = generatedMetadata?.metadata_uri || generatedMetadata?.ipfs_uri;
+    const hasIpfsMetadata = !!ipfsUri;
+    const ipfsCid = ipfsUri ? extractIpfsCid(ipfsUri) : '';
+
 
     return (
-      <div className="bg-dark-2 rounded-lg shadow-lg overflow-hidden border border-[#22253e]">
+      <div className="relative bg-gradient-to-br from-gray-900/90 to-gray-950/90 backdrop-blur-sm rounded-2xl overflow-hidden border border-gray-800/50 shadow-2xl">
+        {/* Subtle grid background */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+        
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[#000010] bg-gradient-to-r from-dark-2 to-dark-1">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className={`w-8 h-8 ${phaseConfig.iconBg} rounded-lg flex items-center justify-center`}>
-                <span className="text-base">{phaseConfig.icon}</span>
+        <div className="relative p-6 pb-4 border-b border-gray-800/50 bg-gradient-to-r from-gray-900/50 via-gray-900/30 to-transparent">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className={`relative ${phaseConfig.iconBg} rounded-xl p-2.5 shadow-lg`}>
+                <div className="text-white">
+                  {phaseConfig.icon}
+                </div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-gray-950 shadow-md"></div>
               </div>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border border-dark-2"></div>
+              <div>
+                <h3 className="text-lg font-semibold text-white tracking-tight">Launch Status</h3>
+                <p className="text-sm text-gray-400 font-medium">Real-time deployment tracker</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-white text-base font-semibold">Launch Status</h3>
-              <p className="text-xs text-gray-400">Token deployment progress</p>
+            
+            <div className={`px-4 py-1.5 rounded-full ${phaseConfig.border} border bg-gray-900/50 backdrop-blur-sm`}>
+              <span className={`text-sm font-medium ${phaseConfig.accentColor} flex items-center gap-2`}>
+                <span className={`w-2 h-2 rounded-full ${phaseConfig.iconBg.replace('bg-gradient-to-br', 'bg-gradient-to-r')} ${phaseConfig.pulse ? 'animate-pulse' : ''}`}></span>
+                {phaseConfig.statusText}
+              </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {launchStatus.phase === 'complete' ? (
-              <span className="px-2 py-1 bg-emerald-900/30 text-emerald-400 text-xs font-medium rounded-full flex items-center gap-1">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                Complete
-              </span>
-            ) : launchStatus.phase === 'failed' ? (
-              <span className="px-2 py-1 bg-red-900/30 text-red-400 text-xs font-medium rounded-full flex items-center gap-1">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-                Failed
-              </span>
-            ) : (
-              <span className="px-2 py-1 bg-teal-900/30 text-teal-400 text-xs font-medium rounded-full flex items-center gap-1">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                </svg>
-                In Progress
-              </span>
-            )}
+          
+          {/* Progress Bar (Header version) */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-300">Overall Progress</span>
+              <div className="text-right">
+                <div className="text-2xl font-bold bg-gradient-to-r from-teal-300 to-emerald-300 bg-clip-text text-transparent">
+                  {launchStatus.progress}%
+                </div>
+              </div>
+            </div>
+            <div className="h-1.5 bg-gray-800/50 rounded-full overflow-hidden backdrop-blur-sm">
+              <div 
+                className={`h-full bg-gradient-to-r ${phaseConfig.gradient} transition-all duration-700 ease-out`}
+                style={{ width: `${launchStatus.progress}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
+              </div>
+            </div>
+            <div className="flex justify-between mt-1 text-xs text-gray-500">
+              <span>Setup</span>
+              <span>Deploy</span>
+              <span>Complete</span>
+            </div>
           </div>
         </div>
         
         {/* Content */}
-        <div className="p-4 space-y-4">
-          {/* Current Step */}
-          <div className="bg-dark-1 rounded-xl p-3 border border-[#2a2d45]">
-            <p className="text-sm text-gray-300">{launchStatus.currentStep}</p>
-          </div>
-          
-          {/* Progress Section */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400">Progress</span>
+        <div className="relative p-6 space-y-6">
+          {/* Current Step Card */}
+          <div className="bg-gray-900/40 backdrop-blur-sm rounded-xl p-4 border border-gray-800/30 shadow-inner">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Current Step</p>
+                <p className="text-base font-medium text-white">{launchStatus.currentStep}</p>
+              </div>
               <div className="text-right">
-                <div className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">
-                  {launchStatus.progress}%
-                </div>
-                <div className="text-xs text-gray-500">
-                  {launchStatus.estimatedTimeRemaining > 0 
-                    ? `${formatTimeRemaining()} remaining`
-                    : 'Complete'}
+                <p className="text-xs text-gray-400 mb-1">Time Remaining</p>
+                <div className={`text-lg font-semibold ${launchStatus.estimatedTimeRemaining > 0 ? 'text-amber-300' : 'text-emerald-300'}`}>
+                  {formatTimeRemaining()}
                 </div>
               </div>
-            </div>
-            
-            {/* Progress Bar */}
-            <div className="h-2 bg-dark-1 rounded-full overflow-hidden">
-              <div 
-                className={`h-full bg-gradient-to-r ${phaseConfig.gradient} transition-all duration-500 ease-out`}
-                style={{ width: `${launchStatus.progress}%` }}
-              ></div>
-            </div>
-            
-            {/* Progress Markers */}
-            <div className="flex justify-between text-xs text-gray-500 px-1">
-              <span>0%</span>
-              <span>50%</span>
-              <span>100%</span>
             </div>
           </div>
           
           {/* Status Message */}
-          <div className="bg-dark-1 rounded-xl p-3 border border-[#2a2d45]">
-            <div className="flex items-start gap-2">
-              <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${phaseConfig.iconBg} ${phaseConfig.pulse ? 'animate-pulse' : ''}`}></div>
-              <p className="text-sm text-gray-200">{launchStatus.message}</p>
+          <div className="bg-gray-900/40 backdrop-blur-sm rounded-xl p-4 border border-gray-800/30">
+            <div className="flex items-start gap-3">
+              <div className={`mt-0.5 w-2.5 h-2.5 rounded-full ${phaseConfig.iconBg.replace('bg-gradient-to-br', 'bg-gradient-to-r')} ${phaseConfig.pulse ? 'animate-pulse' : ''}`}></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-200 leading-relaxed">{launchStatus.message}</p>
+              </div>
             </div>
           </div>
           
-          {/* Launch ID */}
+          {/* Launch ID Section */}
           {activeLaunchId && (
-            <div className="bg-dark-1 rounded-xl p-3 border border-[#2a2d45]">
-              <div className="flex items-center justify-between mb-2">
+            <div className="bg-gray-900/40 backdrop-blur-sm rounded-xl p-4 border border-gray-800/30">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                   </svg>
-                  <span className="text-xs text-gray-400 font-medium">Launch ID</span>
+                  <span className="text-sm font-medium text-gray-300">Transaction ID</span>
                 </div>
                 <button
-                  onClick={() => navigator.clipboard.writeText(activeLaunchId)}
-                  className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                  onClick={() => {
+                    navigator.clipboard.writeText(activeLaunchId);
+                    // You might want to add a toast notification here
+                  }}
+                  className="text-xs bg-gray-800/50 hover:bg-gray-800 text-gray-300 hover:text-white px-3 py-1.5 rounded-lg transition-all duration-200 flex items-center gap-1.5 border border-gray-700/50 hover:border-gray-600"
                 >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
                   Copy
                 </button>
               </div>
-              <div className="text-sm font-mono text-gray-300 break-all bg-dark-2 p-2 rounded-lg border border-[#22253e]">
-                {activeLaunchId}
+              <div className="relative">
+                <div className="text-xs font-mono text-gray-300 p-3 rounded-lg bg-gray-950/50 border border-gray-800/50 overflow-x-auto">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 text-emerald-400">▶</div>
+                    <span className="text-gray-400">{activeLaunchId.slice(0, 20)}</span>
+                    <span className="text-gray-500">...</span>
+                    <span className="text-gray-400">{activeLaunchId.slice(-20)}</span>
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-900/10 to-transparent pointer-events-none"></div>
               </div>
             </div>
           )}
-
-          {/* IPFS Status Section */}
-          {hasIpfsMetadata && (
-            <div className="bg-dark-1 rounded-xl p-3 border border-emerald-500/30">
-              <div className="flex items-center gap-2 mb-2">
-                <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
-                <span className="text-sm text-emerald-400 font-medium">IPFS Storage Ready</span>
+          
+          {/* IPFS Status */}
+          {hasIpfsMetadata && ipfsUri && (
+            <div className="bg-gradient-to-br from-emerald-900/20 via-emerald-900/10 to-transparent rounded-xl p-4 border border-emerald-800/30 shadow-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="bg-gradient-to-br from-emerald-600 to-teal-600 p-2 rounded-lg">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-300">IPFS Storage Ready</p>
+                    <p className="text-xs text-emerald-400/70">Decentralized metadata storage</p>
+                  </div>
+                </div>
+                <div className="text-xs px-2 py-1 bg-emerald-900/30 text-emerald-300 rounded-full border border-emerald-700/30">
+                  Live
+                </div>
               </div>
-              <div className="text-xs text-gray-400">
-                Metadata pinned to IPFS (CID: {generatedMetadata?.ipfs_cid?.slice(0, 12) || 'N/A'}...)
-              </div>
-              <div className="mt-2 text-xs text-gray-500">
-                <div className="truncate">URI: {generatedMetadata.ipfs_uri}</div>
+              
+              <div className="space-y-2">
+                <div className="text-xs text-gray-300 bg-gray-900/50 p-2 rounded-lg border border-gray-800/50">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-gray-400">CID:</span>
+                    <span className="font-mono text-emerald-300">
+                      {ipfsCid.slice(0, 16)}...
+                    </span>
+                  </div>
+                  <div 
+                    className="text-xs text-gray-500 truncate cursor-pointer hover:text-gray-400 transition-colors"
+                    onClick={() => handleCopyURI(ipfsUri)}
+                    title="Click to copy full URI"
+                  >
+                    {formatIpfsUri(ipfsUri)}
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => handleViewIPFS(ipfsUri)}
+                    disabled={isViewing}
+                    className="flex-1 text-xs bg-gray-800/50 hover:bg-gray-800 disabled:bg-gray-900 disabled:cursor-not-allowed text-gray-300 hover:text-white disabled:text-gray-500 px-3 py-1.5 rounded-lg transition-all duration-200 border border-gray-700/50 hover:border-gray-600 disabled:border-gray-800 flex items-center justify-center gap-1.5"
+                  >
+                    {isViewing ? (
+                      <>
+                        <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Opening...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        View
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleCopyURI(ipfsUri)}
+                    disabled={isCopying}
+                    className="flex-1 text-xs bg-emerald-900/30 hover:bg-emerald-800/40 disabled:bg-emerald-900/20 disabled:cursor-not-allowed text-emerald-300 hover:text-emerald-200 disabled:text-emerald-400/50 px-3 py-1.5 rounded-lg transition-all duration-200 border border-emerald-700/30 hover:border-emerald-600/40 disabled:border-emerald-800/30 flex items-center justify-center gap-1.5"
+                  >
+                    {isCopying ? (
+                      <>
+                        <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Copying...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Copy URI
+                      </>
+                    )}
+                  </button>
+                </div>
+                
+                {/* Quick links */}
+                <div className="flex items-center justify-center gap-4 pt-2 border-t border-emerald-800/20">
+                  <button
+                    onClick={() => {
+                      const httpUrl = ipfsUri.startsWith('ipfs://') 
+                        ? ipfsUri.replace('ipfs://', 'https://ipfs.io/ipfs/')
+                        : ipfsUri;
+                      handleCopyURI(httpUrl);
+                    }}
+                    className="text-xs text-emerald-400/70 hover:text-emerald-300 transition-colors"
+                    title="Copy HTTP link"
+                  >
+                    HTTP Link
+                  </button>
+                  <span className="text-emerald-800/50">•</span>
+                  <button
+                    onClick={() => handleCopyURI(`ipfs://${ipfsCid}`)}
+                    className="text-xs text-emerald-400/70 hover:text-emerald-300 transition-colors"
+                    title="Copy IPFS native link"
+                  >
+                    IPFS Link
+                  </button>
+                </div>
               </div>
             </div>
           )}
           
           {/* Phase Indicator */}
-          <PhaseIndicator phase={launchStatus.phase} />
+          <div className="pt-2">
+            <PhaseIndicator phase={launchStatus.phase} />
+          </div>
         </div>
+        
+        {/* Bottom gradient accent */}
+        <div className={`h-1 bg-gradient-to-r ${phaseConfig.gradient} opacity-50`}></div>
       </div>
     );
   };
@@ -3803,1037 +4301,1051 @@ const TokenCreator: React.FC = () => {
   // RENDER
   // ============================================
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-gray-950 via-dark-1 to-secondary">
-      {/* Background Pattern */}
-      <div className="fixed inset-0 opacity-5">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-      </div>
-      
-      <div className="relative z-10">
-        {/* Header */}
-        <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-lg border-b border-gray-800 h-16 flex items-center justify-between px-4 md:px-8">
-          <div className="flex items-center gap-4">
-            {/* Make the entire logo area clickable */}
-            {/* <button 
-              onClick={() => navigate('/')}
-              className="flex items-center gap-4 hover:opacity-80 transition-opacity"
-            >
-              <img src="/images/img_frame_1171277880.svg" alt="Logo" className="w-3 h-3" />
-              <div className="text-white text-sm font-black font-inter">
-                <span className="text-white">FLASH </span>
-                <span className="text-success">CREATOR</span>
-              </div>
-            </button> */}
-            <SliceOfMangoLogo />
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-gray-800/50 rounded-full border border-gray-700">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-300">
-                Balance: <span className="text-white font-medium">{userBalance.toFixed(2)} SOL</span>
-              </span>
-            </div>
-            <button
-              onClick={() => navigate('/trading-interface')}
-              className="text-sm text-gray-300 hover:text-white transition-colors px-4 py-2 hover:bg-gray-800/50 rounded-lg"
-            >
-              ← Back to Sniper
-            </button>
-          </div>
-        </header>
+    <>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#0f172a',
+            color: '#fff',
+            border: '1px solid #334155',
+            fontSize: '14px',
+          },
+        }}
+      />
+      <div className="min-h-screen w-full bg-gradient-to-b from-gray-950 via-dark-1 to-secondary">
+        {/* Background Pattern */}
+        <div className="fixed inset-0 opacity-5">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+        </div>
         
-        {/* Main Content */}
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-7xl mx-auto">
-            {/* Hero Section */}
-            <div className="text-center mb-8">
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                AI-Powered Token <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">Launch Platform</span>
-              </h1>
-              <p className="text-gray-300 max-w-3xl mx-auto text-lg">
-                Create, launch, and profit from Solana tokens with ai metadata and orchestrated bot armies.
-                All in one automated platform.
-              </p>
+        <div className="relative z-10">
+          {/* Header */}
+          <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-lg border-b border-gray-800 h-16 flex items-center justify-between px-4 md:px-8">
+            <div className="flex items-center gap-4">
+              {/* Make the entire logo area clickable */}
+              {/* <button 
+                onClick={() => navigate('/')}
+                className="flex items-center gap-4 hover:opacity-80 transition-opacity"
+              >
+                <img src="/images/img_frame_1171277880.svg" alt="Logo" className="w-3 h-3" />
+                <div className="text-white text-sm font-black font-inter">
+                  <span className="text-white">FLASH </span>
+                  <span className="text-success">CREATOR</span>
+                </div>
+              </button> */}
+              <SliceOfMangoLogo />
             </div>
             
-            
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-gray-800/50 rounded-full border border-gray-700">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-gray-300">
+                  Balance: <span className="text-white font-medium">{userBalance.toFixed(2)} SOL</span>
+                </span>
+              </div>
+              <button
+                onClick={() => navigate('/trading-interface')}
+                className="text-sm text-gray-300 hover:text-white transition-colors px-4 py-2 hover:bg-gray-800/50 rounded-lg"
+              >
+                ← Back to Sniper
+              </button>
+            </div>
+          </header>
+          
+          {/* Main Content */}
+          <div className="container mx-auto px-4 py-8">
+            <div className="max-w-7xl mx-auto">
+              {/* Hero Section */}
+              <div className="text-center mb-8">
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                  AI-Powered Token <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">Launch Platform</span>
+                </h1>
+                <p className="text-gray-300 max-w-3xl mx-auto text-lg">
+                  Create, launch, and profit from Solana tokens with ai metadata and orchestrated bot armies.
+                  All in one automated platform.
+                </p>
+              </div>
+              
+              
 
-            {/* {activeLaunchId && (
-              <div className="mb-6">
-                <button
-                  onClick={() => setShowLaunchDashboard(true)}
-                  className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4 text-left hover:border-purple-500/50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              {/* {activeLaunchId && (
+                <div className="mb-6">
+                  <button
+                    onClick={() => setShowLaunchDashboard(true)}
+                    className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4 text-left hover:border-purple-500/50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 className="text-white font-bold">Live Launch Monitoring</h3>
+                          <p className="text-sm text-gray-400">Click to open real-time dashboard</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                        <span className="text-sm text-emerald-400">Live</span>
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </div>
-                      <div>
-                        <h3 className="text-white font-bold">Live Launch Monitoring</h3>
-                        <p className="text-sm text-gray-400">Click to open real-time dashboard</p>
-                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                      <span className="text-sm text-emerald-400">Live</span>
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            )} */}
+                  </button>
+                </div>
+              )} */}
 
-            {/* {activeLaunchId && !showLaunchDashboard && (
-              <div className="mb-6">
-                <button
-                  onClick={() => setShowLaunchDashboard(true)}
-                  className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4 text-left hover:border-purple-500/50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              {/* {activeLaunchId && !showLaunchDashboard && (
+                <div className="mb-6">
+                  <button
+                    onClick={() => setShowLaunchDashboard(true)}
+                    className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4 text-left hover:border-purple-500/50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 className="text-white font-bold">Live Launch Dashboard</h3>
+                          <p className="text-sm text-gray-400">Click to open real-time monitoring</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                        <span className="text-sm text-emerald-400">Live</span>
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </div>
-                      <div>
-                        <h3 className="text-white font-bold">Live Launch Dashboard</h3>
-                        <p className="text-sm text-gray-400">Click to open real-time monitoring</p>
-                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                      <span className="text-sm text-emerald-400">Live</span>
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                  </button>
+                </div>
+              )} */}
+  {/* 
+              {showLaunchDashboard && activeLaunchId && (
+                <RealTimeLaunchDashboard
+                  launchId={activeLaunchId}
+                  onClose={() => setShowLaunchDashboard(false)}
+                />
+              )} */}
+
+              {/* {showLaunchDashboard && activeLaunchId && (
+                <RealTimeLaunchDashboard
+                  launchId={activeLaunchId}
+                  onClose={() => setShowLaunchDashboard(false)}
+                />
+              )} */}
+
+              {/* Insufficient Balance Warning - Shows when user has < 0.0001 SOL */}
+              <InsufficientBalanceWarning />
+              
+              {/* Only show the rest of the UI if user has sufficient balance */}
+              {userBalance >= MIN_SOL_FOR_CREATOR_MODE ? (
+                <>
+                  {/* Configuration Tabs */}
+                  <ConfigurationTabs />
+
+                  {/* Add this after the ConfigurationTabs */}
+                  {/* <div className="mb-6">
+                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border ${
+                      launchConfig.metadataSource === 'ai'
+                        ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-400'
+                        : 'bg-gradient-to-r from-red-500/20 to-orange-500/20 border-red-500/30 text-orange-400'
+                    }`}>
+                      {launchConfig.metadataSource === 'ai' ? (
+                        <>
+                          <span>🤖</span>
+                          <span className="text-sm font-medium">Using AI for metadata</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>📰</span>
+                          <span className="text-sm font-medium">Using X Trends for metadata</span>
+                        </>
+                      )}
                     </div>
-                  </div>
-                </button>
-              </div>
-            )} */}
-{/* 
-            {showLaunchDashboard && activeLaunchId && (
-              <RealTimeLaunchDashboard
-                launchId={activeLaunchId}
-                onClose={() => setShowLaunchDashboard(false)}
-              />
-            )} */}
+                  </div> */}
 
-            {/* {showLaunchDashboard && activeLaunchId && (
-              <RealTimeLaunchDashboard
-                launchId={activeLaunchId}
-                onClose={() => setShowLaunchDashboard(false)}
-              />
-            )} */}
-
-            {/* Insufficient Balance Warning - Shows when user has < 0.0001 SOL */}
-            <InsufficientBalanceWarning />
-            
-            {/* Only show the rest of the UI if user has sufficient balance */}
-            {userBalance >= MIN_SOL_FOR_CREATOR_MODE ? (
-              <>
-                {/* Configuration Tabs */}
-                <ConfigurationTabs />
-
-                {/* Add this after the ConfigurationTabs */}
-                {/* <div className="mb-6">
-                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border ${
-                    launchConfig.metadataSource === 'ai'
-                      ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-400'
-                      : 'bg-gradient-to-r from-red-500/20 to-orange-500/20 border-red-500/30 text-orange-400'
-                  }`}>
-                    {launchConfig.metadataSource === 'ai' ? (
-                      <>
-                        <span>🤖</span>
-                        <span className="text-sm font-medium">Using AI for metadata</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>📰</span>
-                        <span className="text-sm font-medium">Using X Trends for metadata</span>
-                      </>
-                    )}
-                  </div>
-                </div> */}
-
-                {/* Trending News Panel (only shows when trending tab is active) */}
-                {/* <TrendingNewsPanel /> */}
+                  {/* Trending News Panel (only shows when trending tab is active) */}
+                  {/* <TrendingNewsPanel /> */}
 
 
-                {/* Add pre-funding section after ConfigurationTabs */}
-                
-                {activeTab === 'custom' && (
-                  <>
-                    {/* Pre-Funding Manager */}
-                    <PreFundingManager
-                      botCount={launchConfig.botCount}
-                      onPreFundComplete={handlePreFundComplete}
-                      onUsePreFunded={handleUsePreFunded}
-                      launchConfig={launchConfig}
-                    />
-                    
-                    {/* Launch Mode Selection */}
-                    <div className="bg-gradient-to-br from-gray-900/50 to-dark-2/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-800/50 mb-6 shadow-lg">
-                      <h3 className="text-white font-bold text-xl mb-4">Launch Mode</h3>
+                  {/* Add pre-funding section after ConfigurationTabs */}
+                  
+                  {activeTab === 'custom' && (
+                    <>
+                      {/* Pre-Funding Manager */}
+                      <PreFundingManager
+                        botCount={launchConfig.botCount}
+                        onPreFundComplete={handlePreFundComplete}
+                        onUsePreFunded={handleUsePreFunded}
+                        launchConfig={launchConfig}
+                      />
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <button
-                          onClick={() => {
-                            setAtomicLaunchMode(false);
-                            setUsePreFundedBots(false);
-                          }}
-                          className={`p-5 rounded-xl border transition-all ${
-                            !atomicLaunchMode
-                              ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/30'
-                              : 'bg-gray-900/50 border-gray-700/50 hover:border-gray-600/50'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                              !atomicLaunchMode
-                                ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
-                                : 'bg-gray-800'
-                            }`}>
-                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                              </svg>
-                            </div>
-                            <div className="text-left">
-                              <h4 className="text-white font-bold">Regular Launch</h4>
-                              <p className="text-sm text-gray-400 mt-1">
-                                Auto-fund and launch sequentially
-                              </p>
-                            </div>
-                          </div>
-                        </button>
+                      {/* Launch Mode Selection */}
+                      <div className="bg-gradient-to-br from-gray-900/50 to-dark-2/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-800/50 mb-6 shadow-lg">
+                        <h3 className="text-white font-bold text-xl mb-4">Launch Mode</h3>
                         
-                        <button
-                          onClick={() => {
-                            setAtomicLaunchMode(true);
-                            setUsePreFundedBots(true);
-                          }}
-                          className={`p-5 rounded-xl border transition-all ${
-                            atomicLaunchMode
-                              ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-emerald-500/30'
-                              : 'bg-gray-900/50 border-gray-700/50 hover:border-gray-600/50'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <button
+                            onClick={() => {
+                              setAtomicLaunchMode(false);
+                              setUsePreFundedBots(false);
+                            }}
+                            className={`p-5 rounded-xl border transition-all ${
+                              !atomicLaunchMode
+                                ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/30'
+                                : 'bg-gray-900/50 border-gray-700/50 hover:border-gray-600/50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                !atomicLaunchMode
+                                  ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                                  : 'bg-gray-800'
+                              }`}>
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                              </div>
+                              <div className="text-left">
+                                <h4 className="text-white font-bold">Regular Launch</h4>
+                                <p className="text-sm text-gray-400 mt-1">
+                                  Auto-fund and launch sequentially
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                          
+                          <button
+                            onClick={() => {
+                              setAtomicLaunchMode(true);
+                              setUsePreFundedBots(true);
+                            }}
+                            className={`p-5 rounded-xl border transition-all ${
                               atomicLaunchMode
-                                ? 'bg-gradient-to-r from-emerald-500 to-teal-500'
-                                : 'bg-gray-800'
-                            }`}>
-                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-emerald-500/30'
+                                : 'bg-gray-900/50 border-gray-700/50 hover:border-gray-600/50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                atomicLaunchMode
+                                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500'
+                                  : 'bg-gray-800'
+                              }`}>
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                              </div>
+                              <div className="text-left">
+                                <h4 className="text-white font-bold">Atomic Launch</h4>
+                                <p className="text-sm text-gray-400 mt-1">
+                                  Pre-funded bots, single bundle (3x faster)
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                        </div>
+                        
+                        <div className="mt-4 text-sm text-gray-400">
+                          {atomicLaunchMode ? (
+                            <div className="flex items-center gap-2 text-emerald-400">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                               </svg>
+                              <span>Atomic mode selected: Single transaction bundle, faster execution</span>
                             </div>
-                            <div className="text-left">
-                              <h4 className="text-white font-bold">Atomic Launch</h4>
-                              <p className="text-sm text-gray-400 mt-1">
-                                Pre-funded bots, single bundle (3x faster)
-                              </p>
-                            </div>
-                          </div>
-                        </button>
-                      </div>
-                      
-                      <div className="mt-4 text-sm text-gray-400">
-                        {atomicLaunchMode ? (
-                          <div className="flex items-center gap-2 text-emerald-400">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            <span>Atomic mode selected: Single transaction bundle, faster execution</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 text-blue-400">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            <span>Regular mode selected: Sequential transactions, more control</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Quick Launch Presets */}
-                {/* {activeTab === 'quick' && <QuickStartPresets />} */}
-         
-                {/* <SecurityWarning /> */}
-                
-                {/* Metadata Preview */}
-                <MetadataPreview />
-                
-                {/* Configuration Form */}
-                <div className="bg-gradient-to-br from-gray-900/50 to-dark-2/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-800/50 mb-8 shadow-lg">
-                  <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Left Column - Token Details */}
-                    <div className="lg:w-1/2 space-y-6">
-                      <div>
-                        <h3 className="text-white font-bold text-xl mb-4 flex items-center gap-2">
-                          <span className="w-6 h-6 bg-gradient-to-br from-blue-500 to-cyan-500 rounded flex items-center justify-center">
-                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                            </svg>
-                          </span>
-                          Token Details {!metadataGenerated && (
-                            <span className="ml-2 px-2 py-1 bg-amber-900/30 text-amber-400 text-xs font-medium rounded-full border border-amber-500/30">
-                              Required for Launch
-                            </span>
-                          )}
-                        </h3>
-                        
-                        <div className="space-y-4">
-                          {/* Token Name */}
-                          <div>
-                            <label className="block text-gray-400 text-sm mb-2">Token Name</label>
-                            <input
-                              type="text"
-                              value={launchConfig.tokenName}
-                              onChange={(e) => setLaunchConfig(prev => ({ ...prev, tokenName: e.target.value }))}
-                              className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white placeholder-gray-500 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                              placeholder="Enter token name"
-                            />
-                          </div>
-                          
-                          {/* Token Symbol */}
-                          <div>
-                            <label className="block text-gray-400 text-sm mb-2">Token Symbol</label>
-                            <input
-                              type="text"
-                              value={launchConfig.tokenSymbol}
-                              onChange={(e) => setLaunchConfig(prev => ({ ...prev, tokenSymbol: e.target.value }))}
-                              className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white placeholder-gray-500 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                              placeholder="Enter token symbol (3-6 chars)"
-                            />
-                          </div>
-  
-                          {/* Metadata Source */}
-                          <div>
-                            <label className="block text-gray-400 text-sm mb-2">Metadata Source</label>
-                            <div className="grid grid-cols-2 gap-2">
-                              <button
-                                onClick={() => setLaunchConfig(prev => ({ ...prev, metadataSource: 'ai' }))}
-                                className={`py-3 rounded-lg border transition-all ${
-                                  launchConfig.metadataSource === 'ai'
-                                    ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-white'
-                                    : 'bg-gray-900/50 border-gray-700/50 text-gray-400 hover:text-white hover:border-gray-600/50'
-                                }`}
-                              >
-                                <div className="flex flex-col items-center gap-1">
-                                  <img
-                                    src="/images/openai.png"
-                                    alt="Logo"
-                                    className="w-7 h-7"
-                                  />
-                                  <span className="text-sm font-medium">Generate using OpenAI</span>
-                                </div>
-                              </button>
-                              <button
-                                onClick={() => setLaunchConfig(prev => ({ ...prev, metadataSource: 'trending' }))}
-                                className={`py-3 rounded-lg border transition-all ${
-                                  launchConfig.metadataSource === 'trending'
-                                    ? 'bg-gradient-to-r from-red-500/20 to-orange-500/20 border-red-500/30 text-white'
-                                    : 'bg-gray-900/50 border-gray-700/50 text-gray-400 hover:text-white hover:border-gray-600/50'
-                                }`}
-                              >
-                                <div className="flex flex-col items-center gap-1">
-                                  <img
-                                    src="/images/x.png"
-                                    alt="Logo"
-                                    className="w-6 h-6"
-                                  />
-                                  <span className="text-sm font-medium">Generate using X Trends</span>
-                                </div>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* DALL-E Toggle - Only show when using AI source */}
-                          {launchConfig.metadataSource === 'ai' && (
-                            <div className="mt-4">
-                              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/30">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                  </div>
-                                  <div>
-                                    <div className="text-white font-medium">Generate AI Image</div>
-                                    <div className="text-xs text-gray-400">Use DALL-E to create custom token image</div>
-                                  </div>
-                                </div>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={launchConfig.useDalle}
-                                    onChange={(e) => setLaunchConfig(prev => ({ ...prev, useDalle: e.target.checked }))}
-                                    className="sr-only peer"
-                                  />
-                                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                                </label>
-                              </div>
-                              
-                              {/* Status indicator */}
-                              {launchConfig.useDalle && (
-                                <div>
-                                  <div className="mt-2 p-2 bg-emerald-900/20 text-emerald-400 text-xs rounded-lg border border-emerald-500/30">
-                                    ✅ DALL-E will generate a custom AI image for your token
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          
-                          {/* <div>
-                            <label className="block text-gray-400 text-sm mb-2">Keywords</label>
-                            <input
-                              type="text"
-                              value={launchConfig.metadataKeywords}
-                              onChange={(e) => setLaunchConfig(prev => ({ ...prev, metadataKeywords: e.target.value }))}
-                              className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white placeholder-gray-500 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                              placeholder="meme, solana, crypto, ai, etc."
-                            />
-                          </div> */}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-white font-bold text-xl mb-4 flex items-center gap-2">
-                          <span className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded flex items-center justify-center">
-                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13 1a6 6 0 01-6 6m6-6a6 6 0 00-6-6m6 6h2" />
-                            </svg>
-                          </span>
-                          Bot Army Configuration
-                        </h3>
-                        
-                        <div className="space-y-4">
-                          <div>
-                            <div className="flex justify-between text-sm mb-2">
-                              <label className="text-gray-400">Bot Army Size</label>
-                              <span className="text-white font-medium">{launchConfig.botCount} bots</span>
-                            </div>
-                            <input
-                              type="range"
-                              min="5"
-                              max="50"
-                              value={launchConfig.botCount}
-                              // onChange={(e) => setLaunchConfig(prev => ({ ...prev, botCount: parseInt(e.target.value) }))}
-                              onChange={(e) => handleBotCountChange(parseInt(e.target.value))}
-                              className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-purple-500 [&::-webkit-slider-thumb]:to-pink-500"
-                            />
-                          </div>
-
-                          {/* Dynamic Bot Buy Settings Section */}
-                          <div className="mt-6 p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/30">
-                            <h4 className="text-white font-bold text-lg mb-3 flex items-center gap-2">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                          ) : (
+                            <div className="flex items-center gap-2 text-blue-400">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                               </svg>
-                              Dynamic Bot Buy Settings
-                            </h4>
-                            
-                            <p className="text-sm text-gray-400 mb-4">
-                              Make buys look organic by varying amounts across bots
-                            </p>
-                            
-                            <div className="space-y-4">
-                              {/* Variability Slider */}
-                              <div>
-                                <div className="flex justify-between text-sm mb-2">
-                                  <label className="text-gray-400">Bot Amount Variability</label>
-                                  <span className="text-white font-medium">{launchConfig.botVariability * 100}%</span>
-                                </div>
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="1"
-                                  step="0.05"
-                                  value={launchConfig.botVariability}
-                                  onChange={(e) => setLaunchConfig(prev => ({ 
-                                    ...prev, 
-                                    botVariability: parseFloat(e.target.value) 
-                                  }))}
-                                  className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-purple-500 [&::-webkit-slider-thumb]:to-pink-500"
-                                />
-                                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                  <span>No Variation</span>
-                                  <span>High Variation</span>
-                                </div>
-                              </div>
-                              
-                              {/* Distribution Type */}
-                              <div>
-                                <label className="block text-gray-400 text-sm mb-2">Amount Distribution</label>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                  {[
-                                    { id: 'normal', label: 'Normal', desc: 'Bell curve' },
-                                    { id: 'uniform', label: 'Uniform', desc: 'Even spread' },
-                                    { id: 'log_normal', label: 'Log-Normal', desc: 'Organic tail' },
-                                    { id: 'random', label: 'Random', desc: 'Completely random' }
-                                  ].map((dist) => (
-                                    <button
-                                      key={dist.id}
-                                      onClick={() => setLaunchConfig(prev => ({ ...prev, botDistribution: dist.id as any }))}
-                                      className={`p-3 rounded-lg border transition-all ${
-                                        launchConfig.botDistribution === dist.id
-                                          ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/30 text-white'
-                                          : 'bg-gray-900/50 border-gray-700/50 text-gray-400 hover:text-white hover:border-gray-600/50'
-                                      }`}
-                                    >
-                                      <div className="flex flex-col items-center gap-1">
-                                        <span className="font-medium">{dist.label}</span>
-                                        <span className="text-xs text-gray-500">{dist.desc}</span>
-                                      </div>
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                              
-                              {/* Preview Stats */}
-                              <div className="mt-4 p-3 bg-gray-900/30 rounded-lg border border-gray-700/50">
-                                <div className="flex items-center justify-between text-sm">
-                                  <div>
-                                    <div className="text-gray-400">Base Amount</div>
-                                    <div className="text-white font-medium">{launchConfig.botWalletBuyAmount} SOL</div>
-                                  </div>
-                                  <div>
-                                    <div className="text-gray-400">Variation</div>
-                                    <div className="text-purple-400 font-medium">±{(launchConfig.botVariability * 100).toFixed(0)}%</div>
-                                  </div>
-                                  <div>
-                                    <div className="text-gray-400">Distribution</div>
-                                    <div className="text-emerald-400 font-medium capitalize">{launchConfig.botDistribution}</div>
-                                  </div>
-                                </div>
-                              </div>
+                              <span>Regular mode selected: Sequential transactions, more control</span>
                             </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-gray-400 text-sm mb-2">Bot Buy Amount (SOL)</label>
-                              <input
-                                type="number"
-                                step="0.001"
-                                min="0.001"
-                                max="10"
-                                value={launchConfig.botWalletBuyAmount}
-                                // onChange={(e) => setLaunchConfig(prev => ({ 
-                                //   ...prev, 
-                                //   botWalletBuyAmount: Math.max(parseFloat(e.target.value) || 0.001, 0.001)
-                                // }))}
-                                onChange={(e) => handleBotBuyAmountChange(parseFloat(e.target.value))}
-                                className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                              />
-                            </div>
-                            
-                            <div>
-                              <label className="block text-gray-400 text-sm mb-2">Creator Buy (SOL)</label>
-                              <input
-                                type="number"
-                                step="0.1"
-                                min="0.001"
-                                max="50"
-                                value={launchConfig.creatorBuyAmount}
-                                // onChange={(e) => setLaunchConfig(prev => ({ 
-                                //   ...prev, 
-                                //   creatorBuyAmount: Math.max(parseFloat(e.target.value) || 0.1, 0.001)
-                                // }))}
-                                onChange={(e) => handleCreatorBuyAmountChange(parseFloat(e.target.value))}
-                                className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                              />
-                            </div>
-                          </div>
+                          )}
                         </div>
                       </div>
-                    </div>
-                    
-                    {/* Right Column - Strategy & Summary */}
-                    <div className="lg:w-1/2 space-y-6">
-                      <div>
-                        <h3 className="text-white font-bold text-xl mb-4 flex items-center gap-2">
-                          <span className="w-6 h-6 bg-gradient-to-br from-yellow-500 to-orange-500 rounded flex items-center justify-center">
-                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                            </svg>
-                          </span>
-                          Launch Strategy
-                        </h3>
-                        
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-gray-400 text-sm mb-2">Sell Strategy</label>
-                            <div className="grid grid-cols-3 gap-2">
-                              {[
-                                { id: 'volume_based', label: 'Volume', icon: '📊', defaults: { sellVolumeTrigger: 5.0, sellTimeTrigger: 1, sellPriceTarget: 1.1 } },
-                                { id: 'time_based', label: 'Time', icon: '⏱️', defaults: { sellTimeTrigger: 5, sellVolumeTrigger: 0, sellPriceTarget: 1.1 } },
-                                { id: 'price_target', label: 'Price', icon: '🎯', defaults: { sellPriceTarget: 50, sellTimeTrigger: 1, sellVolumeTrigger: 0 } },
-                                { id: 'immediate', label: 'Immediate', icon: '⚡', defaults: { sellTimeTrigger: 0, sellVolumeTrigger: 0, sellPriceTarget: 0 } }
-                              ].map((strategy) => (
+                    </>
+                  )}
+
+                  {/* Quick Launch Presets */}
+                  {/* {activeTab === 'quick' && <QuickStartPresets />} */}
+          
+                  {/* <SecurityWarning /> */}
+                  
+                  {/* Metadata Preview */}
+                  <MetadataPreview />
+                  
+                  {/* Configuration Form */}
+                  <div className="bg-gradient-to-br from-gray-900/50 to-dark-2/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-800/50 mb-8 shadow-lg">
+                    <div className="flex flex-col lg:flex-row gap-8">
+                      {/* Left Column - Token Details */}
+                      <div className="lg:w-1/2 space-y-6">
+                        <div>
+                          <h3 className="text-white font-bold text-xl mb-4 flex items-center gap-2">
+                            <span className="w-6 h-6 bg-gradient-to-br from-blue-500 to-cyan-500 rounded flex items-center justify-center">
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                              </svg>
+                            </span>
+                            Token Details {!metadataGenerated && (
+                              <span className="ml-2 px-2 py-1 bg-amber-900/30 text-amber-400 text-xs font-medium rounded-full border border-amber-500/30">
+                                Required for Launch
+                              </span>
+                            )}
+                          </h3>
+                          
+                          <div className="space-y-4">
+                            {/* Token Name */}
+                            <div>
+                              <label className="block text-gray-400 text-sm mb-2">Token Name</label>
+                              <input
+                                type="text"
+                                value={launchConfig.tokenName}
+                                onChange={(e) => setLaunchConfig(prev => ({ ...prev, tokenName: e.target.value }))}
+                                className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white placeholder-gray-500 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                                placeholder="Enter token name"
+                              />
+                            </div>
+                            
+                            {/* Token Symbol */}
+                            <div>
+                              <label className="block text-gray-400 text-sm mb-2">Token Symbol</label>
+                              <input
+                                type="text"
+                                value={launchConfig.tokenSymbol}
+                                onChange={(e) => setLaunchConfig(prev => ({ ...prev, tokenSymbol: e.target.value }))}
+                                className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white placeholder-gray-500 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                                placeholder="Enter token symbol (3-6 chars)"
+                              />
+                            </div>
+    
+                            {/* Metadata Source */}
+                            <div>
+                              <label className="block text-gray-400 text-sm mb-2">Metadata Source</label>
+                              <div className="grid grid-cols-2 gap-2">
                                 <button
-                                  key={strategy.id}
-                                  onClick={() => setLaunchConfig(prev => ({ 
-                                    ...prev, 
-                                    sellTiming: strategy.id as any,
-                                    ...strategy.defaults
-                                  }))}
+                                  onClick={() => setLaunchConfig(prev => ({ ...prev, metadataSource: 'ai' }))}
                                   className={`py-3 rounded-lg border transition-all ${
-                                    launchConfig.sellTiming === strategy.id
-                                      ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30 text-white'
+                                    launchConfig.metadataSource === 'ai'
+                                      ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-white'
                                       : 'bg-gray-900/50 border-gray-700/50 text-gray-400 hover:text-white hover:border-gray-600/50'
                                   }`}
                                 >
                                   <div className="flex flex-col items-center gap-1">
-                                    <span className="text-lg">{strategy.icon}</span>
-                                    <span className="text-xs font-medium">{strategy.label}</span>
+                                    <img
+                                      src="/images/openai.png"
+                                      alt="Logo"
+                                      className="w-7 h-7"
+                                    />
+                                    <span className="text-sm font-medium">Generate using OpenAI</span>
                                   </div>
                                 </button>
-                              ))}
+                                <button
+                                  onClick={() => setLaunchConfig(prev => ({ ...prev, metadataSource: 'trending' }))}
+                                  className={`py-3 rounded-lg border transition-all ${
+                                    launchConfig.metadataSource === 'trending'
+                                      ? 'bg-gradient-to-r from-red-500/20 to-orange-500/20 border-red-500/30 text-white'
+                                      : 'bg-gray-900/50 border-gray-700/50 text-gray-400 hover:text-white hover:border-gray-600/50'
+                                  }`}
+                                >
+                                  <div className="flex flex-col items-center gap-1">
+                                    <img
+                                      src="/images/x.png"
+                                      alt="Logo"
+                                      className="w-6 h-6"
+                                    />
+                                    <span className="text-sm font-medium">Generate using X Trends</span>
+                                  </div>
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* DALL-E Toggle - Only show when using AI source */}
+                            {launchConfig.metadataSource === 'ai' && (
+                              <div className="mt-4">
+                                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/30">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                      </svg>
+                                    </div>
+                                    <div>
+                                      <div className="text-white font-medium">Generate AI Image</div>
+                                      <div className="text-xs text-gray-400">Use DALL-E to create custom token image</div>
+                                    </div>
+                                  </div>
+                                  <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={launchConfig.useDalle}
+                                      onChange={(e) => setLaunchConfig(prev => ({ ...prev, useDalle: e.target.checked }))}
+                                      className="sr-only peer"
+                                    />
+                                    <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                  </label>
+                                </div>
+                                
+                                {/* Status indicator */}
+                                {launchConfig.useDalle && (
+                                  <div>
+                                    <div className="mt-2 p-2 bg-emerald-900/20 text-emerald-400 text-xs rounded-lg border border-emerald-500/30">
+                                      ✅ DALL-E will generate a custom AI image for your token
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            
+                            {/* <div>
+                              <label className="block text-gray-400 text-sm mb-2">Keywords</label>
+                              <input
+                                type="text"
+                                value={launchConfig.metadataKeywords}
+                                onChange={(e) => setLaunchConfig(prev => ({ ...prev, metadataKeywords: e.target.value }))}
+                                className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white placeholder-gray-500 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                                placeholder="meme, solana, crypto, ai, etc."
+                              />
+                            </div> */}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h3 className="text-white font-bold text-xl mb-4 flex items-center gap-2">
+                            <span className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded flex items-center justify-center">
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13 1a6 6 0 01-6 6m6-6a6 6 0 00-6-6m6 6h2" />
+                              </svg>
+                            </span>
+                            Bot Army Configuration
+                          </h3>
+                          
+                          <div className="space-y-4">
+                            <div>
+                              <div className="flex justify-between text-sm mb-2">
+                                <label className="text-gray-400">Bot Army Size</label>
+                                <span className="text-white font-medium">{launchConfig.botCount} bots</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="5"
+                                max="50"
+                                value={launchConfig.botCount}
+                                // onChange={(e) => setLaunchConfig(prev => ({ ...prev, botCount: parseInt(e.target.value) }))}
+                                onChange={(e) => handleBotCountChange(parseInt(e.target.value))}
+                                className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-purple-500 [&::-webkit-slider-thumb]:to-pink-500"
+                              />
+                            </div>
+
+                            {/* Dynamic Bot Buy Settings Section */}
+                            <div className="mt-6 p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/30">
+                              <h4 className="text-white font-bold text-lg mb-3 flex items-center gap-2">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                                </svg>
+                                Dynamic Bot Buy Settings
+                              </h4>
+                              
+                              <p className="text-sm text-gray-400 mb-4">
+                                Make buys look organic by varying amounts across bots
+                              </p>
+                              
+                              <div className="space-y-4">
+                                {/* Variability Slider */}
+                                <div>
+                                  <div className="flex justify-between text-sm mb-2">
+                                    <label className="text-gray-400">Bot Amount Variability</label>
+                                    <span className="text-white font-medium">{launchConfig.botVariability * 100}%</span>
+                                  </div>
+                                  <input
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.05"
+                                    value={launchConfig.botVariability}
+                                    onChange={(e) => setLaunchConfig(prev => ({ 
+                                      ...prev, 
+                                      botVariability: parseFloat(e.target.value) 
+                                    }))}
+                                    className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-purple-500 [&::-webkit-slider-thumb]:to-pink-500"
+                                  />
+                                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>No Variation</span>
+                                    <span>High Variation</span>
+                                  </div>
+                                </div>
+                                
+                                {/* Distribution Type */}
+                                <div>
+                                  <label className="block text-gray-400 text-sm mb-2">Amount Distribution</label>
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    {[
+                                      { id: 'normal', label: 'Normal', desc: 'Bell curve' },
+                                      { id: 'uniform', label: 'Uniform', desc: 'Even spread' },
+                                      { id: 'log_normal', label: 'Log-Normal', desc: 'Organic tail' },
+                                      { id: 'random', label: 'Random', desc: 'Completely random' }
+                                    ].map((dist) => (
+                                      <button
+                                        key={dist.id}
+                                        onClick={() => setLaunchConfig(prev => ({ ...prev, botDistribution: dist.id as any }))}
+                                        className={`p-3 rounded-lg border transition-all ${
+                                          launchConfig.botDistribution === dist.id
+                                            ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/30 text-white'
+                                            : 'bg-gray-900/50 border-gray-700/50 text-gray-400 hover:text-white hover:border-gray-600/50'
+                                        }`}
+                                      >
+                                        <div className="flex flex-col items-center gap-1">
+                                          <span className="font-medium">{dist.label}</span>
+                                          <span className="text-xs text-gray-500">{dist.desc}</span>
+                                        </div>
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                
+                                {/* Preview Stats */}
+                                <div className="mt-4 p-3 bg-gray-900/30 rounded-lg border border-gray-700/50">
+                                  <div className="flex items-center justify-between text-sm">
+                                    <div>
+                                      <div className="text-gray-400">Base Amount</div>
+                                      <div className="text-white font-medium">{launchConfig.botWalletBuyAmount} SOL</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-gray-400">Variation</div>
+                                      <div className="text-purple-400 font-medium">±{(launchConfig.botVariability * 100).toFixed(0)}%</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-gray-400">Distribution</div>
+                                      <div className="text-emerald-400 font-medium capitalize">{launchConfig.botDistribution}</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-gray-400 text-sm mb-2">Bot Buy Amount (SOL)</label>
+                                <input
+                                  type="number"
+                                  step="0.001"
+                                  min="0.001"
+                                  max="10"
+                                  value={launchConfig.botWalletBuyAmount}
+                                  // onChange={(e) => setLaunchConfig(prev => ({ 
+                                  //   ...prev, 
+                                  //   botWalletBuyAmount: Math.max(parseFloat(e.target.value) || 0.001, 0.001)
+                                  // }))}
+                                  onChange={(e) => handleBotBuyAmountChange(parseFloat(e.target.value))}
+                                  className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                                />
+                              </div>
+                              
+                              <div>
+                                <label className="block text-gray-400 text-sm mb-2">Creator Buy (SOL)</label>
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  min="0.001"
+                                  max="50"
+                                  value={launchConfig.creatorBuyAmount}
+                                  // onChange={(e) => setLaunchConfig(prev => ({ 
+                                  //   ...prev, 
+                                  //   creatorBuyAmount: Math.max(parseFloat(e.target.value) || 0.1, 0.001)
+                                  // }))}
+                                  onChange={(e) => handleCreatorBuyAmountChange(parseFloat(e.target.value))}
+                                  className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                                />
+                              </div>
                             </div>
                           </div>
+                        </div>
+                      </div>
+                      
+                      {/* Right Column - Strategy & Summary */}
+                      <div className="lg:w-1/2 space-y-6">
+                        <div>
+                          <h3 className="text-white font-bold text-xl mb-4 flex items-center gap-2">
+                            <span className="w-6 h-6 bg-gradient-to-br from-yellow-500 to-orange-500 rounded flex items-center justify-center">
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                              </svg>
+                            </span>
+                            Launch Strategy
+                          </h3>
                           
-                          {launchConfig.sellTiming === 'volume_based' && (
+                          <div className="space-y-4">
                             <div>
-                              <label className="block text-gray-400 text-sm mb-2">Volume Trigger (SOL)</label>
+                              <label className="block text-gray-400 text-sm mb-2">Sell Strategy</label>
+                              <div className="grid grid-cols-3 gap-2">
+                                {[
+                                  { id: 'volume_based', label: 'Volume', icon: '📊', defaults: { sellVolumeTrigger: 5.0, sellTimeTrigger: 1, sellPriceTarget: 1.1 } },
+                                  { id: 'time_based', label: 'Time', icon: '⏱️', defaults: { sellTimeTrigger: 5, sellVolumeTrigger: 0, sellPriceTarget: 1.1 } },
+                                  { id: 'price_target', label: 'Price', icon: '🎯', defaults: { sellPriceTarget: 50, sellTimeTrigger: 1, sellVolumeTrigger: 0 } },
+                                  { id: 'immediate', label: 'Immediate', icon: '⚡', defaults: { sellTimeTrigger: 0, sellVolumeTrigger: 0, sellPriceTarget: 0 } }
+                                ].map((strategy) => (
+                                  <button
+                                    key={strategy.id}
+                                    onClick={() => setLaunchConfig(prev => ({ 
+                                      ...prev, 
+                                      sellTiming: strategy.id as any,
+                                      ...strategy.defaults
+                                    }))}
+                                    className={`py-3 rounded-lg border transition-all ${
+                                      launchConfig.sellTiming === strategy.id
+                                        ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30 text-white'
+                                        : 'bg-gray-900/50 border-gray-700/50 text-gray-400 hover:text-white hover:border-gray-600/50'
+                                    }`}
+                                  >
+                                    <div className="flex flex-col items-center gap-1">
+                                      <span className="text-lg">{strategy.icon}</span>
+                                      <span className="text-xs font-medium">{strategy.label}</span>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            {launchConfig.sellTiming === 'volume_based' && (
+                              <div>
+                                <label className="block text-gray-400 text-sm mb-2">Volume Trigger (SOL)</label>
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  min="1"
+                                  max="100"
+                                  value={launchConfig.sellVolumeTrigger}
+                                  onChange={(e) => setLaunchConfig(prev => ({ ...prev, sellVolumeTrigger: parseFloat(e.target.value) }))}
+                                  className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                                />
+                              </div>
+                            )}
+                            
+                            {launchConfig.sellTiming === 'time_based' && (
+                              <div>
+                                <label className="block text-gray-400 text-sm mb-2">Time Trigger (Minutes)</label>
+                                <input
+                                  type="number"
+                                  step="1"
+                                  min="1"
+                                  max="60"
+                                  value={launchConfig.sellTimeTrigger}
+                                  onChange={(e) => setLaunchConfig(prev => ({ ...prev, sellTimeTrigger: parseInt(e.target.value) }))}
+                                  className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                                />
+                              </div>
+                            )}
+                            
+                            {launchConfig.sellTiming === 'price_target' && (
+                              <div>
+                                <label className="block text-gray-400 text-sm mb-2">Price Target (%)</label>
+                                <input
+                                  type="number"
+                                  step="10"
+                                  min="10"
+                                  max="1000"
+                                  value={launchConfig.sellPriceTarget}
+                                  onChange={(e) => setLaunchConfig(prev => ({ ...prev, sellPriceTarget: parseInt(e.target.value) }))}
+                                  className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                                />
+                              </div>
+                            )}
+
+                            {launchConfig.sellTiming === 'immediate' && (
+                              <div className="p-3 bg-gradient-to-r from-amber-900/20 to-yellow-900/20 rounded-xl border border-amber-500/30">
+                                <div className="flex items-center gap-2 text-amber-400">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                  </svg>
+                                  <span className="text-sm font-medium">Bots will sell immediately after buying</span>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Take Profit */}
+                            <div>
+                              <div className="flex justify-between text-sm mb-2">
+                                <label className="text-gray-400">Target Profit</label>
+                                <span className="text-emerald-400 font-medium">{launchConfig.targetProfitPercentage}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="10"
+                                max="200"
+                                value={launchConfig.targetProfitPercentage}
+                                onChange={(e) => setLaunchConfig(prev => ({ ...prev, targetProfitPercentage: parseInt(e.target.value) }))}
+                                className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-emerald-500 [&::-webkit-slider-thumb]:to-teal-500"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Summary Card */}
+                        <div className="bg-gradient-to-br from-gray-900 to-dark-2 rounded-2xl p-5 border border-gray-800/50">
+                          <h3 className="text-white font-bold text-xl mb-4">Launch Summary</h3>
+                          
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-400">Bot Army</span>
+                              <span className="text-white font-medium">{launchConfig.botCount} bots</span>
+                            </div>
+                            
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-400">Bot Buy Amount Each</span>
+                              <span className="text-white font-medium">{launchConfig.botWalletBuyAmount.toFixed(3)} SOL</span>
+                            </div>
+                            
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-400">Total Bot Buy</span>
+                              <span className="text-white font-medium">{(launchConfig.botCount * launchConfig.botWalletBuyAmount).toFixed(3)} SOL</span>
+                            </div>
+                            
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-400">Creator Buy</span>
+                              <span className="text-white font-medium">{launchConfig.creatorBuyAmount.toFixed(3)} SOL</span>
+                            </div>
+                            
+                            <div className="border-t border-gray-800/50 pt-3 mt-3">
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-300">Token Creation Cost</span>
+                                <span className="text-white font-medium">~0.02 SOL</span>
+                              </div>
+                              
+                              <div className="flex justify-between items-center mt-2">
+                                <span className="text-gray-300">Transaction Fees</span>
+                                <span className="text-white font-medium">~0.08 SOL</span>
+                              </div>
+                              
+                              <div className="flex justify-between items-center mt-2">
+                                <span className="text-gray-300 font-bold">Total Required</span>
+                                <span className={`text-xl font-bold ${
+                                  userBalance >= totalRequiredSol ? 'text-emerald-400' : 'text-red-400'
+                                }`}>
+                                  {totalRequiredSol.toFixed(2)} SOL
+                                </span>
+                              </div>
+                              
+                              <div className="flex justify-between items-center mt-2">
+                                <span className="text-gray-400">Your Balance</span>
+                                <span className={`font-medium ${
+                                  userBalance >= totalRequiredSol ? 'text-emerald-400' : 'text-red-400'
+                                }`}>
+                                  {userBalance.toFixed(2)} SOL
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {/* Status indicator */}
+                            <div className={`mt-4 p-3 rounded-xl border ${
+                              userBalance >= totalRequiredSol 
+                                ? 'bg-emerald-900/20 border-emerald-500/30' 
+                                : 'bg-red-900/20 border-red-500/30'
+                            }`}>
+                              <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${
+                                  userBalance >= totalRequiredSol ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'
+                                }`}></div>
+                                <span className="text-sm">
+                                  {userBalance >= totalRequiredSol 
+                                    ? '✅ Sufficient balance for launch' 
+                                    : '❌ Insufficient balance'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  
+                    {/* Action Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-4 mt-8">
+                      {/* Launch button - only show when metadata is ready */}
+                      {metadataGenerated ? (
+                        <button
+                          onClick={startOrchestratedLaunch}
+                          disabled={isLoading || userBalance < totalRequiredSol}
+                          className={`flex-1 py-4 px-6 rounded-xl font-bold text-white transition-all duration-200 flex items-center justify-center gap-3 ${
+                            isLoading
+                              ? 'bg-gray-700 cursor-not-allowed'
+                              : userBalance < totalRequiredSol
+                              ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 cursor-not-allowed'
+                              : atomicLaunchMode
+                              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg hover:shadow-emerald-500/25'
+                              : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg hover:shadow-blue-500/25'
+                          }`}
+                        >
+                          {isLoading ? (
+                            <>
+                              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              <span>Launching...</span>
+                            </>
+                          ) : atomicLaunchMode ? (
+                            <>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                              </svg>
+                              <span>Start Atomic Launch</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                              </svg>
+                              <span>Start Orchestrated Launch</span>
+                            </>
+                          )}
+                        </button>
+                      ) : (
+                        <div className="flex-1 py-4 px-6 rounded-xl border-2 border-dashed border-amber-500/30 bg-amber-900/10 flex flex-col items-center justify-center">
+                          <div className="flex items-center gap-2 text-amber-400 mb-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            <span className="font-bold">Metadata Required</span>
+                          </div>
+                          <p className="text-amber-300/80 text-sm text-center">
+                            Generate metadata first using AI or X Trends
+                          </p>
+                        </div>
+                      )}
+
+
+                      {/* In your Generate button section */}
+                      <button
+                      onClick={() => {
+                        if (launchConfig.metadataSource === 'trending') {
+                          console.log('📡 Generating from X Trends...');
+                          generateFromTrending();
+                        } else {
+                          console.log('🤖 Generating from AI...');
+                          console.log('🔍 DALL-E enabled:', launchConfig.useDalle);
+                          generateAIMetadata();
+                        }
+                      }}
+                      disabled={aiGenerating}
+                      className={`py-4 px-6 rounded-xl font-bold transition-all duration-200 shadow-lg hover:shadow-purple-500/25 ${
+                        launchConfig.metadataSource === 'trending'
+                          ? 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white'
+                          : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
+                      }`}
+                    >
+                      {aiGenerating ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Generating...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          {launchConfig.metadataSource === 'trending' ? (
+                            <>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                              </svg>
+                              <span>Generate with X Trends</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                              </svg>
+                              <span>Generate with AI {launchConfig.useDalle && ' + DALL-E'}</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </button>
+
+                        {/* Keep advanced toggle button */}
+                        <button
+                          onClick={() => setShowAdvanced(!showAdvanced)}
+                          className="py-4 px-6 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-xl font-medium border border-gray-700/50 transition-all duration-200"
+                        >
+                          {showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
+                        </button>
+                      </div>
+
+                    {/* Advanced Options */}
+                    {showAdvanced && (
+                      <div className="mt-6 p-6 bg-gradient-to-br from-gray-900 to-dark-2 rounded-2xl border border-gray-800/50">
+                        <h3 className="text-white font-bold text-xl mb-4">Advanced Options</h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-gray-400 text-sm mb-2">Initial SOL Reserves</label>
                               <input
                                 type="number"
                                 step="0.1"
-                                min="1"
-                                max="100"
-                                value={launchConfig.sellVolumeTrigger}
-                                onChange={(e) => setLaunchConfig(prev => ({ ...prev, sellVolumeTrigger: parseFloat(e.target.value) }))}
+                                min="0"
+                                max="10"
+                                value={launchConfig.initialSolReserves || 1.0}
+                                onChange={(e) => setLaunchConfig(prev => ({ 
+                                  ...prev, 
+                                  initialSolReserves: parseFloat(e.target.value) 
+                                }))}
                                 className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
                               />
+                              <p className="text-xs text-gray-500 mt-1">Extra SOL for bot operations and fees</p>
                             </div>
-                          )}
-                          
-                          {launchConfig.sellTiming === 'time_based' && (
+                            
                             <div>
-                              <label className="block text-gray-400 text-sm mb-2">Time Trigger (Minutes)</label>
-                              <input
-                                type="number"
-                                step="1"
-                                min="1"
-                                max="60"
-                                value={launchConfig.sellTimeTrigger}
-                                onChange={(e) => setLaunchConfig(prev => ({ ...prev, sellTimeTrigger: parseInt(e.target.value) }))}
-                                className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                              />
-                            </div>
-                          )}
-                          
-                          {launchConfig.sellTiming === 'price_target' && (
-                            <div>
-                              <label className="block text-gray-400 text-sm mb-2">Price Target (%)</label>
-                              <input
-                                type="number"
-                                step="10"
-                                min="10"
-                                max="1000"
-                                value={launchConfig.sellPriceTarget}
-                                onChange={(e) => setLaunchConfig(prev => ({ ...prev, sellPriceTarget: parseInt(e.target.value) }))}
-                                className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                              />
-                            </div>
-                          )}
-
-                          {launchConfig.sellTiming === 'immediate' && (
-                            <div className="p-3 bg-gradient-to-r from-amber-900/20 to-yellow-900/20 rounded-xl border border-amber-500/30">
-                              <div className="flex items-center gap-2 text-amber-400">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
-                                <span className="text-sm font-medium">Bots will sell immediately after buying</span>
+                              <label className="block text-gray-400 text-sm mb-2">Use Jito Bundles</label>
+                              <div className="flex items-center h-[52px]">
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={launchConfig.useJitoBundle !== false}
+                                    onChange={(e) => setLaunchConfig(prev => ({ 
+                                      ...prev, 
+                                      useJitoBundle: e.target.checked 
+                                    }))}
+                                    className="sr-only peer"
+                                  />
+                                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                                <span className="ml-3 text-sm text-gray-400">Faster transaction execution</span>
                               </div>
                             </div>
-                          )}
+                          </div>
                           
-                          {/* Take Profit */}
-                          <div>
-                            <div className="flex justify-between text-sm mb-2">
-                              <label className="text-gray-400">Target Profit</label>
-                              <span className="text-emerald-400 font-medium">{launchConfig.targetProfitPercentage}%</span>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-gray-400 text-sm mb-2">Launch Priority</label>
+                              <select
+                                value={launchConfig.priority || 10}
+                                onChange={(e) => setLaunchConfig(prev => ({ 
+                                  ...prev, 
+                                  priority: parseInt(e.target.value) 
+                                }))}
+                                className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                              >
+                                <option value="1">Low Priority</option>
+                                <option value="5">Normal</option>
+                                <option value="10">High Priority</option>
+                                <option value="20">Maximum Priority</option>
+                              </select>
                             </div>
-                            <input
-                              type="range"
-                              min="10"
-                              max="200"
-                              value={launchConfig.targetProfitPercentage}
-                              onChange={(e) => setLaunchConfig(prev => ({ ...prev, targetProfitPercentage: parseInt(e.target.value) }))}
-                              className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-emerald-500 [&::-webkit-slider-thumb]:to-teal-500"
-                            />
+                            
+                            <div>
+                              <label className="block text-gray-400 text-sm mb-2">Bot Spread Strategy</label>
+                              <select
+                                value={launchConfig.botSpread || 'random'}
+                                onChange={(e) => setLaunchConfig(prev => ({ 
+                                  ...prev, 
+                                  botSpread: e.target.value 
+                                }))}
+                                className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                              >
+                                <option value="random">Random Timing</option>
+                                <option value="sequential">Sequential</option>
+                                <option value="burst">Burst Mode</option>
+                                <option value="wave">Wave Pattern</option>
+                              </select>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      
-                      {/* Summary Card */}
-                      <div className="bg-gradient-to-br from-gray-900 to-dark-2 rounded-2xl p-5 border border-gray-800/50">
-                        <h3 className="text-white font-bold text-xl mb-4">Launch Summary</h3>
                         
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-400">Bot Army</span>
-                            <span className="text-white font-medium">{launchConfig.botCount} bots</span>
-                          </div>
-                          
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-400">Bot Buy Amount Each</span>
-                            <span className="text-white font-medium">{launchConfig.botWalletBuyAmount.toFixed(3)} SOL</span>
-                          </div>
-                          
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-400">Total Bot Buy</span>
-                            <span className="text-white font-medium">{(launchConfig.botCount * launchConfig.botWalletBuyAmount).toFixed(3)} SOL</span>
-                          </div>
-                          
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-400">Creator Buy</span>
-                            <span className="text-white font-medium">{launchConfig.creatorBuyAmount.toFixed(3)} SOL</span>
-                          </div>
-                          
-                          <div className="border-t border-gray-800/50 pt-3 mt-3">
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-300">Token Creation Cost</span>
-                              <span className="text-white font-medium">~0.02 SOL</span>
-                            </div>
-                            
-                            <div className="flex justify-between items-center mt-2">
-                              <span className="text-gray-300">Transaction Fees</span>
-                              <span className="text-white font-medium">~0.08 SOL</span>
-                            </div>
-                            
-                            <div className="flex justify-between items-center mt-2">
-                              <span className="text-gray-300 font-bold">Total Required</span>
-                              <span className={`text-xl font-bold ${
-                                userBalance >= totalRequiredSol ? 'text-emerald-400' : 'text-red-400'
-                              }`}>
-                                {totalRequiredSol.toFixed(2)} SOL
-                              </span>
-                            </div>
-                            
-                            <div className="flex justify-between items-center mt-2">
-                              <span className="text-gray-400">Your Balance</span>
-                              <span className={`font-medium ${
-                                userBalance >= totalRequiredSol ? 'text-emerald-400' : 'text-red-400'
-                              }`}>
-                                {userBalance.toFixed(2)} SOL
-                              </span>
+                        {/* <div className="mt-6 pt-6 border-t border-gray-800/50">
+                          <h4 className="text-gray-300 font-medium mb-3">Debug Information</h4>
+                          <div className="bg-gray-900/50 rounded-lg p-4">
+                            <div className="text-xs text-gray-400 space-y-1">
+                              <div>Wallet: {userWallet?.publicKey.toBase58()}</div>
+                              <div>Balance: {userBalance.toFixed(2)} SOL</div>
+                              <div>Creator Enabled: {creatorStats?.user?.creator_enabled ? 'Yes' : 'No'}</div>
+                              <div>Bot Wallets: {botWallets.length}</div>
+                              <div>Total Required: {totalRequiredSol.toFixed(2)} SOL</div>
                             </div>
                           </div>
-                          
-                          {/* Status indicator */}
-                          <div className={`mt-4 p-3 rounded-xl border ${
-                            userBalance >= totalRequiredSol 
-                              ? 'bg-emerald-900/20 border-emerald-500/30' 
-                              : 'bg-red-900/20 border-red-500/30'
-                          }`}>
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                userBalance >= totalRequiredSol ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'
-                              }`}></div>
-                              <span className="text-sm">
-                                {userBalance >= totalRequiredSol 
-                                  ? '✅ Sufficient balance for launch' 
-                                  : '❌ Insufficient balance'}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                        </div> */}
                       </div>
-                    </div>
-                  </div>
-                
-                  {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                    {/* Launch button - only show when metadata is ready */}
-                    {metadataGenerated ? (
-                      <button
-                        onClick={startOrchestratedLaunch}
-                        disabled={isLoading || userBalance < totalRequiredSol}
-                        className={`flex-1 py-4 px-6 rounded-xl font-bold text-white transition-all duration-200 flex items-center justify-center gap-3 ${
-                          isLoading
-                            ? 'bg-gray-700 cursor-not-allowed'
-                            : userBalance < totalRequiredSol
-                            ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 cursor-not-allowed'
-                            : atomicLaunchMode
-                            ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg hover:shadow-emerald-500/25'
-                            : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg hover:shadow-blue-500/25'
-                        }`}
-                      >
-                        {isLoading ? (
-                          <>
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            <span>Launching...</span>
-                          </>
-                        ) : atomicLaunchMode ? (
-                          <>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            <span>Start Atomic Launch</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            <span>Start Orchestrated Launch</span>
-                          </>
-                        )}
-                      </button>
-                    ) : (
-                      <div className="flex-1 py-4 px-6 rounded-xl border-2 border-dashed border-amber-500/30 bg-amber-900/10 flex flex-col items-center justify-center">
-                        <div className="flex items-center gap-2 text-amber-400 mb-2">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    )}
+                  
+                    {/* Warning */}
+                    <div className="mt-6 p-4 bg-gradient-to-r from-red-900/20 to-orange-900/20 rounded-xl border border-red-500/20">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                           </svg>
-                          <span className="font-bold">Metadata Required</span>
                         </div>
-                        <p className="text-amber-300/80 text-sm text-center">
-                          Generate metadata first using AI or X Trends
-                        </p>
-                      </div>
-                    )}
-
-
-                    {/* In your Generate button section */}
-                    <button
-                    onClick={() => {
-                      if (launchConfig.metadataSource === 'trending') {
-                        console.log('📡 Generating from X Trends...');
-                        generateFromTrending();
-                      } else {
-                        console.log('🤖 Generating from AI...');
-                        console.log('🔍 DALL-E enabled:', launchConfig.useDalle);
-                        generateAIMetadata();
-                      }
-                    }}
-                    disabled={aiGenerating}
-                    className={`py-4 px-6 rounded-xl font-bold transition-all duration-200 shadow-lg hover:shadow-purple-500/25 ${
-                      launchConfig.metadataSource === 'trending'
-                        ? 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white'
-                        : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
-                    }`}
-                  >
-                    {aiGenerating ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>Generating...</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        {launchConfig.metadataSource === 'trending' ? (
-                          <>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                            </svg>
-                            <span>Generate with X Trends</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                            </svg>
-                            <span>Generate with AI {launchConfig.useDalle && ' + DALL-E'}</span>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </button>
-
-                      {/* Keep advanced toggle button */}
-                      <button
-                        onClick={() => setShowAdvanced(!showAdvanced)}
-                        className="py-4 px-6 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-xl font-medium border border-gray-700/50 transition-all duration-200"
-                      >
-                        {showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
-                      </button>
-                    </div>
-
-                  {/* Advanced Options */}
-                  {showAdvanced && (
-                    <div className="mt-6 p-6 bg-gradient-to-br from-gray-900 to-dark-2 rounded-2xl border border-gray-800/50">
-                      <h3 className="text-white font-bold text-xl mb-4">Advanced Options</h3>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-gray-400 text-sm mb-2">Initial SOL Reserves</label>
-                            <input
-                              type="number"
-                              step="0.1"
-                              min="0"
-                              max="10"
-                              value={launchConfig.initialSolReserves || 1.0}
-                              onChange={(e) => setLaunchConfig(prev => ({ 
-                                ...prev, 
-                                initialSolReserves: parseFloat(e.target.value) 
-                              }))}
-                              className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">Extra SOL for bot operations and fees</p>
-                          </div>
-                          
-                          <div>
-                            <label className="block text-gray-400 text-sm mb-2">Use Jito Bundles</label>
-                            <div className="flex items-center h-[52px]">
-                              <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={launchConfig.useJitoBundle !== false}
-                                  onChange={(e) => setLaunchConfig(prev => ({ 
-                                    ...prev, 
-                                    useJitoBundle: e.target.checked 
-                                  }))}
-                                  className="sr-only peer"
-                                />
-                                <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                              </label>
-                              <span className="ml-3 text-sm text-gray-400">Faster transaction execution</span>
-                            </div>
-                          </div>
+                        <div>
+                          <h4 className="text-red-200 font-bold mb-2">High Risk Activity</h4>
+                          <p className="text-red-200/80 text-sm leading-relaxed">
+                            Token launches using orchestrated bot armies may be considered market manipulation in some jurisdictions.
+                            This tool is for educational purposes only. Use at your own risk and ensure compliance with local regulations.
+                            Only use funds you can afford to lose completely.
+                          </p>
                         </div>
-                        
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-gray-400 text-sm mb-2">Launch Priority</label>
-                            <select
-                              value={launchConfig.priority || 10}
-                              onChange={(e) => setLaunchConfig(prev => ({ 
-                                ...prev, 
-                                priority: parseInt(e.target.value) 
-                              }))}
-                              className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                            >
-                              <option value="1">Low Priority</option>
-                              <option value="5">Normal</option>
-                              <option value="10">High Priority</option>
-                              <option value="20">Maximum Priority</option>
-                            </select>
-                          </div>
-                          
-                          <div>
-                            <label className="block text-gray-400 text-sm mb-2">Bot Spread Strategy</label>
-                            <select
-                              value={launchConfig.botSpread || 'random'}
-                              onChange={(e) => setLaunchConfig(prev => ({ 
-                                ...prev, 
-                                botSpread: e.target.value 
-                              }))}
-                              className="w-full bg-gray-900/50 border border-gray-700/50 rounded-xl p-3 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                            >
-                              <option value="random">Random Timing</option>
-                              <option value="sequential">Sequential</option>
-                              <option value="burst">Burst Mode</option>
-                              <option value="wave">Wave Pattern</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* <div className="mt-6 pt-6 border-t border-gray-800/50">
-                        <h4 className="text-gray-300 font-medium mb-3">Debug Information</h4>
-                        <div className="bg-gray-900/50 rounded-lg p-4">
-                          <div className="text-xs text-gray-400 space-y-1">
-                            <div>Wallet: {userWallet?.publicKey.toBase58()}</div>
-                            <div>Balance: {userBalance.toFixed(2)} SOL</div>
-                            <div>Creator Enabled: {creatorStats?.user?.creator_enabled ? 'Yes' : 'No'}</div>
-                            <div>Bot Wallets: {botWallets.length}</div>
-                            <div>Total Required: {totalRequiredSol.toFixed(2)} SOL</div>
-                          </div>
-                        </div>
-                      </div> */}
-                    </div>
-                  )}
-                
-                  {/* Warning */}
-                  <div className="mt-6 p-4 bg-gradient-to-r from-red-900/20 to-orange-900/20 rounded-xl border border-red-500/20">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="text-red-200 font-bold mb-2">High Risk Activity</h4>
-                        <p className="text-red-200/80 text-sm leading-relaxed">
-                          Token launches using orchestrated bot armies may be considered market manipulation in some jurisdictions.
-                          This tool is for educational purposes only. Use at your own risk and ensure compliance with local regulations.
-                          Only use funds you can afford to lose completely.
-                        </p>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Status Display */}
-                <StatusCard />
+                  {/* Status Display */}
+                  <StatusCard />
 
-                {botWallets.length > 0 && (
-                  <BotWalletsTable botWallets={botWallets} />
-                )}
-              </>
-            ) : (
-              // Optional: Show a message that features are locked
-              <div className="bg-gradient-to-br from-gray-900/50 to-dark-2/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-800/50 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
+                  {botWallets.length > 0 && (
+                    <BotWalletsTable botWallets={botWallets} />
+                  )}
+                </>
+              ) : (
+                // Optional: Show a message that features are locked
+                <div className="bg-gradient-to-br from-gray-900/50 to-dark-2/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-800/50 text-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white text-xl font-bold mb-2">Features Locked</h3>
+                  <p className="text-gray-400 mb-6">
+                    Token creation features require a minimum of {MIN_SOL_FOR_CREATOR_MODE} SOL in your wallet.
+                    Please fund your wallet to unlock all features.
+                  </p>
+                  <div className="flex justify-center gap-3">
+                    <button
+                      onClick={handleFundWallet}
+                      className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-medium py-3 px-8 rounded-lg transition-all shadow-lg hover:shadow-emerald-500/25"
+                    >
+                      Fund Wallet Now
+                    </button>
+                  </div>
                 </div>
-                <h3 className="text-white text-xl font-bold mb-2">Features Locked</h3>
-                <p className="text-gray-400 mb-6">
-                  Token creation features require a minimum of {MIN_SOL_FOR_CREATOR_MODE} SOL in your wallet.
-                  Please fund your wallet to unlock all features.
-                </p>
-                <div className="flex justify-center gap-3">
-                  <button
-                    onClick={handleFundWallet}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-medium py-3 px-8 rounded-lg transition-all shadow-lg hover:shadow-emerald-500/25"
-                  >
-                    Fund Wallet Now
-                  </button>
-                </div>
+              )}
               </div>
-            )}
             </div>
-          </div>
-        
-        {/* Footer */}
-        <footer className="bg-gray-900/80 backdrop-blur-lg border-t border-gray-800 py-4 px-4 md:px-8">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <span className="text-gray-400 text-sm">
-              © {currentYear} Flash Orchestrator | High Risk Tool | For Educational Purposes Only
-            </span>
-            <div className="flex items-center gap-6">
-              <button
-                onClick={() => navigate('/trading-interface')}
-                className="text-gray-400 hover:text-emerald-400 transition-colors text-sm font-medium flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Back to Sniper
-              </button>
+          
+          {/* Footer */}
+          <footer className="bg-gray-900/80 backdrop-blur-lg border-t border-gray-800 py-4 px-4 md:px-8">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+              <span className="text-gray-400 text-sm">
+                © {currentYear} Flash Orchestrator | High Risk Tool | For Educational Purposes Only
+              </span>
+              <div className="flex items-center gap-6">
+                <button
+                  onClick={() => navigate('/trading-interface')}
+                  className="text-gray-400 hover:text-emerald-400 transition-colors text-sm font-medium flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  Back to Sniper
+                </button>
+              </div>
             </div>
-          </div>
-        </footer>
+          </footer>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
